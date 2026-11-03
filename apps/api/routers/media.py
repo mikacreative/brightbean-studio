@@ -278,8 +278,7 @@ def list_media(
         qs = qs.filter(folder_id=folder_id)
     if is_starred is not None:
         qs = qs.filter(is_starred=is_starred)
-    for tag in _parse_tags_csv(tags):
-        qs = qs.filter(tags__contains=[tag])
+    qs = MediaAsset.objects.with_all_tags(_parse_tags_csv(tags), queryset=qs)
     if created_after:
         qs = qs.filter(created_at__gte=created_after)
     if created_before:

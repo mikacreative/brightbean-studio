@@ -20,6 +20,22 @@
 
 预览用于检查内容，不保证与平台最终排版完全一致；公众号粘贴效果取决于浏览器和平台编辑器。本版不提供自动发布、平台账号授权、评论同步、平台数据统计或定时提醒。
 
+### 本机 AI 助手接入
+
+本版提供 MCP 工具 `create_manual_draft` 和 `update_manual_draft`。AI 可以创建一个包含多个小红书、公众号版本的草稿，分别填写标题、正文、话题、作者、摘要、文章富文本、素材顺序和人工计划时间。图片先上传到素材库；公众号正文图片仍需在官方编辑器中手动插入。待审、已审批和已发布的版本不能通过 `update_manual_draft` 修改；REST 修改已审批内容时会重新进入审核。
+
+`list_accounts` 用 `management_mode: manual` 标识人工账号。MCP 的草稿创建不会提交审核或发布，团队需在编辑器中提交并完成工作区要求的审批。创建调用暂不支持幂等重试：如果网络中断，请先查询草稿，确认未创建后再重试。
+
+如需在本机 Codex CLI 或桌面端使用，可在 **Organization → API Keys** 为指定工作区的人工账号创建专用密钥，仅授予 `create_posts` 和按需 `upload_media` 权限。将密钥写入项目目录下的 `.socialos-mcp-token`，设置为仅本人可读写（`chmod 600 .socialos-mcp-token`）；该文件已被 Git 忽略。不要把密钥写入命令行参数、提交到 Git 或发送给其他人。
+
+在项目目录中注册本机桥接服务（此命令会修改本机 Codex 配置）：
+
+```bash
+codex mcp add socialos -- "$PWD/.venv/bin/python" "$PWD/scripts/socialos_mcp_bridge.py"
+```
+
+桥接服务只将密钥发往本机回环地址，默认连接 `http://127.0.0.1:8000/api/v1/mcp`。确保本机应用正在运行，并在需要时重新打开 Codex 会话以加载新配置。停止使用时应在应用中撤销 API key，并删除本地密钥文件。此接入不提供模型本身，也不将本地服务开放到公网。
+
 完成依赖安装和数据库初始化后，可在项目目录执行：
 
 ```bash
@@ -862,6 +878,8 @@ The MCP server lives at `POST {APP_URL}/api/v1/mcp` and speaks JSON-RPC 2.0 over
 |---|---|---|
 | `list_accounts` | List social accounts this API key can act on | — |
 | `create_draft` | Create a draft post (caption, title, media, first comment, optional proposed publish time) | `create_posts` |
+| `create_manual_draft` | Create one draft containing independently authored Chinese manual-platform versions | `create_posts` |
+| `update_manual_draft` | Edit a draft or returned manual-platform version without changing other versions | `create_posts` |
 | `schedule_post` | Create and schedule a post in one step | `create_posts` + `publish_directly` |
 | `schedule_draft` | Schedule an existing draft | `create_posts` + `publish_directly` |
 | `get_post` | Retrieve a post with aggregate status and per-platform state | — |

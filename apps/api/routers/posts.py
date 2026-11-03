@@ -39,7 +39,7 @@ from apps.api.schemas import (
     ScheduleRequest,
     UpdatePostRequest,
 )
-from apps.composer.models import Post
+from apps.composer.models import PlatformPost, Post
 from apps.composer.services import (
     create_post,
     media_change_blocker,
@@ -47,7 +47,7 @@ from apps.composer.services import (
     transition_platform_post,
     usable_media_types,
 )
-from apps.social_accounts.models import SocialAccount
+from apps.social_accounts.models import MANUAL_PLATFORMS, SocialAccount
 
 router = Router(tags=["posts"])
 
@@ -339,7 +339,8 @@ def update(request, post_id: uuid.UUID, payload: UpdatePostRequest):
     resolved_assets: dict = {}
     if payload.media_asset_ids is not None:
         wanted_media = list(payload.media_asset_ids)
-        resolved_assets = {a.id: a for a in MediaAsset.objects.filter(id__in=wanted_media, workspace=post.workspace)}
+        assets = MediaAsset.objects.for_workspace_with_shared(post.workspace_id, post.workspace.organization_id)
+        resolved_assets = {a.id: a for a in assets.filter(id__in=wanted_media)}
         missing = [i for i in wanted_media if i not in resolved_assets]
         if missing:
             raise HttpError(422, f"Media asset(s) not in workspace: {missing}")
@@ -354,6 +355,32 @@ def update(request, post_id: uuid.UUID, payload: UpdatePostRequest):
             raise HttpError(422, reason)
 
     with transaction.atomic():
+        # Review and content mutations must serialize on the same platform
+        # rows. Otherwise an agent can change inherited content after approval
+        # while leaving the approval attached to the old version.
+        post = Post.objects.select_for_update().get(pk=post.pk)
+        manual_posts = list(
+            PlatformPost.objects.select_for_update(of=("self",))
+            .filter(post=post, social_account__platform__in=MANUAL_PLATFORMS)
+            .select_related("social_account")
+            .order_by("id")
+        )
+        for pp in manual_posts:
+            pp.post = post
+        if not post.is_editable:
+            raise HttpError(409, f"Post is not editable in status {post.status}.")
+
+        review_fingerprints = {
+            pp.id: pp.manual_review_fingerprint for pp in manual_posts if pp.status in {"approved", "pending_client"}
+        }
+        if payload.media_asset_ids is not None:
+            wanted_ids = {str(mid) for mid in wanted_media}
+            for pp in manual_posts:
+                if pp.status == "published" and (pp.platform_extra or {}).get("manual_media_frozen"):
+                    frozen_ids = {str(mid) for mid in (pp.platform_specific_media or [])}
+                    if not frozen_ids.issubset(wanted_ids):
+                        raise HttpError(409, "Cannot remove media from a published manual version.")
+
         update_fields: list[str] = []
         if payload.caption is not None:
             post.caption = payload.caption
@@ -400,6 +427,11 @@ def update(request, post_id: uuid.UUID, payload: UpdatePostRequest):
 
         if update_fields:
             post.save(update_fields=[*update_fields, "updated_at"])
+
+        for pp in manual_posts:
+            if pp.id in review_fingerprints and pp.manual_review_fingerprint != review_fingerprints[pp.id]:
+                pp.transition_to("pending_review")
+                pp.save(update_fields=[*PlatformPost.TRANSITION_FIELDS, "updated_at"])
 
         sync_post_scheduled_at(post)
 

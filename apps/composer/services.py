@@ -172,7 +172,11 @@ def create_post(
                 return None
 
         resolved = [(mid, _to_uuid(mid)) for mid in media_ids]
-        found = list(MediaAsset.objects.filter(id__in=[u for _, u in resolved if u is not None], workspace=workspace))
+        found = list(
+            MediaAsset.objects.for_workspace_with_shared(workspace.id, workspace.organization_id).filter(
+                id__in=[u for _, u in resolved if u is not None]
+            )
+        )
         asset_map = {a.id: a for a in found}
         missing = [mid for mid, u in resolved if u is None or u not in asset_map]
         if missing:

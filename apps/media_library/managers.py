@@ -1,7 +1,22 @@
 """Custom managers for media library models."""
 
-from django.db import connection, models
+from django.db import connection, connections, models
 from django.db.models import Max, Q
+
+
+class _SQLiteTagMatch(models.Func):
+    """Test exact JSON-array membership using SQLite's built-in JSON support."""
+
+    output_field = models.BooleanField()
+    arity = 2
+
+    def as_sql(self, compiler, connection, **extra_context):
+        array_sql, array_params = compiler.compile(self.source_expressions[0])
+        value_sql, value_params = compiler.compile(self.source_expressions[1])
+        sql = (
+            f"EXISTS (SELECT 1 FROM json_each({array_sql}) AS tag WHERE tag.type = 'text' AND tag.value = {value_sql})"
+        )
+        return sql, [*array_params, *value_params]
 
 
 class MediaAssetManager(models.Manager):
@@ -36,6 +51,16 @@ class MediaAssetManager(models.Manager):
         """
         qs = queryset if queryset is not None else self.get_queryset()
         return qs.annotate(last_used_at=Max("post_usages__post__created_at"))
+
+    def with_all_tags(self, tags, queryset=None):
+        """Filter by exact tags with AND semantics on PostgreSQL and SQLite."""
+        qs = queryset if queryset is not None else self.get_queryset()
+        for tag in tags:
+            if connections[qs.db].vendor == "sqlite":
+                qs = qs.filter(_SQLiteTagMatch(models.F("tags"), models.Value(tag)))
+            else:
+                qs = qs.filter(tags__contains=[tag])
+        return qs
 
     def search(self, query, queryset=None):
         """Full-text search on filename and tags.

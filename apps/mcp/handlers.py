@@ -209,8 +209,9 @@ register_tool(
         name="list_accounts",
         description=(
             "List the social media accounts this API key is allowed to act on. "
-            "Returns id, platform, account_name, account_handle, connection_status, char_limit, "
+            "Returns id, platform, account_name, account_handle, connection_status, management_mode, char_limit, "
             "escaped_chars, needs_title, supports_first_comment, requires_video, and requires_media. "
+            "A manual account is not connected to a platform and cannot publish automatically. "
             "Call this first to discover which "
             "social_account_id values are valid and what each platform requires."
         ),
@@ -303,6 +304,212 @@ register_tool(
             "additionalProperties": False,
         },
         handler=_create_draft,
+    )
+)
+
+
+# ---------------------------------------------------------------------------
+# Manual Chinese-platform drafts: one post can contain several versions.
+# ---------------------------------------------------------------------------
+
+
+_MANUAL_FIELD_PROPERTIES = {
+    "title": {"type": "string", "maxLength": 255},
+    "caption": {"type": "string", "maxLength": 10000},
+    "tags": {"type": "string", "maxLength": 2000, "description": "Xiaohongshu topic tags."},
+    "author": {"type": "string", "maxLength": 255, "description": "WeChat Official Account author."},
+    "digest": {"type": "string", "maxLength": 1000, "description": "WeChat Official Account summary."},
+    "article_html": {
+        "type": "string",
+        "maxLength": 200000,
+        "description": "WeChat article HTML; unsupported or unsafe elements are removed.",
+    },
+    "planned_at": {
+        "type": ["string", "null"],
+        "description": "ISO-8601 manual publication plan, with timezone. Null clears it; it never schedules a publish.",
+    },
+    "media_order": {
+        "type": "array",
+        "items": {"type": "string", "format": "uuid"},
+        "maxItems": 100,
+        "description": "Order of media IDs already attached to this post. Other attached items remain visible.",
+    },
+}
+
+
+def _apply_manual_draft_fields(pp, fields: dict, attached_ids: set[str]) -> None:
+    """Validate and assign only fields supported by this manual platform."""
+    from apps.composer.manual_content import sanitize_article_html
+
+    platform = pp.social_account.platform
+    supported = {"tags"} if platform == "xiaohongshu" else {"author", "digest", "article_html"}
+    wrong_fields = set(fields) & {"tags", "author", "digest", "article_html"} - supported
+    if wrong_fields:
+        raise JsonRpcError(INVALID_PARAMS, f"Fields not supported for {platform}: {', '.join(sorted(wrong_fields))}")
+
+    if "title" in fields:
+        pp.platform_specific_title = fields["title"]
+    if "caption" in fields:
+        pp.platform_specific_caption = fields["caption"]
+
+    extra = dict(pp.platform_extra or {})
+    for key, stored in (("tags", "manual_tags"), ("author", "author"), ("digest", "digest")):
+        if key in fields:
+            extra[stored] = fields[key].strip()
+    if "article_html" in fields:
+        extra["article_html"] = sanitize_article_html(fields["article_html"])
+    pp.platform_extra = extra
+
+    if "planned_at" in fields:
+        planned = fields["planned_at"]
+        pp.scheduled_at = _parse_iso_datetime(planned, "planned_at") if planned is not None else None
+    if "media_order" in fields:
+        order = [str(_parse_uuid(item, "media_order")) for item in fields["media_order"]]
+        if len(order) != len(set(order)) or not set(order).issubset(attached_ids):
+            raise JsonRpcError(INVALID_PARAMS, "media_order must contain distinct media attached to this post")
+        pp.platform_specific_media = order or None
+
+
+def _create_manual_draft(args: dict, context: dict[str, Any]) -> dict:
+    from django.db import transaction
+
+    _require_perm(context, "create_posts")
+    api_key = context["api_key"]
+    variants = args["variants"]
+    accounts = [_resolve_allowed_account(api_key, variant["social_account_id"]) for variant in variants]
+    if any(not sa.is_manual or sa.workspace_id != api_key.workspace_id for sa in accounts):
+        raise JsonRpcError(INVALID_PARAMS, "Every account must be a manual account in the current workspace")
+    if len({sa.id for sa in accounts}) != len(accounts):
+        raise JsonRpcError(INVALID_PARAMS, "Each social account may appear only once")
+    media_ids = [str(_parse_uuid(mid, "media_asset_ids")) for mid in args.get("media_asset_ids", [])]
+    if len(media_ids) != len(set(media_ids)):
+        raise JsonRpcError(INVALID_PARAMS, "media_asset_ids must not contain duplicates")
+
+    try:
+        with transaction.atomic():
+            post = create_post(
+                workspace=api_key.workspace,
+                social_account=accounts[0],
+                title=variants[0].get("title", ""),
+                caption="",
+                media_asset_ids=media_ids,
+                internal_notes=args.get("internal_notes", ""),
+                author=api_key.issued_by if api_key.issued_by_id else None,
+                status="draft",
+            )
+            for index, (variant, account) in enumerate(zip(variants, accounts, strict=True)):
+                if index == 0:
+                    pp = post.platform_posts.get(social_account=account)
+                else:
+                    pp = PlatformPost(post=post, social_account=account, status="draft")
+                pp.post = post
+                # Versions are independent even when a field is omitted; the
+                # parent title is only a useful label in lists and calendars.
+                pp.platform_specific_title = ""
+                pp.platform_specific_caption = ""
+                _apply_manual_draft_fields(pp, variant, set(media_ids))
+                pp.save()
+            return _wrap_text(_serialize_post(post, context))
+    except ValueError as exc:
+        raise JsonRpcError(INVALID_PARAMS, str(exc)) from exc
+
+
+register_tool(
+    Tool(
+        name="create_manual_draft",
+        description=(
+            "Create one draft containing independent Xiaohongshu and/or WeChat Official Account versions. "
+            "Accounts must use manual management. This never submits, approves, schedules or publishes a post. "
+            "Upload media first, then pass shared media_asset_ids and optional per-version media_order."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "variants": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "social_account_id": {"type": "string", "format": "uuid"},
+                            **_MANUAL_FIELD_PROPERTIES,
+                        },
+                        "required": ["social_account_id"],
+                        "additionalProperties": False,
+                    },
+                },
+                "media_asset_ids": {
+                    "type": "array",
+                    "items": {"type": "string", "format": "uuid"},
+                    "maxItems": 100,
+                },
+                "internal_notes": {"type": "string", "maxLength": 10000},
+            },
+            "required": ["variants"],
+            "additionalProperties": False,
+        },
+        handler=_create_manual_draft,
+    )
+)
+
+
+def _update_manual_draft(args: dict, context: dict[str, Any]) -> dict:
+    from django.db import transaction
+
+    _require_perm(context, "create_posts")
+    api_key = context["api_key"]
+    account = _resolve_allowed_account(api_key, args["social_account_id"])
+    if not account.is_manual or account.workspace_id != api_key.workspace_id:
+        raise JsonRpcError(INVALID_PARAMS, "The account must be a manual account in the current workspace")
+    post = _get_post_for_key(api_key, args["post_id"])
+    with transaction.atomic():
+        post = Post.objects.select_for_update().get(pk=post.pk)
+        try:
+            pp = (
+                PlatformPost.objects.select_for_update(of=("self",))
+                .select_related("social_account")
+                .get(post=post, social_account=account)
+            )
+        except PlatformPost.DoesNotExist as exc:
+            raise JsonRpcError(INVALID_PARAMS, "The post has no version for this account") from exc
+        if pp.status not in {"draft", "changes_requested", "rejected"}:
+            raise JsonRpcError(INVALID_PARAMS, "Only draft or returned manual versions may be edited")
+        pp.post = post
+        attached_ids = {str(mid) for mid in post.media_attachments.values_list("media_asset_id", flat=True)}
+        _apply_manual_draft_fields(pp, args, attached_ids)
+        pp.save(
+            update_fields=[
+                "platform_specific_title",
+                "platform_specific_caption",
+                "platform_specific_media",
+                "platform_extra",
+                "scheduled_at",
+                "updated_at",
+            ]
+        )
+        return _wrap_text(_serialize_post(post, context))
+
+
+register_tool(
+    Tool(
+        name="update_manual_draft",
+        description=(
+            "Update one manual account's draft, returned, or rejected version. "
+            "Pending, approved and published versions cannot be edited by this tool. "
+            "Omitted fields are preserved; planned_at=null clears the manual plan."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "post_id": {"type": "string", "format": "uuid"},
+                "social_account_id": {"type": "string", "format": "uuid"},
+                **_MANUAL_FIELD_PROPERTIES,
+            },
+            "required": ["post_id", "social_account_id"],
+            "additionalProperties": False,
+        },
+        handler=_update_manual_draft,
     )
 )
 
@@ -718,7 +925,7 @@ def _search_media(args: dict, context: dict[str, Any]) -> dict:
         for tag in tags:
             if not isinstance(tag, str):
                 raise JsonRpcError(INVALID_PARAMS, "tags must be a list of strings")
-            qs = qs.filter(tags__contains=[tag])
+        qs = MediaAsset.objects.with_all_tags(tags, queryset=qs)
     if query:
         qs = MediaAsset.objects.search(query, queryset=qs)
 

@@ -50,6 +50,10 @@ class AccountSummary(Schema):
     account_name: str
     account_handle: str = ""
     connection_status: str
+    management_mode: Literal["manual", "api"] = Field(
+        "api",
+        description="Manual accounts are for previews and human publication; they are not connected to a platform API.",
+    )
     char_limit: int = Field(
         2200,
         description="Maximum caption length the platform accepts. Reject locally before calling /posts.",
@@ -100,6 +104,7 @@ class AccountSummary(Schema):
             account_name=sa.account_name,
             account_handle=getattr(sa, "account_handle", "") or "",
             connection_status=sa.connection_status,
+            management_mode="manual" if sa.is_manual else "api",
             char_limit=sa.char_limit,
             escaped_chars=sa.escaped_chars,
             needs_title=bool(sa.field_config.get("needs_title", False)),
@@ -270,6 +275,14 @@ class ScheduleRequest(Schema):
 # ---------------------------------------------------------------------------
 
 
+class ManualVersionSummary(Schema):
+    author: str = ""
+    digest: str = ""
+    tags: str = ""
+    article_html: str = ""
+    media_order: list[str] = Field(default_factory=list)
+
+
 class PlatformPostSummary(Schema):
     id: uuid.UUID
     social_account_id: uuid.UUID
@@ -279,13 +292,33 @@ class PlatformPostSummary(Schema):
     published_at: dt.datetime | None
     platform_post_id: str = ""
     publish_error: str = ""
+    effective_title: str = ""
+    effective_caption: str = ""
+    manual: ManualVersionSummary | None = None
 
     @field_serializer("scheduled_at", "published_at")
     def _serialize_dt(self, value: dt.datetime | None) -> str | None:
         return _serialize_utc_z(value)
 
     @classmethod
-    def from_platform_post(cls, pp: PlatformPost) -> PlatformPostSummary:
+    def from_platform_post(cls, pp: PlatformPost, *, include_internal: bool = False) -> PlatformPostSummary:
+        manual = None
+        can_show_version = (
+            not pp.social_account.is_manual
+            or include_internal
+            or pp.status in {"pending_client", "approved", "on_hold", "published"}
+        )
+        if pp.social_account.is_manual and can_show_version:
+            from apps.composer.manual_content import sanitize_article_html
+
+            extra = pp.platform_extra or {}
+            manual = ManualVersionSummary(
+                author=extra.get("author", ""),
+                digest=extra.get("digest", ""),
+                tags=extra.get("manual_tags", ""),
+                article_html=sanitize_article_html(extra.get("article_html", "")),
+                media_order=[str(item) for item in (pp.platform_specific_media or [])],
+            )
         return cls(
             id=pp.id,
             social_account_id=pp.social_account_id,
@@ -295,6 +328,9 @@ class PlatformPostSummary(Schema):
             published_at=pp.published_at,
             platform_post_id=pp.platform_post_id or "",
             publish_error=pp.publish_error or "",
+            effective_title=pp.effective_title if can_show_version else "",
+            effective_caption=pp.effective_caption if can_show_version else "",
+            manual=manual,
         )
 
 
@@ -341,7 +377,10 @@ class PostResponse(Schema):
             children = post.platform_posts.all()
         else:
             children = post.platform_posts.select_related("social_account")
-        platform_posts = [PlatformPostSummary.from_platform_post(pp) for pp in children]
+        platform_posts = []
+        for pp in children:
+            pp.post = post
+            platform_posts.append(PlatformPostSummary.from_platform_post(pp, include_internal=include_internal_notes))
         return cls(
             id=post.id,
             workspace_id=post.workspace_id,
