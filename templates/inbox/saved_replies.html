@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Saved Replies - {{ workspace.name }} - Brightbean{% endblock %}
+{% block title %}已保存回复 - {{ workspace.name }} - Brightbean{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl">
@@ -12,15 +12,15 @@
                    class="text-stone-400 hover:text-stone-600 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 </a>
-                <h2 class="text-xl font-semibold text-stone-900 tracking-tight">Saved Replies</h2>
+                <h2 class="text-xl font-semibold text-stone-900 tracking-tight">保存的回复</h2>
             </div>
-            <p class="text-sm text-stone-500 ml-8">Pre-written responses for common questions. Use variables: <code class="text-[11px] px-1 py-0.5 bg-stone-100 rounded">{sender_name}</code> <code class="text-[11px] px-1 py-0.5 bg-stone-100 rounded">{account_name}</code> <code class="text-[11px] px-1 py-0.5 bg-stone-100 rounded">{post_url}</code></p>
+            <p class="text-sm text-stone-500 ml-8">针对常见问题的预设回复。使用变量： <code class="text-[11px] px-1 py-0.5 bg-stone-100 rounded">{sender_name}</code> <code class="text-[11px] px-1 py-0.5 bg-stone-100 rounded">{account_name}</code> <code class="text-[11px] px-1 py-0.5 bg-stone-100 rounded">{post_url}</code></p>
         </div>
         <a href="{% url 'inbox:saved_reply_create' workspace_id=workspace.id %}"
            class="inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white rounded-full transition-all duration-150"
            style="background: var(--primary); box-shadow: var(--shadow-primary);">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-            New Reply
+            新建回复
         </a>
     </div>
 
@@ -42,7 +42,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </a>
                 <form x-data method="post" action="{% url 'inbox:saved_reply_delete' workspace_id=workspace.id reply_id=reply.id %}"
-                      @submit="if(!confirm('Delete this saved reply?')) $event.preventDefault()">
+                      @submit="if(!confirm('确定删除这条常用回复吗？')) $event.preventDefault()">
                     {% csrf_token %}
                     <button type="submit"
                             class="w-7 h-7 flex items-center justify-center rounded-md text-stone-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer">
@@ -58,8 +58,8 @@
         <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: var(--surface-2);">
             <svg class="w-6 h-6" style="color: var(--text-ghost);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
         </div>
-        <h3 class="text-sm font-semibold text-stone-800 mb-1">No saved replies yet</h3>
-        <p class="text-[13px] text-stone-500">Create reusable response templates for common questions.</p>
+        <h3 class="text-sm font-semibold text-stone-800 mb-1">暂无已保存回复</h3>
+        <p class="text-[13px] text-stone-500">为常见问题创建可复用的回复模板。</p>
     </div>
     {% endif %}
 </div>

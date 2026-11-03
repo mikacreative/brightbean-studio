@@ -1,1 +1,2 @@
-<span class="badge-pill badge-status-{{ message.status }}">{{ message.get_status_display }}</span>
+{% load common_extras %}
+<span class="badge-pill badge-status-{{ message.status }}">{{ message.get_status_display|zh_ui_label }}</span>

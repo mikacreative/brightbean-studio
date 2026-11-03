@@ -126,8 +126,8 @@ def submit_for_review(target, user, workspace):
         user,
         post=post,
         event_type=EventType.POST_SUBMITTED,
-        title="Post submitted for review",
-        body=f'{user.display_name} submitted a post for your review: "{post.caption_snippet}"',
+        title="内容已提交审核",
+        body=f'{user.display_name} 提交了待你审核的内容："{post.caption_snippet}"',
     )
 
     return post
@@ -180,8 +180,8 @@ def approve_post(target, user, workspace, comment=""):
         notify(
             user=post.author,
             event_type=EventType.POST_APPROVED,
-            title="Post approved",
-            body=f'Your post "{post.caption_snippet}" was approved by {user.display_name}.',
+            title="内容已通过审核",
+            body=f'你的内容 "{post.caption_snippet}" 已由 {user.display_name} 审核通过。',
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),
@@ -216,8 +216,8 @@ def request_changes(target, user, workspace, comment):
         notify(
             user=post.author,
             event_type=EventType.POST_CHANGES_REQUESTED,
-            title="Changes requested on your post",
-            body=f'{user.display_name} requested changes: "{comment[:100]}"',
+            title="内容需要修改",
+            body=f'{user.display_name} 提出了修改意见："{comment[:100]}"',
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),
@@ -252,8 +252,8 @@ def reject_post(target, user, workspace, comment):
         notify(
             user=post.author,
             event_type=EventType.POST_REJECTED,
-            title="Post rejected",
-            body=f'{user.display_name} rejected your post: "{comment[:100]}"',
+            title="内容已驳回",
+            body=f'{user.display_name} 驳回了你的内容："{comment[:100]}"',
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),
@@ -420,8 +420,8 @@ def _notify_clients(post, workspace):
         notify(
             user=membership.user,
             event_type=EventType.CLIENT_APPROVAL_REQUESTED,
-            title="Posts ready for your review",
-            body=f"A post in {workspace.name} is waiting for your approval.",
+            title="有内容等待你的审核",
+            body=f"{workspace.name} 中有内容等待你的审核。",
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),

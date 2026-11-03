@@ -25,7 +25,7 @@ from apps.social_accounts.models import SocialAccount
 from apps.workspaces.models import Workspace
 
 # The card's class also appears in base.html's pre-paint CSS, so match its copy.
-BANNER = "Enjoying BrightBean?"
+BANNER = "喜欢 BrightBean 吗？"
 TRUSTPILOT_URL = "https://www.trustpilot.com/review/brightbean.xyz"
 
 

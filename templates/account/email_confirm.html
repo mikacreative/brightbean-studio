@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n account allauth %}
 
-{% block title %}Confirm Email - Brightbean{% endblock %}
+{% block title %}确认邮箱 - Brightbean{% endblock %}
 
 {% block auth_content %}
 <div class="w-full max-w-md px-4">
@@ -14,7 +14,7 @@
             </svg>
         </div>
         <h1 class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">
-            Confirm email address
+            确认邮箱地址
         </h1>
     </div>
 
@@ -24,36 +24,36 @@
             {% user_display confirmation.email_address.user as user_display %}
             {% if can_confirm %}
                 <p class="text-sm mb-6 leading-relaxed" style="color: var(--text-secondary);">
-                    Please confirm that
+                    请确认
                     <strong style="color: var(--text-primary);">{{ confirmation.email_address.email }}</strong>
-                    is your email address.
+                    是您的邮箱地址。
                 </p>
                 {% url 'account_confirm_email' confirmation.key as action_url %}
                 <form method="post" action="{{ action_url }}">
                     {% csrf_token %}
                     {{ redirect_field }}
                     <button type="submit" class="btn-brand">
-                        Confirm Email
+                        确认邮箱
                     </button>
                 </form>
             {% else %}
                 <div class="alert-error">
-                    This email address has already been confirmed by a different account.
+                    该邮箱地址已被其他账号确认。
                 </div>
             {% endif %}
         {% else %}
             <div class="alert-error mb-4">
-                This confirmation link has expired or is invalid.
+                此确认链接已过期或无效。
             </div>
             <a href="{% url 'account_login' %}" class="btn-brand">
-                Sign In
+                登录
             </a>
         {% endif %}
     </div>
 
     <!-- Footer link -->
     <p class="text-center text-sm mt-6" style="color: var(--text-secondary);">
-        <a href="{% url 'account_login' %}" class="font-semibold hover:underline" style="color: var(--primary);">Back to sign in</a>
+        <a href="{% url 'account_login' %}" class="font-semibold hover:underline" style="color: var(--primary);">返回登录</a>
     </p>
 </div>
 {% endblock %}

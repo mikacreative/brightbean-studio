@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}Activation failed{% endblock %}
+{% block page_title %}激活失败{% endblock %}
 
 {% block extra_head %}
 {% include "intelligence/_cta_styles.html" %}
@@ -12,10 +12,10 @@
     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
   </div>
 
-  <h1 class="text-xl font-semibold text-stone-900 mb-2">We couldn't activate Intelligence</h1>
+  <h1 class="text-xl font-semibold text-stone-900 mb-2">无法激活 Intelligence</h1>
   <p class="text-sm text-stone-600 mb-6">{{ message }}</p>
   {% if code %}
-    <p class="text-xs text-stone-400 font-mono mb-6">code: {{ code }}</p>
+    <p class="text-xs text-stone-400 font-mono mb-6">代码：{{ code }}</p>
   {% endif %}
 
   {% comment %}
@@ -30,17 +30,17 @@
   {% if organization %}
   <div class="flex items-center justify-center gap-3 flex-wrap">
     <a href="{% url 'intelligence:subscribe' org_id=organization.id %}" class="intel-cta-primary">
-      Start a new checkout
+      开始新的结账
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </a>
     <a href="{% url 'intelligence:playground' org_id=organization.id %}" class="intel-cta-text-link">
-      Back to Intelligence
+      返回智能中心
     </a>
   </div>
   {% endif %}
 
   <p class="text-xs text-stone-500 mt-8">
-    If Stripe charged you and you don't see your subscription, contact
+    如果 Stripe 已扣款但您未看到订阅，请联系
     <a href="mailto:support@brightbean.xyz"
        class="text-orange-600 hover:text-orange-700 cursor-pointer">support@brightbean.xyz</a>.
   </p>

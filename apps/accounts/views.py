@@ -90,7 +90,7 @@ def _handle_photo_update(request, user):
         # request, and a full save would write back any column another request
         # changed meanwhile (e.g. review_banner_dismissed_at).
         user.save(update_fields=["avatar", "updated_at"])
-        messages.success(request, "Photo removed.")
+        messages.success(request, "头像已移除。")
         return
 
     # Handle upload
@@ -102,13 +102,13 @@ def _handle_photo_update(request, user):
     # Validate file type
     allowed_types = ("image/jpeg", "image/png", "image/webp", "image/gif")
     if avatar.content_type not in allowed_types:
-        messages.error(request, "Photo must be a JPEG, PNG, WebP, or GIF image.")
+        messages.error(request, "头像须为 JPEG、PNG、WebP 或 GIF 图片。")
         return
 
     # Validate file size (2 MB max)
     max_size = 2 * 1024 * 1024
     if avatar.size > max_size:
-        messages.error(request, "Photo must be under 2 MB.")
+        messages.error(request, "头像大小须小于 2 MB。")
         return
 
     # Validate minimum dimensions (180x180)
@@ -124,10 +124,10 @@ def _handle_photo_update(request, user):
         with Image.open(avatar) as img:
             width, height = img.size
         if width < 180 or height < 180:
-            messages.error(request, "Photo must be at least 180×180 pixels.")
+            messages.error(request, "头像尺寸至少为 180×180 像素。")
             return
     except Exception:
-        messages.error(request, "Could not read image file.")
+        messages.error(request, "无法读取图片文件。")
         return
     finally:
         avatar.seek(0)  # Reset file pointer after reading
@@ -138,19 +138,19 @@ def _handle_photo_update(request, user):
 
     user.avatar = avatar
     user.save(update_fields=["avatar", "updated_at"])
-    messages.success(request, "Photo updated.")
+    messages.success(request, "头像已更新。")
 
 
 def _handle_name_update(request, user):
     """Handle name change."""
     name = request.POST.get("name", "").strip()
     if not name:
-        messages.error(request, "Name cannot be empty.")
+        messages.error(request, "名称不能为空。")
         return
 
     user.name = name
     user.save(update_fields=["name"])
-    messages.success(request, "Name updated.")
+    messages.success(request, "名称已更新。")
 
 
 def _handle_password_update(request, user):
@@ -160,29 +160,29 @@ def _handle_password_update(request, user):
     password_confirm = request.POST.get("password_confirm", "")
 
     if not current_password:
-        messages.error(request, "Current password is required.")
+        messages.error(request, "请输入当前密码。")
         return
 
     if not user.check_password(current_password):
-        messages.error(request, "Current password is incorrect.")
+        messages.error(request, "当前密码不正确。")
         return
 
     if not password:
-        messages.error(request, "New password cannot be empty.")
+        messages.error(request, "新密码不能为空。")
         return
 
     if len(password) < 8:
-        messages.error(request, "New password must be at least 8 characters.")
+        messages.error(request, "新密码至少需要 8 个字符。")
         return
 
     if password != password_confirm:
-        messages.error(request, "New passwords do not match.")
+        messages.error(request, "两次输入的新密码不一致。")
         return
 
     user.set_password(password)
     user.save(update_fields=["password", "updated_at"])
     update_session_auth_hash(request, user)
-    messages.success(request, "Password changed.")
+    messages.success(request, "密码已修改。")
 
 
 def _handle_account_deletion(request, user):
@@ -211,15 +211,14 @@ def _handle_account_deletion(request, user):
         org_names = ", ".join(sole_owner_orgs)
         messages.error(
             request,
-            f"You are the sole owner of: {org_names}. "
-            "Transfer ownership or delete the organization before deleting your account.",
+            f"你是以下组织的唯一所有者：{org_names}。请先转移所有权或删除组织，再删除你的账号。",
         )
         return redirect("accounts:settings")
 
     # Safe to delete
     user.delete()
     logout(request)
-    messages.success(request, "Your account has been deleted.")
+    messages.success(request, "你的账号已删除。")
     return redirect("account_login")
 
 
@@ -235,7 +234,7 @@ def accept_terms(request):
             request.user.tos_accepted_at = timezone.now()
             request.user.save(update_fields=["tos_accepted_at"])
             return redirect("/")
-        messages.error(request, "You must agree to the Terms of Service and Privacy Policy to continue.")
+        messages.error(request, "请先同意服务条款和隐私政策。")
 
     return render(request, "account/accept_terms.html")
 

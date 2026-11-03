@@ -1,16 +1,14 @@
 {% extends "base.html" %}
-{% block page_title %}Not authorized{% endblock %}
+{% block page_title %}未授权{% endblock %}
 {% block content %}
 <div class="max-w-xl mx-auto py-16 px-4 text-center">
-  <h1 class="text-xl font-semibold text-stone-900 mb-2">This deployment isn't authorized</h1>
+  <h1 class="text-xl font-semibold text-stone-900 mb-2">此部署未获授权</h1>
   <p class="text-sm text-stone-600 mb-6">
-    This Studio deployment is not registered for the hosted Intelligence
-    integration. If you're a fork operator running your own Stripe and
-    Intelligence stack, you need to register your deployment first.
+    此 Studio 部署未注册用于托管的智能分析集成。如果您是运行自有 Stripe 和智能分析堆栈的分支操作者，需先注册您的部署。
   </p>
   <p class="text-sm text-stone-600">
-    Contact <a href="mailto:support@brightbean.xyz" class="text-orange-600 hover:text-orange-700">support@brightbean.xyz</a>
-    for details.
+    联系 <a href="mailto:support@brightbean.xyz" class="text-orange-600 hover:text-orange-700">support@brightbean.xyz</a>
+    了解详情。
   </p>
 </div>
 {% endblock %}

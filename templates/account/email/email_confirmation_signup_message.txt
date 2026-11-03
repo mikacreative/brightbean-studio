@@ -1,10 +1,10 @@
-{% load account %}{% autoescape off %}{% user_display user as user_display %}Hi {{ user_display }},
+{% load account %}{% autoescape off %}{% user_display user as user_display %}{{ user_display }}，你好：
 
-Thanks for signing up for Brightbean. Please confirm your email address by clicking the link below:
+感谢注册 Brightbean。请点击以下链接确认邮箱地址：
 
 {{ activate_url }}
 
-If you didn't sign up, you can safely ignore this email.
+如果这不是你的操作，可忽略此邮件。
 
-— The Brightbean team
+— Brightbean 团队
 {% endautoescape %}

@@ -1,7 +1,7 @@
 {% if pending_invites %}
 <div style="background: var(--surface-0); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden;">
     <div class="px-6 py-4" style="border-bottom: 1px solid var(--border);">
-        <h3 class="text-sm font-semibold" style="color: var(--text-primary);">Pending Invitations</h3>
+        <h3 class="text-sm font-semibold" style="color: var(--text-primary);">待处理邀请</h3>
     </div>
     <div id="client-invitations-list">
         {% for invite in pending_invites %}
@@ -17,13 +17,13 @@
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ invite.email }}</div>
                 <div class="text-xs" style="color: var(--text-tertiary);">
-                    Invited by {{ invite.invited_by.display_name }} · Expires {{ invite.expires_at|timesince }} from now
+                    由 {{ invite.invited_by.display_name }} 邀请 · 将于 {{ invite.expires_at|timesince }} 后过期
                 </div>
             </div>
 
             <!-- Role Badge -->
             <div class="flex-shrink-0">
-                <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: #FEF3C7; color: #92400E;">Client</span>
+                <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: #FEF3C7; color: #92400E;">客户</span>
             </div>
 
             <!-- Actions -->
@@ -35,18 +35,18 @@
                     <button type="submit"
                             class="btn-neutral-surface text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-colors"
                             style="border: 1px solid var(--border); color: var(--text-primary); background: var(--surface-0);">
-                        Resend
+                        重新发送
                     </button>
                 </form>
                 <form hx-post="{% url 'members:revoke_invite' invitation_id=invite.id %}"
                       hx-target="#client-invite-{{ invite.id }}"
                       hx-swap="delete"
-                      hx-confirm="Revoke invitation to {{ invite.email }}?">
+                      hx-confirm="确定撤销发给 {{ invite.email }} 的邀请吗？">
                     {% csrf_token %}
                     <button type="submit"
                             class="btn-danger-soft-bg text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-colors"
                             style="color: #DC2626; background: transparent;">
-                        Revoke
+                        撤销
                     </button>
                 </form>
             </div>

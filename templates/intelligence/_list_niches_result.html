@@ -6,10 +6,10 @@
                 <div class="text-sm font-medium text-stone-900 truncate">{{ niche.name }}</div>
                 <div class="text-[11px] font-mono text-stone-400 truncate">{{ niche.slug }}</div>
             </div>
-            <span class="text-[11px] flex-shrink-0 px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 font-medium">{{ niche.gap_count }} gaps</span>
+            <span class="text-[11px] flex-shrink-0 px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 font-medium">{{ niche.gap_count }} 个内容缺口</span>
         </li>
         {% empty %}
-        <li class="text-sm text-stone-500 py-2">No niches available.</li>
+        <li class="text-sm text-stone-500 py-2">暂无可用细分领域。</li>
         {% endfor %}
     </ul>
 </div>

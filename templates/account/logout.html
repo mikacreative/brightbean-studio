@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}Sign Out - Brightbean{% endblock %}
+{% block title %}退出登录 - Brightbean{% endblock %}
 
 {% block auth_content %}
 <div class="w-full max-w-md px-4">
@@ -14,10 +14,10 @@
             </svg>
         </div>
         <h1 class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">
-            Sign out
+            退出登录
         </h1>
         <p class="text-sm mt-1" style="color: var(--text-secondary);">
-            Are you sure you want to sign out?
+            确定要退出登录吗？
         </p>
     </div>
 
@@ -25,8 +25,8 @@
         <form method="post" action="{% url 'account_logout' %}">
             {% csrf_token %}
             <div class="flex gap-3">
-                <a href="/" class="btn-outline flex-1">Cancel</a>
-                <button type="submit" class="btn-brand flex-1">Sign Out</button>
+                <a href="/" class="btn-outline flex-1">取消</a>
+                <button type="submit" class="btn-brand flex-1">退出登录</button>
             </div>
         </form>
     </div>

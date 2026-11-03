@@ -1,9 +1,9 @@
-Hi {{ client_user.display_name }},
+{{ client_user.display_name }}，你好：
 
-{{ created_by.display_name }} has shared content for your review in {{ workspace.name }}.
+{{ created_by.display_name }} 在「{{ workspace.name }}」中分享了待你审核的内容。
 
-Click the link below to access your portal and approve or provide feedback on scheduled posts:
+请点击以下链接进入客户门户，审核内容或提出修改意见：
 
 {{ magic_url }}
 
-This link is valid for 30 days. If it expires, ask your account manager for a new one.
+此链接有效期为 30 天，且只能使用一次。失效后请联系客户经理重新发送。

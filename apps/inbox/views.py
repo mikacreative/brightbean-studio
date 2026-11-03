@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.common.ui_messages import localize_ui_error, localize_ui_label
 from apps.members.decorators import require_permission
 from apps.members.models import WorkspaceMembership
 from apps.notifications.engine import notify
@@ -232,7 +233,7 @@ def send_reply(request, workspace_id, message_id):
 
     form = ReplyForm(request.POST)
     if not form.is_valid():
-        return HttpResponse("Invalid reply.", status=400)
+        return HttpResponse("回复内容无效。", status=400)
 
     body = form.cleaned_data["body"]
     account = message.social_account
@@ -250,7 +251,7 @@ def send_reply(request, workspace_id, message_id):
             "inbox/partials/_reply_error.html",
             {
                 "platform_label": account.get_platform_display(),
-                "reason": inbox_services.reply_failure_reason(exc),
+                "reason": localize_ui_error(inbox_services.reply_failure_reason(exc)),
             },
         )
         # htmx does not swap on a 4xx/5xx, so the failure is reported as a
@@ -399,8 +400,8 @@ def assign_message(request, workspace_id, message_id):
         notify(
             user=message.assigned_to,
             event_type=EventType.NEW_INBOX_MESSAGE,
-            title=f"You were assigned a {message.get_message_type_display()}",
-            body=f"From {message.sender_name}: {message.body[:100]}",
+            title=f"有一条{localize_ui_label(message.get_message_type_display())}分配给了你",
+            body=f"来自 {message.sender_name}：{message.body[:100]}",
             data={
                 "message_id": str(message.id),
                 "workspace_id": str(workspace.id),

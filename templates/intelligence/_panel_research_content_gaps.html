@@ -1,12 +1,12 @@
 <div id="intel-panel-content-gaps" class="intel-panel mt-6 grid-cols-1 gap-6 lg:grid-cols-2">
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Research content gaps</h2>
-            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">5 credits</span>
+            <h2 class="text-sm font-semibold text-stone-900">研究内容缺口</h2>
+            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">5 积分</span>
         </div>
         <div class="p-5">
             <p class="text-xs text-stone-500 mb-5 leading-relaxed">
-                Find ranked content opportunities in a niche. Returns gaps that are <em>underserved</em> (no quality coverage) or <em>stale</em> (existing top videos are over a year old).
+                在特定领域中发现排名靠前的内容机会。返回的缺口为 <em>内容供给不足</em>（缺少优质内容）或 <em>内容过时</em>（现有热门视频已超过一年）。
             </p>
 
             <form class="intel-form space-y-5"
@@ -16,7 +16,7 @@
                 {% csrf_token %}
 
                 <div>
-                    <label for="cg-niche-trigger" class="intel-label">Niche</label>
+                    <label for="cg-niche-trigger" class="intel-label">细分领域</label>
                     {% if content_gap_niches %}
                     {{ content_gap_niches|json_script:"cg-niche-data" }}
                     <div id="cg-niche-combobox" class="relative">
@@ -41,7 +41,7 @@
                             {% if is_preview %}
                             <span class="cg-niche-label truncate text-stone-900">{{ preview_inputs.research_content_gaps.niche_name }} ({{ preview_inputs.research_content_gaps.niche_slug }})</span>
                             {% else %}
-                            <span class="cg-niche-label truncate text-stone-400">Choose a niche…</span>
+                            <span class="cg-niche-label truncate text-stone-400">选择领域…</span>
                             {% endif %}
                             <svg class="cg-niche-chevron h-4 w-4 flex-shrink-0 text-stone-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
@@ -54,18 +54,18 @@
                                     <svg class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                                     </svg>
-                                    <input type="text" id="cg-niche-search" placeholder="Search niches…" autocomplete="off"
+                                    <input type="text" id="cg-niche-search" placeholder="搜索领域…" autocomplete="off"
                                            class="block w-full rounded-md border-0 bg-stone-50 py-1.5 pl-8 pr-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:ring-2"
                                            style="--tw-ring-color: var(--primary-ring, rgba(249,115,22,0.30));">
                                 </div>
                             </div>
-                            <ul id="cg-niche-listbox" role="listbox" aria-label="Niches" class="max-h-72 overflow-y-auto py-1"></ul>
-                            <div id="cg-niche-empty" class="hidden px-4 py-6 text-center text-sm text-stone-400">No niches match.</div>
+                            <ul id="cg-niche-listbox" role="listbox" aria-label="领域" class="max-h-72 overflow-y-auto py-1"></ul>
+                            <div id="cg-niche-empty" class="hidden px-4 py-6 text-center text-sm text-stone-400">无匹配细分领域。</div>
                             <div id="cg-niche-status" class="border-t border-stone-100 bg-stone-50 px-3 py-1.5 text-[11px] text-stone-500"></div>
                         </div>
                     </div>
                     <p class="intel-helper">
-                        {{ content_gap_niches|length }} niche{{ content_gap_niches|length|pluralize }} available · click to browse, type to filter.
+                        共有 {{ content_gap_niches|length }} 个细分领域 · 点击浏览，输入以筛选。
                     </p>
                     {% else %}
                     {% comment %}
@@ -78,51 +78,51 @@
                            placeholder="ai_dev_tools"
                            class="intel-input">
                     <p class="intel-helper">
-                        Couldn't load the niche catalog right now. Type a slug directly, or use the <strong>List niches</strong> tab to browse.
+                        暂时无法加载细分领域目录。请直接输入 slug，或使用 <strong>列出细分领域</strong> 标签页浏览。
                     </p>
                     {% endif %}
                 </div>
 
                 <div>
-                    <span class="intel-label">Gap types</span>
+                    <span class="intel-label">缺口类型</span>
                     <div class="mt-1 flex flex-wrap gap-2">
                         <label class="cursor-pointer">
                             <input type="checkbox" name="gap_type" value="underserved" checked class="peer sr-only">
                             <span class="cg-gap-pill inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition">
                                 <svg class="cg-gap-pill-check h-3 w-3 opacity-0 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                                underserved
+                                内容供给不足
                             </span>
                         </label>
                         <label class="cursor-pointer">
                             <input type="checkbox" name="gap_type" value="stale" checked class="peer sr-only">
                             <span class="cg-gap-pill inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition">
                                 <svg class="cg-gap-pill-check h-3 w-3 opacity-0 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                                stale
+                                过时
                             </span>
                         </label>
                         <label class="cursor-pointer">
                             <input type="checkbox" name="gap_type" value="competitive" class="peer sr-only">
                             <span class="cg-gap-pill inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition">
                                 <svg class="cg-gap-pill-check h-3 w-3 opacity-0 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                                competitive
+                                竞争激烈
                             </span>
                         </label>
                     </div>
-                    <p class="intel-helper">Competitive is opt-in, usually means the topic already has plenty of strong recent videos.</p>
+                    <p class="intel-helper">“竞争激烈”为可选类型，通常表示该主题已有大量近期优质视频。</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="cg-limit" class="intel-label">Max gaps</label>
+                        <label for="cg-limit" class="intel-label">最大缺口数</label>
                         <input type="number" name="limit" id="cg-limit" min="1" max="50" value="20"
                                class="intel-input">
-                        <p class="intel-helper">1–50 results.</p>
+                        <p class="intel-helper">1–50 条结果。</p>
                     </div>
                     <div>
-                        <label for="cg-min-score" class="intel-label">Min score</label>
+                        <label for="cg-min-score" class="intel-label">最低分数</label>
                         <input type="number" name="min_score" id="cg-min-score" min="0" max="100" value="0"
                                class="intel-input">
-                        <p class="intel-helper">Drops gaps below this opportunity score.</p>
+                        <p class="intel-helper">过滤低于此机会分数的缺口。</p>
                     </div>
                 </div>
 
@@ -130,12 +130,12 @@
                     <button type="submit" class="intel-submit"{% if is_preview %} disabled aria-disabled="true"{% endif %}>
                         <svg class="intel-submit-icon h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg>
                         <svg class="intel-submit-spinner hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
-                        <span class="intel-submit-label">Find gaps</span>
-                        <span class="intel-submit-loading hidden">Querying…</span>
+                        <span class="intel-submit-label">查找缺口</span>
+                        <span class="intel-submit-loading hidden">查询中…</span>
                     </button>
                     {% if is_preview %}
                     <p class="intel-activate-note">
-                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">Activate Intelligence</a> to research gaps in any niche you choose.{% else %}Ask an admin to activate Intelligence to research gaps in any niche you choose.{% endif %}
+                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">启用智能功能</a> 以研究您选择的任何细分领域的缺口。{% else %}请联系管理员激活 Intelligence 以研究任何细分领域的缺口。{% endif %}
                     </p>
                     {% endif %}
                 </div>
@@ -145,7 +145,7 @@
 
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Result</h2>
+            <h2 class="text-sm font-semibold text-stone-900">结果</h2>
         </div>
         <div id="content-gaps-result" class="p-5 min-h-[220px]">
             {% if is_preview %}

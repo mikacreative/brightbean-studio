@@ -1,3 +1,4 @@
+{% load common_extras %}
 {% if render_tab_counts_oob %}{% include "calendar/partials/_tab_counts_oob.html" %}{% endif %}
 {% comment %}
 Sent tab partial for the Publish page.
@@ -61,7 +62,7 @@ Shows all published/partially_published platform posts. Loaded via HTMX into #ta
                 <td class="px-4 py-3">
                     <span class="post-chip status-{{ pp.status }} inline-flex">
                         <span class="chip-dot"></span>
-                        {% if pp.status == 'published' %}已发布{% elif pp.status == 'failed' %}失败{% elif pp.status == 'publishing' %}发布中{% else %}{{ pp.get_status_display }}{% endif %}
+                        {% if pp.status == 'published' %}已发布{% elif pp.status == 'failed' %}失败{% elif pp.status == 'publishing' %}发布中{% else %}{{ pp.get_status_display|zh_ui_label }}{% endif %}
                     </span>
                     {% if pp.status == "failed" and pp.publish_error %}
                     <p class="text-[11px] text-red-500 mt-1 max-w-[220px] truncate" title="{{ pp.publish_error }}">{{ pp.publish_error }}</p>

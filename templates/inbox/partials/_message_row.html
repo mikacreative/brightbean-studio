@@ -1,3 +1,4 @@
+{% load common_extras %}
 {% load humanize %}
 <div id="msg-{{ message.id }}"
      class="inbox-row {% if message.status == 'unread' %}is-unread{% endif %}"
@@ -38,14 +39,14 @@
             {% if message.sender_handle %}
             <span class="text-[11px] text-stone-400 truncate">@{{ message.sender_handle }}</span>
             {% endif %}
-            <span class="text-[11px] text-stone-400 ml-auto flex-shrink-0" title="{{ message.received_at|date:'N j, Y g:i A' }}">{{ message.received_at|timesince }} ago</span>
+            <span class="text-[11px] text-stone-400 ml-auto flex-shrink-0" title="{{ message.received_at|date:'N j, Y g:i A' }}">{{ message.received_at|timesince }} 前</span>
         </div>
         <p class="inbox-row-preview text-[12px] text-stone-500 truncate leading-snug">{{ message.body|truncatewords:20 }}</p>
         <div class="flex items-center gap-1.5 mt-1.5">
             <!-- Type badge -->
-            <span class="badge-pill badge-type">{{ message.get_message_type_display }}</span>
+            <span class="badge-pill badge-type">{{ message.get_message_type_display|zh_ui_label }}</span>
             <!-- Status badge -->
-            <span class="badge-pill badge-status-{{ message.status }}">{{ message.get_status_display }}</span>
+            <span class="badge-pill badge-status-{{ message.status }}">{{ message.get_status_display|zh_ui_label }}</span>
             <!-- Sentiment badge -->
             {% include "inbox/partials/_sentiment_badge.html" %}
             <!-- Assignment -->

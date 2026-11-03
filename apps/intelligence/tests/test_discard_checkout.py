@@ -1,4 +1,4 @@
-"""Tests for the Discard Checkout Session feature.
+"""Tests for the 放弃结账会话 feature.
 
 Covers:
 - ``InternalClient.cancel_studio_checkout_session`` HTTP wire shape and
@@ -401,8 +401,8 @@ class SubscribeTemplateBranchingTests(TestCase):
 
     def test_no_attempt_renders_plan_picker_form(self):
         html = self._render()
-        assert "Choose a plan" in html
-        assert "Discard Checkout Session" not in html
+        assert "选择方案" in html
+        assert "放弃结账会话" not in html
         assert 'name="plan"' in html
 
     def test_resumable_renders_discard_form_and_hides_picker(self):
@@ -414,10 +414,10 @@ class SubscribeTemplateBranchingTests(TestCase):
             status=StudioCheckoutAttempt.Status.OPEN,
         )
         html = self._render(resumable_attempt=attempt)
-        assert "Resume your checkout" in html
-        assert "Discard Checkout Session" in html
-        # Plan picker is suppressed — no radios, no "Choose a plan".
-        assert "Choose a plan" not in html
+        assert "恢复结账" in html
+        assert "放弃结账会话" in html
+        # Plan picker is suppressed — no radios, no "选择方案".
+        assert "选择方案" not in html
         assert 'name="plan"' not in html
 
     def test_in_flight_hides_picker_but_no_discard_form(self):
@@ -427,7 +427,7 @@ class SubscribeTemplateBranchingTests(TestCase):
             status=StudioCheckoutAttempt.Status.CREATING,
         )
         html = self._render(in_flight_attempt=attempt)
-        assert "Setting up your checkout" in html
+        assert "正在设置结账" in html
         # The discard CTA is only on the resume card, not the spinner card.
-        assert "Discard Checkout Session" not in html
-        assert "Choose a plan" not in html
+        assert "放弃结账会话" not in html
+        assert "选择方案" not in html

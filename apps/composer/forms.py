@@ -31,7 +31,7 @@ class PostForm(forms.ModelForm):
     selected_accounts = forms.CharField(
         widget=forms.HiddenInput(),
         required=False,
-        help_text="Comma-separated list of SocialAccount UUIDs.",
+        help_text="以逗号分隔的 SocialAccount UUID 列表。",
     )
 
     scheduled_date = forms.DateField(
@@ -54,7 +54,7 @@ class PostForm(forms.ModelForm):
             "caption": forms.Textarea(
                 attrs={
                     "rows": 6,
-                    "placeholder": "Write your post caption...",
+                    "placeholder": "输入内容正文…",
                     "class": "form-input w-full",
                     "x-model": "caption",
                     "@input.debounce.500ms": "updatePreview()",
@@ -63,14 +63,14 @@ class PostForm(forms.ModelForm):
             "first_comment": forms.Textarea(
                 attrs={
                     "rows": 2,
-                    "placeholder": "First comment (optional)...",
+                    "placeholder": "首条评论（选填）…",
                     "class": "form-input w-full",
                 }
             ),
             "internal_notes": forms.Textarea(
                 attrs={
                     "rows": 2,
-                    "placeholder": "Internal notes (not visible to clients)...",
+                    "placeholder": "内部备注（客户不可见）…",
                     "class": "form-input w-full",
                 }
             ),
@@ -95,7 +95,7 @@ class ContentCategoryForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(
                 attrs={
-                    "placeholder": "e.g., Educational, Promotional...",
+                    "placeholder": "例如：知识分享、产品推广…",
                     "class": "form-input w-full",
                 }
             ),
@@ -117,14 +117,14 @@ class PostTemplateForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(
                 attrs={
-                    "placeholder": "Template name...",
+                    "placeholder": "模板名称…",
                     "class": "form-input w-full",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
                     "rows": 2,
-                    "placeholder": "Optional description...",
+                    "placeholder": "描述（选填）…",
                     "class": "form-input w-full",
                 }
             ),
@@ -140,7 +140,7 @@ class PlatformOverrideForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "rows": 4,
-                "placeholder": "Custom caption for this platform (leave empty to use shared caption)...",
+                "placeholder": "此平台的专用正文（留空则使用共享正文）…",
                 "class": "form-input w-full text-sm",
             }
         ),
@@ -150,7 +150,7 @@ class PlatformOverrideForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "rows": 2,
-                "placeholder": "Custom first comment...",
+                "placeholder": "自定义首条评论…",
                 "class": "form-input w-full text-sm",
             }
         ),

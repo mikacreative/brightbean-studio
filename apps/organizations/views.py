@@ -126,24 +126,24 @@ def _handle_name_update(request, org):
     """
     name = clean_display_name(request.POST.get("name", ""))
     if not name:
-        messages.error(request, "Organization name cannot be empty.")
+        messages.error(request, "组织名称不能为空。")
         return
 
     org.name = name
     org.save(update_fields=["name"])
-    messages.success(request, "Organization name updated.")
+    messages.success(request, "组织名称已更新。")
 
 
 def _handle_tz_update(request, org):
     """Handle default timezone change."""
     tz = request.POST.get("timezone", "").strip()
     if tz not in available_timezones():
-        messages.error(request, "Invalid timezone.")
+        messages.error(request, "时区无效。")
         return
 
     org.default_timezone = tz
     org.save(update_fields=["default_timezone"])
-    messages.success(request, "Default timezone updated.")
+    messages.success(request, "默认时区已更新。")
 
 
 @transaction.atomic
@@ -165,7 +165,7 @@ def _handle_org_deletion(request, org):
 
     execute_scheduled_org_deletion(str(org.id), schedule=grace)
 
-    messages.success(request, "Organization scheduled for deletion in 14 days.")
+    messages.success(request, "组织已设置为 14 天后删除。")
     return redirect("organizations:settings")
 
 
@@ -212,9 +212,7 @@ def _handle_cancel_deletion(request, org):
     org.deletion_requested_at = None
     org.deletion_scheduled_for = None
     org.save(update_fields=["deletion_requested_at", "deletion_scheduled_for"])
-    messages.success(
-        request, "Organization deletion cancelled. Reconnect any YouTube channels removed when deletion was requested."
-    )
+    messages.success(request, "已取消删除组织。申请删除时移除的 YouTube 账号需要重新连接。")
 
 
 @login_required

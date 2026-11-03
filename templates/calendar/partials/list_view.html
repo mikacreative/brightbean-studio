@@ -1,3 +1,4 @@
+{% load common_extras %}
 {% comment %}
 List view - table format of posts.
 Context: posts, workspace.
@@ -23,7 +24,7 @@ Context: posts, workspace.
                 <td class="px-4 py-3">
                     <span class="post-chip status-{{ post.status }} inline-flex">
                         <span class="chip-dot"></span>
-                        {{ post.get_status_display }}
+                        {{ post.get_status_display|zh_ui_label }}
                     </span>
                 </td>
                 <td class="px-4 py-3 text-xs text-stone-500 tabular-nums whitespace-nowrap">

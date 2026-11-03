@@ -94,4 +94,4 @@ def test_members_view_shows_the_reason(settings, client, owner):
     response = client.post(reverse("members:invite"), {"email": "stranger@example.com"})
 
     assert response.status_code == 422
-    assert b"Sign-up is closed" in response.content
+    assert "已关闭注册" in response.content.decode()

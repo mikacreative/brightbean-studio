@@ -1,10 +1,30 @@
 import json
+import re
 
 from django import template
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
+from apps.common.ui_messages import localize_ui_label
+
 register = template.Library()
+
+
+@register.filter
+def zh_ui_label(value):
+    """Translate known built-in labels while preserving custom names and IDs."""
+    return localize_ui_label(value)
+
+
+@register.filter
+def zh_analytics_formula(value):
+    """Translate metric names in a display formula while preserving its operators."""
+    parts = re.split(r"([()+÷])", str(value or ""))
+    for index, part in enumerate(parts):
+        label = part.strip()
+        if label and label not in "()+÷":
+            parts[index] = part.replace(label, str(localize_ui_label(label)), 1)
+    return "".join(parts)
 
 
 @register.simple_tag
@@ -90,6 +110,8 @@ def ui_select(
             value = getattr(o, value_field, None)
             label = getattr(o, label_field) if label_field else str(o)
             opt_icon = getattr(o, icon_field, None) if icon_field else None
+        if icon == "status":
+            label = zh_ui_label(label)
         norm.append({"value": str(value) if value is not None else "", "label": label, "icon": opt_icon})
 
     return {

@@ -9,12 +9,12 @@
             <div class="text-[11px] font-mono text-stone-400">{{ result.niche.slug }}</div>
         </div>
         {% if result.gaps %}
-        <span class="text-[11px] flex-shrink-0 px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 font-medium">{{ result.gaps|length }} gap{{ result.gaps|length|pluralize }}</span>
+        <span class="text-[11px] flex-shrink-0 px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 font-medium">{{ result.gaps|length }} 个内容空缺</span>
         {% endif %}
     </div>
 
     {% if not result.gaps %}
-    <p class="text-sm text-stone-500 py-4 text-center">No gaps found for this niche.</p>
+    <p class="text-sm text-stone-500 py-4 text-center">该细分领域未发现缺口。</p>
     {% else %}
 
     {% comment %}
@@ -40,12 +40,12 @@
                     {% else %}
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                     {% endif %}
-                    {{ gap.gap_type }}
+                    {% if gap.gap_type == 'underserved' %}内容供给不足{% elif gap.gap_type == 'stale' %}内容过时{% elif gap.gap_type == 'competitive' %}竞争激烈{% else %}{{ gap.gap_type }}{% endif %}
                 </span>
                 {% endif %}
 
                 <div class="flex items-center gap-2">
-                    <span class="text-[10px] uppercase tracking-wide text-stone-500">Opportunity</span>
+                    <span class="text-[10px] uppercase tracking-wide text-stone-500">机会</span>
                     <span class="text-base font-bold tabular-nums px-2 py-0.5 rounded
                                  {% if gap.opportunity_score >= 70 %}bg-green-50 text-green-700
                                  {% elif gap.opportunity_score >= 40 %}bg-amber-50 text-amber-700
@@ -57,14 +57,14 @@
 
             {% comment %} Canonical title, what's currently dominating the niche {% endcomment %}
             <div>
-                <div class="text-[10px] uppercase tracking-wide text-stone-500 mb-1">Current top title</div>
+                <div class="text-[10px] uppercase tracking-wide text-stone-500 mb-1">当前热门标题</div>
                 <div class="text-sm font-medium text-stone-900 leading-snug">{{ gap.canonical_title }}</div>
             </div>
 
             {% comment %} Why the model thinks this is a gap {% endcomment %}
             {% if gap.explanation %}
             <div class="mt-3 pt-3 border-t border-stone-200/70">
-                <div class="text-[10px] uppercase tracking-wide text-stone-500 mb-1">Why it's a gap</div>
+                <div class="text-[10px] uppercase tracking-wide text-stone-500 mb-1">为何存在缺口</div>
                 <p class="text-xs text-stone-700 leading-relaxed">{{ gap.explanation }}</p>
             </div>
             {% endif %}
@@ -74,7 +74,7 @@
             <div class="mt-3 pt-3 border-t border-stone-200/70">
                 <div class="flex items-center gap-1.5 mb-2">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                    <div class="text-[10px] uppercase tracking-wide font-semibold" style="color: var(--primary);">Try these angles</div>
+                    <div class="text-[10px] uppercase tracking-wide font-semibold" style="color: var(--primary);">尝试这些角度</div>
                 </div>
                 <ul class="space-y-1.5 text-xs text-stone-800">
                     {% for angle in gap.suggested_angles %}
@@ -97,34 +97,34 @@
             {% if gap.components %}
             <div class="mt-3 pt-3 border-t border-stone-200/70">
                 <div class="flex items-center mb-2">
-                    <div class="text-[10px] uppercase tracking-wide text-stone-500">Signals</div>
+                    <div class="text-[10px] uppercase tracking-wide text-stone-500">信号</div>
                     <span class="intel-tooltip-trigger" tabindex="0">
                         <span class="intel-tooltip-icon" aria-hidden="true">?</span>
                         <span role="tooltip" class="intel-tooltip" data-align="left">
-                            <strong>Demand</strong>: search volume + trends interest. Higher is better.<br>
-                            <strong>Supply</strong>: how saturated the niche is with existing content. <em>Lower</em> is better (less competition).<br>
-                            <strong>Recency</strong>: how fresh the top-ranking videos are. <em>Lower</em> is better (existing content is older, ripe for refresh).
+                            <strong>需求</strong>：搜索量 + 趋势兴趣。数值越高越好。<br>
+                            <strong>供给</strong>：该细分领域现有内容的饱和程度。 <em>较低</em> 数值越低越好（竞争越少）。<br>
+                            <strong>最近</strong>：排名靠前的视频的新鲜程度。 <em>较低</em> 数值越低越好（现有内容较旧，适合更新）。
                         </span>
                     </span>
                 </div>
                 <div class="space-y-1.5">
                     {% with c=gap.components %}
                     <div class="grid grid-cols-[80px_1fr_50px] items-center gap-2">
-                        <div class="text-[11px] text-stone-600">Demand</div>
+                        <div class="text-[11px] text-stone-600">需求</div>
                         <div class="h-1 rounded-full bg-stone-200 overflow-hidden">
                             <div class="h-full rounded-full" style="width: {% widthratio c.demand 1 100 %}%; background: var(--primary);"></div>
                         </div>
                         <div class="text-[11px] font-mono tabular-nums text-stone-700 text-right">{{ c.demand|pretty_percent:0 }}</div>
                     </div>
                     <div class="grid grid-cols-[80px_1fr_50px] items-center gap-2">
-                        <div class="text-[11px] text-stone-600">Supply</div>
+                        <div class="text-[11px] text-stone-600">供给</div>
                         <div class="h-1 rounded-full bg-stone-200 overflow-hidden">
                             <div class="h-full rounded-full" style="width: {% widthratio c.supply 1 100 %}%; background: var(--primary);"></div>
                         </div>
                         <div class="text-[11px] font-mono tabular-nums text-stone-700 text-right">{{ c.supply|pretty_percent:0 }}</div>
                     </div>
                     <div class="grid grid-cols-[80px_1fr_50px] items-center gap-2">
-                        <div class="text-[11px] text-stone-600">Recency</div>
+                        <div class="text-[11px] text-stone-600">最近</div>
                         <div class="h-1 rounded-full bg-stone-200 overflow-hidden">
                             <div class="h-full rounded-full" style="width: {% widthratio c.recency 1 100 %}%; background: var(--primary);"></div>
                         </div>
@@ -145,24 +145,24 @@
                 {% if ev.newest_quality_video_age_days is not None %}
                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-white border border-stone-200 text-stone-600">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Newest top video: {{ ev.newest_quality_video_age_days }}d old
+                    最新热门视频：发布于 {{ ev.newest_quality_video_age_days }} 天前
                 </span>
                 {% endif %}
                 {% if ev.trends_appearance_count %}
                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-white border border-stone-200 text-stone-600">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    {{ ev.trends_appearance_count }} trend signal{{ ev.trends_appearance_count|pluralize }}
+                    {{ ev.trends_appearance_count }} 个趋势信号
                 </span>
                 {% endif %}
                 {% if ev.residual_outlier_count %}
                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-white border border-stone-200 text-stone-600">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    {{ ev.residual_outlier_count }} overperformer{{ ev.residual_outlier_count|pluralize }}
+                    {{ ev.residual_outlier_count }} 条表现突出的内容
                 </span>
                 {% endif %}
                 {% if ev.autocomplete_rank %}
                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-white border border-stone-200 text-stone-600">
-                    Autocomplete rank #{{ ev.autocomplete_rank }}
+                    自动补全排名 #{{ ev.autocomplete_rank }}
                 </span>
                 {% endif %}
             </div>
@@ -176,7 +176,7 @@
             <details class="mt-3 pt-3 border-t border-stone-200/70 group/comp">
                 <summary class="cursor-pointer flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-stone-500 hover:text-stone-700 select-none">
                     <svg class="w-3 h-3 transition-transform group-open/comp:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    Top {{ ev.top_competitors|length }} competitor{{ ev.top_competitors|length|pluralize }} ranking now
+                    当前排名前 {{ ev.top_competitors|length }} 的竞争者
                 </summary>
                 <ul class="mt-2 space-y-2">
                     {% for c in ev.top_competitors %}
@@ -184,9 +184,9 @@
                         <div class="font-medium text-stone-900 truncate">{{ c.title }}</div>
                         <div class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-stone-500 tabular-nums">
                             <span class="truncate">{{ c.channel_title }}</span>
-                            {% if c.subscriber_count %}<span>· {{ c.subscriber_count|humanize_count }} subs</span>{% endif %}
-                            {% if c.view_count is not None %}<span>· {{ c.view_count|humanize_count }} views</span>{% endif %}
-                            {% if c.age_days is not None %}<span>· {{ c.age_days }}d old</span>{% endif %}
+                            {% if c.subscriber_count %}<span>· {{ c.subscriber_count|humanize_count }} 订阅</span>{% endif %}
+                            {% if c.view_count is not None %}<span>· {{ c.view_count|humanize_count }} 播放</span>{% endif %}
+                            {% if c.age_days is not None %}<span>· {{ c.age_days }} 天前发布</span>{% endif %}
                         </div>
                     </li>
                     {% endfor %}
@@ -196,7 +196,7 @@
 
             {% if ev.related_queries %}
             <div class="mt-3 pt-3 border-t border-stone-200/70">
-                <div class="text-[10px] uppercase tracking-wide text-stone-500 mb-1.5">Related searches</div>
+                <div class="text-[10px] uppercase tracking-wide text-stone-500 mb-1.5">相关搜索</div>
                 <div class="flex flex-wrap gap-1">
                     {% for q in ev.related_queries %}
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-stone-100 text-stone-600">{{ q }}</span>

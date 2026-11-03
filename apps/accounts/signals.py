@@ -19,7 +19,7 @@ def provision_organization_and_workspace(user):
         return
 
     org = Organization.objects.create(
-        name="My Organization",
+        name="我的组织",
         default_timezone="Asia/Shanghai",
     )
 
@@ -32,8 +32,8 @@ def provision_organization_and_workspace(user):
     # Create a default workspace so the user can start immediately
     workspace = Workspace.objects.create(
         organization=org,
-        name="My Workspace",
-        description="Your default workspace. Rename it anytime.",
+        name="我的工作区",
+        description="默认工作区，可随时重命名。",
     )
 
     WorkspaceMembership.objects.create(
@@ -107,7 +107,7 @@ def _join_invited_org(token, user):
         membership.delete()
         # Only delete the org if it's the auto-provisioned one and has no
         # other members.
-        if org.name == "My Organization" and not org.memberships.exists():
+        if org.name in {"My Organization", "我的组织"} and not org.memberships.exists():
             Workspace.objects.filter(organization=org).delete()
             org.delete()
     return True

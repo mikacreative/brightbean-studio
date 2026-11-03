@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 
+from apps.common.ui_messages import localize_ui_error
 from apps.workspaces.models import Workspace
 
 from . import services
@@ -145,7 +146,7 @@ def invite_member(request):
         )
     except ValueError as e:
         return HttpResponse(
-            f'<div class="text-red-600 text-sm p-3">{e}</div>',
+            f'<div class="text-red-600 text-sm p-3">{localize_ui_error(e)}</div>',
             status=422,
         )
 
@@ -176,7 +177,7 @@ def resend_invite(request, invitation_id):
     try:
         services.resend_invitation(invitation)
     except ValueError as e:
-        return HttpResponse(str(e), status=400)
+        return HttpResponse(localize_ui_error(e), status=400)
 
     if request.headers.get("HX-Request"):
         return render(
@@ -199,7 +200,7 @@ def revoke_invite(request, invitation_id):
     try:
         services.revoke_invitation(invitation)
     except ValueError as e:
-        return HttpResponse(str(e), status=400)
+        return HttpResponse(localize_ui_error(e), status=400)
 
     if request.headers.get("HX-Request"):
         return HttpResponse(status=200, headers={"HX-Trigger": "inviteRevoked"})
@@ -243,7 +244,7 @@ def accept_invite(request, token):
                 {
                     "invitation": invitation,
                     "ws_display": ws_display,
-                    "error": str(e),
+                    "error": localize_ui_error(e),
                 },
             )
 
@@ -283,7 +284,7 @@ def update_member_role(request, membership_id):
         services.update_member_org_role(request.org, membership, new_role, caller=request.user)
     except ValueError as e:
         return HttpResponse(
-            f'<div class="text-red-600 text-sm">{e}</div>',
+            f'<div class="text-red-600 text-sm">{localize_ui_error(e)}</div>',
             status=422,
         )
 
@@ -331,7 +332,7 @@ def remove_member(request, membership_id):
         services.remove_member(request.org, membership, request.user)
     except ValueError as e:
         return HttpResponse(
-            f'<div class="text-red-600 text-sm">{e}</div>',
+            f'<div class="text-red-600 text-sm">{localize_ui_error(e)}</div>',
             status=422,
         )
 
@@ -372,7 +373,7 @@ def manage_workspaces(request, membership_id):
         try:
             services.update_workspace_assignments(org, membership.user, assignments, inviter=request.user)
         except ValueError as e:
-            return HttpResponse(str(e), status=422)
+            return HttpResponse(localize_ui_error(e), status=422)
 
         if request.headers.get("HX-Request"):
             # Return updated member row

@@ -18,12 +18,12 @@
     {% endcomment %}
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Score packaging</h2>
-            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">1-3 credit</span>
+            <h2 class="text-sm font-semibold text-stone-900">包装评分</h2>
+            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">1-3 积分</span>
         </div>
         <div class="p-5">
             <p class="text-xs text-stone-500 mb-5 leading-relaxed">
-                Score a YouTube packaging (title + thumbnail) for click-through potential. Provide one or both, combined is most accurate. Title-only is 1 credit, thumbnail-only is 2, combined is 3
+                为 YouTube 包装（标题 + 缩略图）评估点击率潜力。提供其中一项或两者，两者结合最准确。仅标题为 1 积分，仅缩略图为 2 积分，两者结合为 3 积分
             </p>
 
             <form class="intel-form space-y-5"
@@ -33,14 +33,14 @@
                   hx-encoding="multipart/form-data">
                 {% csrf_token %}
                 <div>
-                    <label for="pkg-title" class="intel-label">Video title <span class="intel-label-hint">(optional)</span></label>
+                    <label for="pkg-title" class="intel-label">视频标题 <span class="intel-label-hint">（可选）</span></label>
                     <input type="text" name="title" id="pkg-title" maxlength="250"
-                           placeholder="How I Built a $1M SaaS in 6 Months"
+                           placeholder="我如何在 6 个月内打造 100 万美元 SaaS"
                            value="{% if is_preview %}{{ preview_inputs.score_packaging.title }}{% endif %}"
                            class="intel-input">
                 </div>
                 <div>
-                    <label for="pkg-thumb" class="intel-label">Thumbnail <span class="intel-label-hint">(optional)</span></label>
+                    <label for="pkg-thumb" class="intel-label">缩略图 <span class="intel-label-hint">（可选）</span></label>
                     <div id="pkg-thumb-zone"
                          class="relative rounded-lg border-2 border-dashed border-stone-200 bg-stone-50 transition hover:border-orange-300 hover:bg-orange-50/40">
                         <label for="pkg-thumb-input" id="pkg-thumb-empty"
@@ -49,9 +49,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 7.5m0 0L7.5 12M12 7.5v9"/>
                             </svg>
                             <p class="mt-3 text-sm font-medium text-stone-700">
-                                <span style="color: var(--primary);">Click to upload</span> or drag and drop
+                                <span style="color: var(--primary);">点击上传</span> 或拖放
                             </p>
-                            <p class="mt-1 text-xs text-stone-500">JPEG, PNG or WebP · up to 5&nbsp;MB</p>
+                            <p class="mt-1 text-xs text-stone-500">JPEG、PNG 或 WebP · 最大 5&nbsp;MB</p>
                         </label>
                         <div id="pkg-thumb-preview" class="hidden items-center gap-3 p-3">
                             <img id="pkg-thumb-img" alt=""
@@ -62,7 +62,7 @@
                             </div>
                             <button type="button" id="pkg-thumb-clear"
                                     class="flex-shrink-0 rounded-md p-1.5 text-stone-400 hover:bg-white hover:text-red-500 transition cursor-pointer"
-                                    aria-label="Remove thumbnail">
+                                    aria-label="移除缩略图">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                                 </svg>
@@ -73,18 +73,18 @@
                                accept="image/jpeg,image/png,image/webp" class="sr-only">
                     </div>
                     <p id="pkg-thumb-error" class="hidden mt-1.5 text-xs text-red-600"></p>
-                    <p id="pkg-thumb-helper" class="intel-helper">Accepts JPEG/PNG/WebP under 5&nbsp;MB.</p>
+                    <p id="pkg-thumb-helper" class="intel-helper">接受 5&nbsp;MB 以内的 JPEG/PNG/WebP。</p>
                 </div>
                 <div>
                     <button type="submit" class="intel-submit"{% if is_preview %} disabled aria-disabled="true"{% endif %}>
                         <svg class="intel-submit-icon h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg>
                         <svg class="intel-submit-spinner hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
-                        <span class="intel-submit-label">Score</span>
-                        <span class="intel-submit-loading hidden">Scoring…</span>
+                        <span class="intel-submit-label">评分</span>
+                        <span class="intel-submit-loading hidden">评分中…</span>
                     </button>
                     {% if is_preview %}
                     <p class="intel-activate-note">
-                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">Activate Intelligence</a> to score your own packaging.{% else %}Ask an admin to activate Intelligence to score your own packaging.{% endif %}
+                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">启用智能功能</a> 以评估您自己的包装。{% else %}请联系管理员激活 Intelligence 以评估您自己的包装。{% endif %}
                     </p>
                     {% endif %}
                 </div>
@@ -95,7 +95,7 @@
     {# Response card #}
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Result</h2>
+            <h2 class="text-sm font-semibold text-stone-900">结果</h2>
         </div>
         <div id="packaging-result" class="p-5 min-h-[220px]">
             {% if is_preview %}

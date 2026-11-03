@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Link Expired{% endblock %}
+{% block title %}链接已过期{% endblock %}
 
 {% block auth_content %}
 <div style="width: 100%; max-width: 440px; padding: 0 16px; text-align: center;">
@@ -26,7 +26,7 @@
         color: var(--text-primary);
         letter-spacing: -0.015em;
         margin-bottom: 8px;
-    ">{% if is_revoked %}This link has been revoked{% else %}This link has expired{% endif %}</h1>
+    ">{% if is_revoked %}此链接已失效{% else %}此链接已过期{% endif %}</h1>
 
     <p style="
         font-size: 0.9375rem;
@@ -37,9 +37,9 @@
         {% if error %}
             {{ error }}
         {% elif org_name %}
-            Please contact <strong style="color: var(--text-primary);">{{ org_name }}</strong> to request a new connection link.
+            请联系 <strong style="color: var(--text-primary);">{{ org_name }}</strong> 以获取新的连接链接。
         {% else %}
-            Please contact your agency to request a new connection link.
+            请联系您的代理机构以获取新的连接链接。
         {% endif %}
     </p>
 
@@ -54,7 +54,7 @@
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: -2px; margin-right: 4px;">
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
         </svg>
-        Connection links are time-limited for security. Your agency can generate a new one at any time.
+        出于安全考虑，连接链接有时效限制。您的代理机构可随时生成新链接。
     </div>
 </div>
 {% endblock %}

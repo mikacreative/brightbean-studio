@@ -1097,7 +1097,7 @@ class PublishEngine:
             notify(
                 author,
                 EventType.POST_FAILED,
-                title=f"{platform} post failed to publish",
+                title=f"{platform} 内容发布失败",
                 body=platform_post.publish_error,
                 data={
                     "post_id": str(platform_post.post_id),

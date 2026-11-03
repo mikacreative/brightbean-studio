@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% block page_title %}Finalizing…{% endblock %}
+{% block page_title %}正在完成…{% endblock %}
 {% block content %}
 <div class="max-w-xl mx-auto py-16 px-4 text-center">
   <div class="mx-auto mb-6 w-12 h-12 rounded-full border-4 border-orange-200 border-t-orange-600 animate-spin"></div>
-  <h1 class="text-xl font-semibold text-stone-900 mb-2">Setting up your Intelligence access…</h1>
+  <h1 class="text-xl font-semibold text-stone-900 mb-2">正在设置 Intelligence 访问权限…</h1>
   <p class="text-sm text-stone-600 mb-6">
-    Stripe confirmed your payment. We're finishing the handshake with the
-    billing service, this usually takes a few seconds.
+    Stripe 已确认您的付款。我们正在与账单服务完成握手，这通常只需几秒钟。
   </p>
 
   <div id="finalizing-status"
@@ -14,7 +13,7 @@
        hx-trigger="load, every 2s"
        hx-swap="outerHTML"
        class="text-xs text-stone-400">
-    Checking…
+    检查中…
   </div>
 </div>
 {% endblock %}

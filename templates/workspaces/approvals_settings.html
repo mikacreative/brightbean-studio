@@ -1,10 +1,10 @@
 {% extends "layouts/workspace_settings.html" %}
-{% block title %}Approvals - {{ workspace.name }} - Brightbean{% endblock %}
+{% block title %}审批 - {{ workspace.name }} - Brightbean{% endblock %}
 {% block content %}
 <div class="max-w-2xl">
-    <h2 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">Approvals</h2>
+    <h2 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">审批</h2>
     <p class="text-sm mb-8" style="color: var(--text-secondary);">
-        Control whether posts need to be reviewed before they can be scheduled or published.
+        控制内容在排期或发布前是否需要审核。
     </p>
 
     <form method="POST" x-data="{ mode: '{{ workspace.approval_workflow_mode }}' }">
@@ -26,22 +26,22 @@
                        {% if workspace.approval_workflow_mode == value %}checked{% endif %}>
                 <div class="flex-1">
                     <div class="text-sm font-semibold mb-0.5" style="color: var(--text-primary);">
-                        {% if value == 'none' %}No approvals
-                        {% elif value == 'optional' %}Optional approvals
-                        {% elif value == 'required_internal' %}Internal review required
-                        {% elif value == 'required_internal_and_client' %}Internal review + client approval
+                        {% if value == 'none' %}无审批
+                        {% elif value == 'optional' %}可选审批
+                        {% elif value == 'required_internal' %}需要内部审核
+                        {% elif value == 'required_internal_and_client' %}内部审核 + 客户审批
                         {% else %}{{ label }}
                         {% endif %}
                     </div>
                     <div class="text-xs" style="color: var(--text-secondary);">
                         {% if value == 'none' %}
-                            Anyone with publishing rights can schedule or publish directly.
+                            拥有发布权限的用户可直接排期或发布内容。
                         {% elif value == 'optional' %}
-                            Creators can choose to submit a post for review, but it's not required.
+                            创作者可选择提交内容进行审核，但非强制要求。
                         {% elif value == 'required_internal' %}
-                            Every post must be approved by a team member with review rights before it can go out.
+                            所有内容在发布前必须经具有审核权限的团队成员审批。
                         {% elif value == 'required_internal_and_client' %}
-                            Posts go through internal review, then are sent to the client portal for final sign-off.
+                            内容需先通过内部审核，再发送至客户门户进行最终确认。
                         {% endif %}
                     </div>
                 </div>
@@ -53,14 +53,13 @@
         <button type="submit"
                 class="btn-neutral px-5 py-2 text-sm font-medium rounded-full cursor-pointer whitespace-nowrap"
                 style="background: var(--neutral-100); color: var(--text-primary);">
-            Save Changes
+            保存更改
         </button>
         {% endif %}
     </form>
 
     <p class="text-xs mt-6" style="color: var(--text-tertiary);">
-        Reviewers are workspace members with the "Approve posts" permission.
-        Manage them on the <a href="{% url 'members:list' %}" class="underline" style="color: var(--text-secondary);">Members</a> page.
+        审核员为具有“审批内容”权限的工作区成员。请在以下位置管理： <a href="{% url 'members:list' %}" class="underline" style="color: var(--text-secondary);">成员</a> 页。
     </p>
 </div>
 {% endblock %}

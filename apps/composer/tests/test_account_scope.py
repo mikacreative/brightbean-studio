@@ -645,7 +645,7 @@ class CsvImportPublishabilityTests(AccountScopeTestsBase):
         self.assertEqual(tiktok_row.status, PlatformPost.Status.DRAFT)
         self.assertIsNotNone(tiktok_row.scheduled_at)
         self.assertEqual(self._row(self.linkedin).status, PlatformPost.Status.SCHEDULED)
-        self.assertContains(response, "1 TikTok post was kept as draft")
+        self.assertContains(response, "1 条 TikTok 内容已在原定日期保留为草稿")
 
     def test_an_undated_row_is_a_draft_either_way_and_reports_nothing(self):
         session = self.client.session
@@ -656,7 +656,7 @@ class CsvImportPublishabilityTests(AccountScopeTestsBase):
         response = self.client.post(reverse("composer:csv_confirm_import", kwargs={"workspace_id": self.workspace.id}))
 
         self.assertEqual(self._row(self.tiktok).status, PlatformPost.Status.DRAFT)
-        self.assertNotContains(response, "kept as draft")
+        self.assertNotContains(response, "保留为草稿")
 
 
 class RequiredMediaTests(PinterestBoardSelectionTests):

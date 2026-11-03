@@ -38,7 +38,7 @@ def test_a_get_shows_the_page_without_changing_anything(client, user):
     res = client.get(url_for(user))
 
     assert res.status_code == 200
-    assert b"Unsubscribe" in res.content
+    assert "取消订阅" in res.content.decode()
     assert not NotificationPreference.objects.exists(), "a fetch is not a decision"
 
 

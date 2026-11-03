@@ -1,20 +1,19 @@
 {% extends "layouts/settings.html" %}
-{% block title %}API Keys - Settings - Brightbean{% endblock %}
+{% block title %}API 密钥 - 设置 - Brightbean{% endblock %}
 {% block content %}
 <div x-data="{ showIssueModal: false, showRevealModal: {% if reveal_token %}true{% else %}false{% endif %} }">
     <div class="flex items-start justify-between mb-8 gap-6">
         <div>
-            <h2 class="text-xl font-semibold" style="color: var(--text-primary);">API Keys</h2>
+            <h2 class="text-xl font-semibold" style="color: var(--text-primary);">API 密钥</h2>
             <p class="text-sm mt-1 max-w-xl" style="color: var(--text-tertiary);">
-                Used by AI agents and external scripts to act in your workspaces.
-                Each key can be scoped to one workspace and an explicit list of social accounts.
+                供 AI 代理和外部脚本在工作区中执行操作。每个密钥可限定于一个工作区及明确的社交账号列表。
             </p>
         </div>
         <button type="button"
                 @click="showIssueModal = true"
                 class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 rounded-full hover:bg-orange-100 hover:border-orange-300 active:bg-orange-100 transition-all duration-150 cursor-pointer whitespace-nowrap">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Issue new key
+            生成新密钥
         </button>
     </div>
 
@@ -35,9 +34,9 @@
     {% if revoked_count %}
     <div class="flex justify-end mb-3 text-xs">
         {% if show_all %}
-        <a href="{% url 'api_keys:list' %}" style="color: var(--text-tertiary);">Hide revoked keys</a>
+        <a href="{% url 'api_keys:list' %}" style="color: var(--text-tertiary);">隐藏已撤销的密钥</a>
         {% else %}
-        <a href="?show=all" style="color: var(--text-tertiary);">Show {{ revoked_count }} revoked</a>
+        <a href="?show=all" style="color: var(--text-tertiary);">显示 {{ revoked_count }} 个已撤销</a>
         {% endif %}
     </div>
     {% endif %}
@@ -53,15 +52,15 @@
     {% else %}
     <div class="px-6 py-12 text-center rounded-xl" style="background: var(--surface-0); border: 1px solid var(--border);">
         {% if revoked_count and not show_all %}
-        <p class="text-sm" style="color: var(--text-tertiary);">No active API keys.</p>
+        <p class="text-sm" style="color: var(--text-tertiary);">暂无已激活的 API 密钥。</p>
         <p class="text-xs mt-2" style="color: var(--text-tertiary);">
-            <a href="?show=all" style="color: var(--text-secondary); text-decoration: underline;">Show {{ revoked_count }} revoked</a>
-            or click <strong>Issue new key</strong> to mint a new one.
+            <a href="?show=all" style="color: var(--text-secondary); text-decoration: underline;">显示 {{ revoked_count }} 个已撤销</a>
+            或点击 <strong>生成新密钥</strong> 以创建新密钥。
         </p>
         {% else %}
-        <p class="text-sm" style="color: var(--text-tertiary);">No API keys issued yet.</p>
+        <p class="text-sm" style="color: var(--text-tertiary);">尚未签发任何 API 密钥。</p>
         <p class="text-xs mt-2" style="color: var(--text-tertiary);">
-            Click <strong>Issue new key</strong> to mint one for an agent.
+            点击 <strong>生成新密钥</strong> 为代理创建一个密钥。
         </p>
         {% endif %}
     </div>

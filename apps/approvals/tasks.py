@@ -111,8 +111,8 @@ def _remind_reviewers(post):
             notify(
                 user=membership.user,
                 event_type=EventType.APPROVAL_REMINDER,
-                title="Post awaiting your review",
-                body=f'A post in {workspace.name} has been waiting for review: "{post.caption_snippet}"',
+                title="有内容等待你的审核",
+                body=f'{workspace.name} 中有内容等待审核："{post.caption_snippet}"',
                 data={
                     "post_id": str(post.id),
                     "workspace_id": str(workspace.id),
@@ -132,8 +132,8 @@ def _remind_clients(post):
         notify(
             user=membership.user,
             event_type=EventType.APPROVAL_REMINDER,
-            title="Posts waiting for your approval",
-            body=f"Content in {workspace.name} is waiting for your review.",
+            title="有内容等待你的审批",
+            body=f"{workspace.name} 中的内容等待你的审核。",
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),
@@ -152,14 +152,14 @@ def _escalate(post, stage):
         ],
     ).select_related("user")
 
-    stage_label = "internal review" if stage == "pending_review" else "client approval"
+    stage_label = "内部审核" if stage == "pending_review" else "客户审批"
 
     for membership in manager_memberships:
         notify(
             user=membership.user,
             event_type=EventType.APPROVAL_STALLED,
-            title="Stalled post needs attention",
-            body=f'A post in {workspace.name} has been stuck in {stage_label} after multiple reminders: "{post.caption_snippet}"',
+            title="审批停滞，需要处理",
+            body=f'{workspace.name} 中有内容多次提醒后仍停留在{stage_label}："{post.caption_snippet}"',
             data={
                 "post_id": str(post.id),
                 "workspace_id": str(workspace.id),

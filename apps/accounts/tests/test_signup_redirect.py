@@ -78,7 +78,7 @@ def _google_callback(email, session=None):
 
 def _signup_href(response):
     content = response.content.decode()
-    marker = content.index(">Sign up</a>")
+    marker = content.index(">注册</a>")
     start = content.rindex('href="', 0, marker) + len('href="')
     return content[start : content.index('"', start)]
 
@@ -178,7 +178,7 @@ class TestInvitees:
         assert _signup_href(client.get(reverse("account_login"))) == "/accounts/signup/"
         response = client.get(reverse("account_signup"))
         assert response.status_code == 200
-        assert b"Your invitation has expired or was already used" in response.content
+        assert "您的邀请已过期或已被使用".encode() in response.content
 
 
 @pytest.mark.django_db
@@ -237,14 +237,14 @@ class TestWithoutCustomUrl:
         response = client.get(reverse("account_signup"))
 
         assert response.status_code == 200
-        assert b"Sign-up is closed" in response.content
+        assert "注册已关闭".encode() in response.content
 
     def test_open_mode_signup_page_stays_open_with_custom_url(self, settings, client, custom_signup_url):
         settings.SIGNUP_MODE = "open"
         response = client.get(reverse("account_signup"))
 
         assert response.status_code == 200
-        assert b"Sign-up is closed" not in response.content
+        assert "注册已关闭".encode() not in response.content
 
 
 def _import_settings(**env):

@@ -1,9 +1,9 @@
-Hi there,
+你好：
 
-{{ invited_by.display_name }} has invited you to join {{ org_name }} as a team member on Brightbean.
+{{ invited_by.display_name }} 邀请你加入 Brightbean 上的「{{ org_name }}」团队。
 
-Accept the invitation by visiting the link below:
+请点击以下链接接受邀请：
 
 {{ accept_url }}
 
-This invitation expires in 7 days. If it expires, ask your team admin for a new one.
+此邀请将在 7 天后失效。失效后请联系团队管理员重新发送。

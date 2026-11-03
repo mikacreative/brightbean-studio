@@ -1,7 +1,7 @@
 {% extends "oauth2_provider/base.html" %}
 {% load i18n static %}
 
-{% block title %}Authorize {{ application.name|default:"an app" }} · BrightBean Studio{% endblock title %}
+{% block title %}授权 {{ application.name|default:"an app" }} · BrightBean Studio{% endblock title %}
 
 {% block content %}
     <div class="bb-head">
@@ -11,8 +11,8 @@
 
     <div class="bb-card">
         {% if not error %}
-            <h1>{% blocktrans with name=application.name|default:"This application" %}Authorize {{ name }}?{% endblocktrans %}</h1>
-            <p>{% blocktrans with name=application.name|default:"This application" %}{{ name }} wants to connect to your BrightBean Studio workspace with the following permissions:{% endblocktrans %}</p>
+            <h1>{% blocktrans with name=application.name|default:"This application" %}授权 {{ name }}？{% endblocktrans %}</h1>
+            <p>{% blocktrans with name=application.name|default:"This application" %}{{ name }} 希望使用以下权限连接到您的 BrightBean Studio 工作区：{% endblocktrans %}</p>
 
             <form id="authorizationForm" method="post">
                 {% csrf_token %}
@@ -36,15 +36,15 @@
 
                 <div class="bb-actions">
                     {# Cancel must NOT carry name="allow" — its absence signals denial to DOT. #}
-                    <input type="submit" class="bb-btn bb-btn-ghost" value="{% trans 'Cancel' %}"/>
+                    <input type="submit" class="bb-btn bb-btn-ghost" value="{% trans '取消' %}"/>
                     {# Authorize MUST keep name="allow" — DOT checks for it to detect approval. #}
-                    <input type="submit" class="bb-btn bb-btn-primary" name="allow" value="{% trans 'Authorize' %}"/>
+                    <input type="submit" class="bb-btn bb-btn-primary" name="allow" value="{% trans '授权' %}"/>
                 </div>
             </form>
 
-            <p class="bb-foot">{% trans "You can revoke this access at any time from BrightBean Studio." %}</p>
+            <p class="bb-foot">{% trans "您可以随时在 BrightBean Studio 中撤销此访问权限。" %}</p>
         {% else %}
-            <h1>{% trans "Something went wrong" %}</h1>
+            <h1>{% trans "出错了" %}</h1>
             <p>{{ error.error }}</p>
             <p>{{ error.description }}</p>
         {% endif %}

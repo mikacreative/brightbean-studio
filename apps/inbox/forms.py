@@ -10,7 +10,7 @@ class ReplyForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "rows": 3,
-                "placeholder": "Write a reply...",
+                "placeholder": "输入回复…",
                 "class": "form-input w-full",
             }
         ),
@@ -22,7 +22,7 @@ class InternalNoteForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "rows": 2,
-                "placeholder": "Add an internal note...",
+                "placeholder": "添加内部备注…",
                 "class": "form-input w-full",
             }
         ),
@@ -66,14 +66,14 @@ class SavedReplyForm(forms.ModelForm):
             "title": forms.TextInput(
                 attrs={
                     "class": "form-input w-full",
-                    "placeholder": "Reply title",
+                    "placeholder": "回复标题",
                 }
             ),
             "body": forms.Textarea(
                 attrs={
                     "class": "form-input w-full",
                     "rows": 4,
-                    "placeholder": "Reply body. Use {sender_name}, {account_name}, {post_url} for variables.",
+                    "placeholder": "回复内容。可使用 {sender_name}、{account_name}、{post_url} 变量。",
                 }
             ),
         }

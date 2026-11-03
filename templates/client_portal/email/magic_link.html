@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head><meta charset="UTF-8"></head>
 <body style="margin:0; padding:0; font-family: system-ui, -apple-system, sans-serif; background: #FAFAF9;">
     <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
@@ -18,10 +18,10 @@
                     <tr>
                         <td style="padding: 24px 32px 32px 32px;">
                             <p style="font-size: 15px; color: #44403C; line-height: 1.6; margin: 0 0 8px 0;">
-                                Hi {{ client_user.display_name }},
+                                您好 {{ client_user.display_name }}，
                             </p>
                             <p style="font-size: 15px; color: #44403C; line-height: 1.6; margin: 0 0 24px 0;">
-                                {{ created_by.display_name }} has shared content for your review. Click below to access your portal and approve or provide feedback on scheduled posts.
+                                {{ created_by.display_name }} 已分享内容供您审批。请点击下方链接访问门户，对排期内容进行审批或提供反馈。
                             </p>
                             <!-- CTA Button -->
                             <table cellpadding="0" cellspacing="0" width="100%">
@@ -29,13 +29,13 @@
                                     <td align="center">
                                         <a href="{{ magic_url }}"
                                            style="display: inline-block; padding: 12px 32px; background: #F97316; color: #FFFFFF; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 9999px;">
-                                            Review Posts
+                                            审批内容
                                         </a>
                                     </td>
                                 </tr>
                             </table>
                             <p style="font-size: 13px; color: #A8A29E; line-height: 1.6; margin: 24px 0 0 0;">
-                                This link is valid for 30 days. If it expires, ask your account manager for a new one.
+                                此链接有效期为 30 天，且只能使用一次。失效后请联系客户经理重新发送。
                             </p>
                         </td>
                     </tr>
@@ -43,7 +43,7 @@
                     <tr>
                         <td style="padding: 16px 32px; border-top: 1px solid #E7E5E4;">
                             <p style="font-size: 12px; color: #A8A29E; margin: 0;">
-                                You're receiving this because you're a client of {{ workspace.name }}.
+                                您收到此邮件是因为您是 {{ workspace.name }} 的客户。
                             </p>
                         </td>
                     </tr>

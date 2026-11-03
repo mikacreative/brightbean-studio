@@ -75,7 +75,7 @@ class PublishFailureFanOutTest(TestCase):
         NotificationDelivery.objects.filter(batch_queued_at__isnull=False).update(batch_queued_at=then, created_at=then)
         self.assertEqual(send_batched_email_digests(), 1)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "5 posts failed to publish")
+        self.assertEqual(mail.outbox[0].subject, "5 条内容发布失败")
 
     def test_settling_a_failed_row_again_does_not_notify_again(self):
         """Seven paths reach _fail_permanently. A publish thread still running

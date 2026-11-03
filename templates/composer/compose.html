@@ -361,7 +361,7 @@
                 <div class="border border-red-200 bg-red-50 rounded-xl p-3 space-y-1.5">
                     <div class="flex items-center gap-1.5 text-xs font-semibold text-red-700">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                        Publishing failed
+                        发布失败
                     </div>
                     {% for pp in failed_platform_posts %}
                     <p class="text-xs text-red-600 pl-5.5">
@@ -374,8 +374,8 @@
                         <button type="button"
                                 class="text-xs font-semibold text-red-700 hover:text-red-900 underline underline-offset-2"
                                 hx-post="{% url 'composer:clone_post' workspace_id=workspace.id post_id=post.id %}"
-                                title="Open an editable draft copy to fix and re-queue">
-                            Clone to retry →
+                                title="打开可编辑的草稿副本以修复并重新排期">
+                            克隆以重试 →
                         </button>
                     </div>
                     {% endif %}
@@ -388,15 +388,15 @@
                 <div class="border border-amber-200 bg-amber-50 rounded-xl p-3 space-y-1.5">
                     <div class="flex items-center gap-1.5 text-xs font-semibold text-amber-800">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                        First comment not posted
+                        首条评论未发布
                     </div>
                     {% for pp in failed_first_comments %}
                     <p class="text-xs text-amber-700 pl-5.5">
                         <span class="font-semibold">{{ pp.social_account.account_name|default:pp.social_account.account_handle }}:</span>
-                        {{ pp.first_comment_error|default:"The first comment couldn't be added. Add it manually on the post." }}
+                        {{ pp.first_comment_error|default:"首条评论未能添加，请在平台上手动补充。" }}
                     </p>
                     {% endfor %}
-                    <p class="text-[11px] text-amber-600 pl-5.5">The post itself published successfully — only the comment failed.</p>
+                    <p class="text-[11px] text-amber-600 pl-5.5">内容本身已成功发布——仅评论发布失败。</p>
                 </div>
                 {% endif %}
 
@@ -404,20 +404,20 @@
                 <!-- Scheduled: editable, but warn that edits affect a live schedule -->
                 <div class="border border-amber-200 bg-amber-50 rounded-xl p-3 flex items-start gap-2">
                     <svg class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-                    <p class="text-xs text-amber-700">This post is <span class="font-semibold">scheduled</span>. Saving changes will affect the scheduled post.</p>
+                    <p class="text-xs text-amber-700">此内容 <span class="font-semibold">已排期</span>. Saving changes will affect the scheduled post.</p>
                 </div>
                 {% elif post_is_readonly %}
                 <!-- Published / publishing: read-only; Clone to repost an editable copy -->
                 <div class="border border-stone-200 bg-stone-50 rounded-xl p-3 flex items-start justify-between gap-3">
                     <div class="flex items-start gap-2">
                         <svg class="w-4 h-4 text-stone-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-                        <p class="text-xs text-stone-600">This post is <span class="font-semibold">{{ post.get_status_display|default:post.status }}</span> and read-only. Use <span class="font-semibold">Clone</span> to repost an editable copy.</p>
+                        <p class="text-xs text-stone-600">此内容 <span class="font-semibold">{{ post.get_status_display|default:post.status|zh_ui_label }}</span> 且为只读。使用 <span class="font-semibold">克隆</span> 重新发布可编辑副本。</p>
                     </div>
                     <button type="button"
                             class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-stone-800 text-white hover:bg-stone-900 flex-shrink-0 cursor-pointer"
                             hx-post="{% url 'composer:clone_post' workspace_id=workspace.id post_id=post.id %}"
-                            title="Create an editable draft copy">
-                        Clone
+                            title="创建可编辑的草稿副本">
+                        克隆
                     </button>
                 </div>
                 {% endif %}
@@ -429,7 +429,7 @@
                 <div class="border border-amber-200 bg-amber-50 rounded-xl p-3 flex items-start gap-2">
                     <svg class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
                     <p class="text-xs text-amber-700">
-                        Already published on
+                        已发布于
                         <span class="font-semibold">{% for pp in live_siblings %}{{ pp.social_account.account_name|default:pp.social_account.account_handle }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>.
                         Shared fields like the caption are used by that post too — editing them here changes its record.
                     </p>
@@ -469,15 +469,15 @@
                                 <button type="button" @click="showSaveTemplate = !showSaveTemplate"
                                         class="text-xs font-semibold py-1.5 px-3 rounded-full border border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-colors flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                                    Save as Template
+                                    保存为模板
                                 </button>
                                 <div x-show="showSaveTemplate" x-cloak x-transition
                                      @click.outside="showSaveTemplate = false"
                                      class="absolute z-50 mt-1 right-0 p-3 bg-white rounded-xl shadow-lg ring-1 ring-stone-200 w-72 max-w-[calc(100vw-2rem)]">
                                     <div x-data="{ tplName: '', tplDesc: '' }">
-                                        <input type="text" x-model="tplName" placeholder="Template name…"
+                                        <input type="text" x-model="tplName" placeholder="模板名称…"
                                                class="form-input w-full text-sm mb-2">
-                                        <textarea x-model="tplDesc" placeholder="Description (optional)…" rows="2"
+                                        <textarea x-model="tplDesc" placeholder="描述（选填）…" rows="2"
                                                   class="form-input w-full text-xs mb-2"></textarea>
                                         <button type="button" class="btn-brand text-xs py-1.5 px-3 w-full"
                                                 :disabled="!tplName.trim()"
@@ -487,7 +487,7 @@
                                                         headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, 'Content-Type': 'application/x-www-form-urlencoded' },
                                                         body: 'template_name=' + encodeURIComponent(tplName) + '&template_description=' + encodeURIComponent(tplDesc)
                                                     }).then(() => { showSaveTemplate = false; tplName = ''; tplDesc = ''; });">
-                                            Save Template
+                                            保存模板
                                         </button>
                                     </div>
                                 </div>
@@ -497,7 +497,7 @@
                                     @click="showTemplatePicker = !showTemplatePicker; if (showTemplatePicker) $nextTick(() => htmx.trigger($refs.templatePicker, 'load-picker'))"
                                     class="text-xs font-semibold py-1.5 px-3 rounded-full border border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-colors flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                Use Template
+                                使用模板
                             </button>
                             <!-- Template picker modal -->
                             <!-- hx-swap="innerHTML" is explicit because composer-form ancestor sets hx-swap="none" -->
@@ -509,7 +509,7 @@
                                  hx-trigger="load-picker, templateSaved from:body, templateChanged from:body"
                                  hx-target="this"
                                  hx-swap="innerHTML">
-                                <div class="p-4 text-center text-xs text-stone-400">Loading templates…</div>
+                                <div class="p-4 text-center text-xs text-stone-400">正在加载模板…</div>
                             </div>
                         </div>
                     </div>
@@ -535,7 +535,7 @@
                                 <span class="text-[11px] text-stone-400 leading-tight">拖放或<span class="text-orange-500 font-medium">选择素材</span></span>
                             </div>
                             {% if unsplash_enabled %}
-                            <button type="button" class="media-unsplash-btn" title="Search Unsplash"
+                            <button type="button" class="media-unsplash-btn" title="搜索 Unsplash"
                                     @click="openUnsplashModal()">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6.75V0h9v6.75h-9zm9 3.75H24V24H0V10.5h7.5v6.75h9V10.5z"/></svg>
                             </button>
@@ -581,18 +581,18 @@
                             <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
                                   :class="'pi-' + (charLimits[accId]?.platform || '')"
                                   x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Video Settings'"></span>
+                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - 视频设置'"></span>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Publish as</label>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">发布为</label>
                             <select :name="'facebook_post_type_' + accId"
                                     x-model="facebookPostType"
                                     :disabled="charLimits[accId]?.platform !== 'facebook' || !hasSingleVideoAttached"
                                     class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                <option value="video">Regular Page video</option>
+                                <option value="video">普通主页视频</option>
                                 <option value="reel">Facebook Reel</option>
                             </select>
-                            <p class="text-[11px] text-stone-400 mt-1">Reels use Facebook's dedicated vertical-video flow and must be 3-90 seconds. Regular Page video suits long-form and landscape uploads.</p>
+                            <p class="text-[11px] text-stone-400 mt-1">Reels 使用 Facebook 专用的竖屏视频流，时长须为 3-90 秒。普通主页视频适用于长视频和横屏上传。</p>
                         </div>
                     </div>
                 </template>
@@ -614,50 +614,50 @@
                             <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
                                   :class="'pi-' + (charLimits[accId]?.platform || '')"
                                   x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Pin Settings'"></span>
+                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - 图钉设置'"></span>
                         </div>
                         <p x-show="!hasMediaAttached" class="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-                            <span class="font-semibold">Pinterest needs an image or a video.</span>
-                            Add one to schedule this post, or deselect the account.
+                            <span class="font-semibold">Pinterest 需要图片或视频。</span>
+                            添加素材以排期该内容，或取消选择该账号。
                         </p>
                         <!-- Select Board -->
                         <div>
                             <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">
-                                Select Board <span class="text-red-400">*</span>
+                                选择画板 <span class="text-red-400">*</span>
                             </label>
                             <select :name="'pin_board_id_' + accId"
                                     class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all"
                                     :required="charLimits[accId]?.platform === 'pinterest' && selectedAccounts.includes(accId)">
-                                <option value="">Select a board…</option>
+                                <option value="">选择画板…</option>
                                 <template x-for="board in boards" :key="board.id">
                                     <option :value="board.id"
                                             :selected="platformExtras[accId]?.board_id === board.id"
                                             x-text="board.name"></option>
                                 </template>
                             </select>
-                            <p x-show="boardsLoading" class="text-[11px] text-stone-400 mt-1">Loading boards…</p>
-                            <p x-show="boardsLoaded && boards.length === 0" class="text-[11px] text-red-400 mt-1">No boards found. Create a board on Pinterest first.</p>
+                            <p x-show="boardsLoading" class="text-[11px] text-stone-400 mt-1">正在加载画板…</p>
+                            <p x-show="boardsLoaded && boards.length === 0" class="text-[11px] text-red-400 mt-1">未找到画板。请先在 Pinterest 上创建画板。</p>
                         </div>
                         <!-- Destination Link -->
                         <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Destination Link</label>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">目标链接</label>
                             <input type="url"
                                    :name="'pin_link_url_' + accId"
                                    :value="platformExtras[accId]?.link_url || ''"
                                    placeholder="https://example.com/your-page"
                                    maxlength="2048"
                                    class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                            <p class="text-[11px] text-stone-400 mt-1">Where people go when they click the pin</p>
+                            <p class="text-[11px] text-stone-400 mt-1">用户点击图钉后的跳转地址</p>
                         </div>
                         <!-- Tag Products -->
                         <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Tag Products</label>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">标记商品</label>
                             <input type="text"
                                    :name="'pin_tag_products_' + accId"
                                    :value="platformExtras[accId]?.tag_products || ''"
-                                   placeholder="Product URLs or IDs (comma-separated)"
+                                   placeholder="商品 URL 或 ID（以逗号分隔）"
                                    class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                            <p class="text-[11px] text-stone-400 mt-1">Requires a connected product catalog</p>
+                            <p class="text-[11px] text-stone-400 mt-1">需要已连接的商品目录</p>
                         </div>
                         <!-- Advanced -->
                         <div class="border-t border-stone-100 pt-3">
@@ -669,7 +669,7 @@
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
-                                Advanced
+                                高级
                             </button>
                             <div x-show="advancedOpen[accId]" x-transition class="mt-3 space-y-3">
                                 <!-- Allow Comments -->
@@ -679,7 +679,7 @@
                                            value="true"
                                            :checked="platformExtras[accId]?.allow_comments !== false"
                                            class="w-4 h-4 mt-0.5 rounded border-stone-300 text-orange-500 focus:ring-orange-200">
-                                    <span class="text-sm text-stone-700">Allow people to comment</span>
+                                    <span class="text-sm text-stone-700">允许用户评论</span>
                                 </label>
                                 <!-- Show Similar Products -->
                                 <label class="flex items-start gap-2 cursor-pointer">
@@ -688,13 +688,13 @@
                                            value="true"
                                            :checked="platformExtras[accId]?.show_similar_products !== false"
                                            class="w-4 h-4 mt-0.5 rounded border-stone-300 text-orange-500 focus:ring-orange-200">
-                                    <span class="text-sm text-stone-700">Show similar products</span>
+                                    <span class="text-sm text-stone-700">显示相似商品</span>
                                 </label>
                                 <!-- Alt Text -->
                                 <div>
-                                    <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Alt Text</label>
+                                    <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">替代文本</label>
                                     <textarea :name="'pin_alt_text_' + accId"
-                                              placeholder="Describe this pin for accessibility…"
+                                              placeholder="描述图钉内容，方便无障碍阅读…"
                                               maxlength="500"
                                               rows="2"
                                               class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all resize-none"
@@ -703,7 +703,7 @@
                                 <!-- Video Cover Image (only when video media is attached) -->
                                 <template x-if="mediaItems && mediaItems.some(m => m.is_video)">
                                     <div>
-                                        <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Video Cover Image</label>
+                                        <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">视频封面图</label>
                                         <input type="hidden"
                                                :name="'pin_cover_image_asset_id_' + accId"
                                                :value="platformExtras[accId]?.cover_image_asset_id || ''">
@@ -715,13 +715,13 @@
                                             <button type="button"
                                                     @click="openThumbnailPicker(accId)"
                                                     class="text-xs font-medium px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700 hover:border-orange-400 hover:text-orange-600 transition-all cursor-pointer">
-                                                <span x-text="platformExtras[accId]?.cover_image_asset_id ? 'Change' : 'Pick from Library'"></span>
+                                                <span x-text="platformExtras[accId]?.cover_image_asset_id ? '更换' : '从素材库选择'"></span>
                                             </button>
                                             <button type="button"
                                                     @click="triggerThumbnailUpload(accId)"
                                                     :disabled="thumbnailUploading[accId]"
                                                     class="text-xs font-medium px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700 hover:border-orange-400 hover:text-orange-600 transition-all disabled:opacity-50 cursor-pointer">
-                                                <span x-text="thumbnailUploading[accId] ? 'Uploading…' : 'Upload'"></span>
+                                                <span x-text="thumbnailUploading[accId] ? '上传中…' : '上传'"></span>
                                             </button>
                                             <input type="file"
                                                    :data-thumb-upload-for="accId"
@@ -731,9 +731,9 @@
                                             <button type="button"
                                                     x-show="platformExtras[accId]?.cover_image_asset_id"
                                                     @click="clearThumbnail(accId)"
-                                                    class="text-xs text-stone-400 hover:text-red-500 cursor-pointer">Remove</button>
+                                                    class="text-xs text-stone-400 hover:text-red-500 cursor-pointer">移除</button>
                                         </div>
-                                        <p class="text-[11px] text-stone-400 mt-1">Required for video pins. PNG or JPG, same dimensions as video.</p>
+                                        <p class="text-[11px] text-stone-400 mt-1">视频图钉必填。PNG 或 JPG 格式，尺寸需与视频一致。</p>
                                     </div>
                                 </template>
                             </div>
@@ -747,15 +747,15 @@
                          class="border border-stone-200 rounded-xl bg-white p-4 space-y-3">
                         <div class="flex items-center gap-2">
                             <a :href="charLimits[accId]?.youtube_url || 'https://www.youtube.com/'" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-stone-600 underline underline-offset-2">YouTube</a>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Video Settings'"></span>
+                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - 视频设置'"></span>
                         </div>
                         <p x-show="!hasVideoAttached" class="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-                            <span class="font-semibold">YouTube only publishes videos.</span>
-                            Add a video to schedule this post, or deselect the account.
+                            <span class="font-semibold">YouTube 仅发布视频。</span>
+                            添加视频以排期此内容，或取消选择该账号。
                         </p>
                         <!-- Thumbnail -->
                         <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">Custom Thumbnail</label>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">自定义缩略图</label>
                             <input type="hidden"
                                    :name="'yt_thumbnail_asset_id_' + accId"
                                    :value="platformExtras[accId]?.thumbnail_asset_id || ''">
@@ -768,7 +768,7 @@
                                          @drop.prevent="handleThumbnailDrop(accId, $event); $el.classList.remove('border-orange-400', 'bg-orange-50')"
                                          @click="triggerThumbnailUpload(accId)">
                                         <svg class="w-6 h-6 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <span class="text-[11px] text-stone-400" x-text="thumbnailUploading[accId] ? 'Uploading…' : 'Drag & drop a thumbnail'"></span>
+                                        <span class="text-[11px] text-stone-400" x-text="thumbnailUploading[accId] ? '上传中…' : '拖放缩略图'"></span>
                                     </div>
                                 </template>
                                 <template x-if="platformExtras[accId]?.thumbnail_url">
@@ -776,7 +776,7 @@
                                         <img :src="platformExtras[accId].thumbnail_url"
                                              class="h-[104px] w-auto max-w-[480px] object-cover rounded-lg border border-stone-200">
                                         <button type="button" @click="clearThumbnail(accId)"
-                                                title="Remove thumbnail"
+                                                title="移除缩略图"
                                                 class="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/55 hover:bg-red-500 text-white flex items-center justify-center transition-colors cursor-pointer">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
@@ -791,17 +791,17 @@
                             <button type="button" @click="openThumbnailPicker(accId)"
                                     class="mt-2 text-xs font-medium text-stone-400 hover:text-orange-600 transition-colors flex items-center gap-1.5 cursor-pointer">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                Media Library
+                                素材库
                             </button>
                         </div>
                         <!-- Visibility -->
                         <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Visibility</label>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">可见性</label>
                             <select :name="'yt_privacy_status_' + accId"
                                     class="bb-select w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                <option value="public" :selected="(platformExtras[accId]?.privacy_status || 'public') === 'public'">Public</option>
-                                <option value="unlisted" :selected="platformExtras[accId]?.privacy_status === 'unlisted'">Unlisted</option>
-                                <option value="private" :selected="platformExtras[accId]?.privacy_status === 'private'">Private</option>
+                                <option value="public" :selected="(platformExtras[accId]?.privacy_status || 'public') === 'public'">公开</option>
+                                <option value="unlisted" :selected="platformExtras[accId]?.privacy_status === 'unlisted'">非公开</option>
+                                <option value="private" :selected="platformExtras[accId]?.privacy_status === 'private'">私密</option>
                             </select>
                         </div>
                         <!-- Advanced -->
@@ -814,7 +814,7 @@
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
-                                Advanced
+                                高级
                             </button>
                             <div x-show="advancedOpen[accId]" x-transition class="mt-3 space-y-3">
                                 <!-- Made for Kids -->
@@ -825,19 +825,19 @@
                                            :checked="platformExtras[accId]?.self_declared_made_for_kids"
                                            class="w-4 h-4 mt-0.5 rounded border-stone-300 text-orange-500 focus:ring-orange-200">
                                     <span class="text-sm text-stone-700">
-                                        Made for Kids
-                                        <span class="block text-[11px] text-stone-400 font-normal">Required by COPPA - mark if this video is directed at children under 13</span>
+                                        适合儿童
+                                        <span class="block text-[11px] text-stone-400 font-normal">COPPA 合规要求 - 若视频面向 13 岁以下儿童，请标记此项</span>
                                     </span>
                                 </label>
                                 <!-- Tags -->
                                 <div>
-                                    <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Tags</label>
+                                    <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">标签</label>
                                     <input type="text"
                                            :name="'yt_tags_' + accId"
                                            :value="(platformExtras[accId]?.tags || []).join(', ')"
-                                           placeholder="vlog, travel, daily"
+                                           placeholder="例如：旅行、日常"
                                            class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all">
-                                    <p class="text-[11px] text-stone-400 mt-1">Comma-separated</p>
+                                    <p class="text-[11px] text-stone-400 mt-1">逗号分隔</p>
                                 </div>
                             </div>
                         </div>
@@ -869,15 +869,15 @@
                              },
                              ttLabel(level) {
                                  return ({
-                                     PUBLIC_TO_EVERYONE: 'Everyone',
-                                     MUTUAL_FOLLOW_FRIENDS: 'Friends',
-                                     FOLLOWER_OF_CREATOR: 'Followers',
-                                     SELF_ONLY: 'Only you',
+                                     PUBLIC_TO_EVERYONE: '所有人',
+                                     MUTUAL_FOLLOW_FRIENDS: '好友',
+                                     FOLLOWER_OF_CREATOR: '粉丝',
+                                     SELF_ONLY: '仅自己',
                                  })[level] || level;
                              },
                              get ttLabelPrompt() {
-                                 if (this.ttBrandContent) return `Your photo/video will be labeled as 'Paid partnership'`;
-                                 if (this.ttBrandOrganic) return `Your photo/video will be labeled as 'Promotional content'`;
+                                 if (this.ttBrandContent) return `你的图片或视频将标记为“付费合作”`;
+                                 if (this.ttBrandOrganic) return `你的图片或视频将标记为“推广内容”`;
                                  return '';
                              },
                              get ttBrandingBlocked() {
@@ -916,17 +916,17 @@
                             <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
                                   :class="'pi-' + (charLimits[accId]?.platform || '')"
                                   x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Post Settings'"></span>
-                            <span class="ml-auto text-[11px] text-stone-400" x-show="tt?.creator_nickname" x-text="'Posting to @' + (tt?.creator_nickname || '')"></span>
+                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - 内容设置'"></span>
+                            <span class="ml-auto text-[11px] text-stone-400" x-show="tt?.creator_nickname" x-text="'发布到 @' + (tt?.creator_nickname || '')"></span>
                         </div>
                         <p x-show="!hasVideoAttached" class="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-                            <span class="font-semibold">TikTok only publishes videos.</span>
-                            Add a video to schedule this post, or deselect the account.
+                            <span class="font-semibold">TikTok 仅支持发布视频。</span>
+                            添加视频以排期此内容，或取消选择该账号。
                         </p>
                         <!-- Privacy: TikTok requires an explicit choice from the creator's allowed options -->
                         <div>
                             <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">
-                                Who can see this post <span class="text-red-400">*</span>
+                                谁可以查看此内容 <span class="text-red-400">*</span>
                             </label>
                             <!-- Custom dropdown (not a native <select>): native <option>s never
                                  render a hover tooltip, so the disabled "Only you" option couldn't
@@ -960,7 +960,7 @@
                                         aria-haspopup="listbox"
                                         class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all flex items-center justify-between gap-2 text-left cursor-pointer">
                                     <span :class="ttPrivacy ? 'text-stone-800' : 'text-stone-400'"
-                                          x-text="ttPrivacy ? ttLabel(ttPrivacy) : 'Select who can view this post'"></span>
+                                          x-text="ttPrivacy ? ttLabel(ttPrivacy) : '选择可查看内容的人'"></span>
                                     <svg class="w-4 h-4 text-stone-400 flex-shrink-0 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
                                 <ul x-show="open" x-cloak x-transition
@@ -991,7 +991,7 @@
                                                  always-visible note below the dropdown covers keyboard/SR users. -->
                                             <span x-show="ttBrandContent && lvl === 'SELF_ONLY'"
                                                   class="pointer-events-none absolute left-3 -top-6 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-800 text-white text-[11px] rounded px-2 py-1 whitespace-nowrap z-50 shadow">
-                                                Branded content visibility cannot be set to private.
+                                                品牌内容可见性不能设为私密。
                                             </span>
                                         </li>
                                     </template>
@@ -1003,15 +1003,15 @@
                                        :required="charLimits[accId]?.platform === 'tiktok' && selectedAccounts.includes(accId)"
                                        tabindex="-1" aria-hidden="true" class="sr-only">
                             </div>
-                            <p x-show="ttLoading" class="text-[11px] text-stone-400 mt-1">Loading account settings…</p>
+                            <p x-show="ttLoading" class="text-[11px] text-stone-400 mt-1">正在加载账号设置…</p>
                             <p x-show="ttSelfOnlyLocked" class="text-[11px] text-amber-600 mt-1">
-                                This TikTok app hasn't passed TikTok's content audit yet — only private posting ("Only you") is available until the audit is approved.
+                                此 TikTok 应用尚未通过 TikTok 内容审核——在审核通过前，仅支持私密发布（“仅自己可见”）。
                             </p>
-                            <p x-show="ttBrandContent" class="text-[11px] text-stone-400 mt-1">Branded content visibility cannot be set to private.</p>
+                            <p x-show="ttBrandContent" class="text-[11px] text-stone-400 mt-1">品牌内容可见性不能设为私密。</p>
                         </div>
                         <!-- Cover: TikTok takes a frame timestamp, not an uploaded image -->
                         <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">Cover</label>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">封面</label>
                             <input type="hidden"
                                    :name="'tiktok_video_cover_timestamp_ms_' + accId"
                                    :value="platformExtras[accId]?.video_cover_timestamp_ms ?? ''">
@@ -1022,7 +1022,7 @@
                                         <img :src="tiktokCoverPreview[accId]"
                                              class="h-[104px] w-auto max-w-[480px] object-cover rounded-lg border border-stone-200">
                                         <button type="button" @click="clearTiktokCover(accId)"
-                                                title="Reset to default cover"
+                                                title="重置为默认封面"
                                                 class="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/55 hover:bg-red-500 text-white flex items-center justify-center transition-colors cursor-pointer">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
@@ -1031,9 +1031,9 @@
                                 <template x-if="!tiktokCoverPreview[accId] && (platformExtras[accId]?.video_cover_timestamp_ms ?? null) !== null">
                                     <div class="relative flex-1 max-w-[480px] rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center min-h-[104px]">
                                         <span class="text-xs text-stone-500 font-medium tabular-nums"
-                                              x-text="'Cover at ' + formatTimecode((platformExtras[accId]?.video_cover_timestamp_ms || 0) / 1000)"></span>
+                                              x-text="'封面时间：' + formatTimecode((platformExtras[accId]?.video_cover_timestamp_ms || 0) / 1000)"></span>
                                         <button type="button" @click="clearTiktokCover(accId)"
-                                                title="Reset to default cover"
+                                                title="重置为默认封面"
                                                 class="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/55 hover:bg-red-500 text-white flex items-center justify-center transition-colors cursor-pointer">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
@@ -1045,25 +1045,25 @@
                              TikTok requires an independent checkbox per interaction,
                              greyed out individually when disabled in creator settings. -->
                         <div>
-                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">Allow users to:</label>
+                            <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">允许用户：</label>
                             <div class="space-y-2">
                                 <label class="flex items-center gap-2" :class="tt?.comment_disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'">
                                     <input type="checkbox" :name="'tiktok_allow_comment_' + accId" value="true"
                                            x-model="ttAllowComment" :disabled="!!tt?.comment_disabled"
                                            class="bb-checkbox w-4 h-4 rounded border-stone-300">
-                                    <span class="text-sm text-stone-700">Comment</span>
+                                    <span class="text-sm text-stone-700">评论</span>
                                 </label>
                                 <label class="flex items-center gap-2" :class="tt?.duet_disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'">
                                     <input type="checkbox" :name="'tiktok_allow_duet_' + accId" value="true"
                                            x-model="ttAllowDuet" :disabled="!!tt?.duet_disabled"
                                            class="bb-checkbox w-4 h-4 rounded border-stone-300">
-                                    <span class="text-sm text-stone-700">Duet</span>
+                                    <span class="text-sm text-stone-700">合拍</span>
                                 </label>
                                 <label class="flex items-center gap-2" :class="tt?.stitch_disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'">
                                     <input type="checkbox" :name="'tiktok_allow_stitch_' + accId" value="true"
                                            x-model="ttAllowStitch" :disabled="!!tt?.stitch_disabled"
                                            class="bb-checkbox w-4 h-4 rounded border-stone-300">
-                                    <span class="text-sm text-stone-700">Stitch</span>
+                                    <span class="text-sm text-stone-700">拼接</span>
                                 </label>
                             </div>
                         </div>
@@ -1071,8 +1071,8 @@
                         <div class="border-t border-stone-100 pt-3">
                             <div class="flex items-start justify-between gap-3">
                                 <span class="text-sm text-stone-700">
-                                    Disclose post content
-                                    <span class="block text-[11px] text-stone-400 font-normal">Let others know this post promotes a brand, product or service.</span>
+                                    披露内容信息
+                                    <span class="block text-[11px] text-stone-400 font-normal">告知他人此内容推广了品牌、产品或服务。</span>
                                 </span>
                                 <label class="bb-toggle mt-0.5">
                                     <input type="checkbox" x-model="ttDisclose"
@@ -1086,8 +1086,8 @@
                                            x-model="ttBrandOrganic"
                                            class="bb-checkbox w-4 h-4 mt-0.5 rounded border-stone-300">
                                     <span class="text-sm text-stone-700">
-                                        Your brand
-                                        <span class="block text-[11px] text-stone-400 font-normal">You are promoting yourself or your own business.</span>
+                                        您的品牌
+                                        <span class="block text-[11px] text-stone-400 font-normal">您正在推广自己或自己的业务。</span>
                                     </span>
                                 </label>
                                 <label class="flex items-start gap-2"
@@ -1097,17 +1097,17 @@
                                            :disabled="ttBrandingBlocked"
                                            class="bb-checkbox w-4 h-4 mt-0.5 rounded border-stone-300">
                                     <span class="text-sm text-stone-700">
-                                        Branded content
-                                        <span class="block text-[11px] text-stone-400 font-normal">You are promoting another brand or a third party.</span>
+                                        品牌内容
+                                        <span class="block text-[11px] text-stone-400 font-normal">您正在推广其他品牌或第三方。</span>
                                     </span>
                                 </label>
                                 <!-- Branded content can't be posted privately, so the option is
                                      locked while visibility is "Only you"; explain why. -->
                                 <p x-show="ttSelfOnlyLocked" class="text-[11px] text-amber-600 -mt-1">
-                                    Branded content isn't available until your TikTok app passes TikTok's content audit, because branded content can't be posted privately.
+                                    在您的 TikTok 应用通过 TikTok 内容审核之前，品牌内容功能不可用，因为品牌内容无法私密发布。
                                 </p>
                                 <p x-show="ttPrivacy === 'SELF_ONLY' && !ttSelfOnlyLocked" class="text-[11px] text-stone-500 -mt-1">
-                                    Set visibility to public, friends, or followers to enable branded content.
+                                    请将可见性设置为公开、好友或粉丝，以启用品牌内容功能。
                                 </p>
                                 <!-- Exact TikTok content label prompt, shown once a disclosure option is selected -->
                                 <template x-if="ttLabelPrompt">
@@ -1115,7 +1115,7 @@
                                 </template>
                                 <!-- Disclosure requires at least one sub-option; gate submit via native validity -->
                                 <template x-if="!ttBrandOrganic && !ttBrandContent">
-                                    <p class="text-[11px] text-red-500">You need to indicate if your content promotes yourself, a third party, or both.</p>
+                                    <p class="text-[11px] text-red-500">您需要指明您的内容是推广自己、第三方，还是两者兼有。</p>
                                 </template>
                                 <input type="text" tabindex="-1" aria-hidden="true" class="sr-only"
                                        :required="ttDisclose"
@@ -1126,8 +1126,8 @@
                         <div class="border-t border-stone-100 pt-3">
                             <div class="flex items-start justify-between gap-3">
                                 <span class="text-sm text-stone-700">
-                                    AI-generated content
-                                    <span class="block text-[11px] text-stone-400 font-normal">Add TikTok's AI-generated label if the post contains AI-generated content.</span>
+                                    AI 生成内容
+                                    <span class="block text-[11px] text-stone-400 font-normal">如果内容包含 AI 生成内容，请添加 TikTok 的 AI 生成标签。</span>
                                 </span>
                                 <label class="bb-toggle mt-0.5">
                                     <input type="checkbox" :name="'tiktok_is_aigc_' + accId" value="true"
@@ -1138,15 +1138,15 @@
                         </div>
                         <!-- Compliance declaration (required by TikTok's integration guidelines) -->
                         <p class="text-[11px] text-stone-400 border-t border-stone-100 pt-3">
-                            By posting, you agree to TikTok's
+                            发布即表示您同意 TikTok 的
                             <template x-if="ttBrandContent">
-                                <span><a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener" class="underline hover:text-stone-600">Branded Content Policy</a> and </span>
+                                <span><a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener" class="underline hover:text-stone-600">品牌内容政策</a> 和 </span>
                             </template>
-                            <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener" class="underline hover:text-stone-600">Music Usage Confirmation</a>.
+                            <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener" class="underline hover:text-stone-600">音乐使用确认</a>.
                         </p>
                         <!-- Processing-time notice (TikTok requires informing users of the publish delay) -->
                         <p class="text-[11px] text-stone-400">
-                            After you publish, it may take a few minutes for your video to process and appear on your TikTok profile.
+                            发布后，视频可能需要几分钟处理时间才会显示在您的 TikTok 主页上。
                         </p>
                     </div>
                 </template>
@@ -1162,7 +1162,7 @@
                                 @click="overrides[accId] = !overrides[accId]"
                                 x-show="!overrides[accId] && !isManual(accId)">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            <span x-text="'Customize ' + (charLimits[accId]?.platform === 'youtube' ? 'YouTube' : (charLimits[accId]?.platform || ''))"></span>
+                            <span x-text="'自定义 ' + (charLimits[accId]?.platform === 'youtube' ? 'YouTube' : (charLimits[accId]?.platform || ''))"></span>
                         </button>
                     </template>
                 </div>
@@ -1175,18 +1175,18 @@
                             <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
                                   :class="'pi-' + (charLimits[accId]?.platform || '')"
                                   x-html="platformIconSvg(charLimits[accId]?.platform || '')"></span>
-                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - Custom Override'"></span>
-                            <button type="button" class="ml-auto text-xs text-red-400 hover:text-red-500 cursor-pointer" @click="overrides[accId] = false">Remove override</button>
+                            <span class="text-xs font-semibold text-stone-600" x-text="charLimits[accId]?.name + ' - 单独设置'"></span>
+                            <button type="button" class="ml-auto text-xs text-red-400 hover:text-red-500 cursor-pointer" @click="overrides[accId] = false">移除覆盖设置</button>
                         </div>
                         <!-- Title override (only for platforms that need it) -->
                         <template x-if="charLimits[accId]?.needs_title">
                             <div class="mb-3">
                                 <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1"
-                                       x-text="(charLimits[accId]?.title_label || 'Title') + ' Override'"></label>
+                                       x-text="titleLabelFor(charLimits[accId]?.title_label) + '（单独设置）'"></label>
                                 <input type="text" :name="'override_title_' + accId"
                                        :disabled="isManual(accId)"
                                        class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all"
-                                       :placeholder="'Custom ' + (charLimits[accId]?.title_label || 'title') + '…'"
+                                       placeholder="填写此平台的专用标题…"
                                        :maxlength="charLimits[accId]?.title_max_length || 255">
                             </div>
                         </template>
@@ -1194,7 +1194,7 @@
                                   :disabled="isManual(accId)"
                                   class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all resize-none"
                                   style="font-family: system-ui, -apple-system, sans-serif;"
-                                  :placeholder="'Custom ' + (charLimits[accId]?.caption_label || 'caption') + ' for this platform...'"
+                                  placeholder="填写此平台的专用正文（留空沿用共享内容）…"
                                   rows="3"></textarea>
 
                     </div>
@@ -1202,10 +1202,10 @@
 
                 <!-- First Comment (conditional - only when a platform supporting comments is selected) -->
                 <div x-show="anyPlatformSupportsFirstComment" x-transition x-cloak>
-                    <label class="block text-sm font-semibold text-stone-500 uppercase tracking-wider mb-2">First Comment</label>
+                    <label class="block text-sm font-semibold text-stone-500 uppercase tracking-wider mb-2">首条评论</label>
                     <textarea name="first_comment"
                               class="comment-editor"
-                              placeholder="First comment posted after the main post…"
+                              placeholder="主内容发布后的首条评论…"
                               rows="1">{{ form.first_comment.value|default:"" }}</textarea>
                 </div>
                 <!-- Hidden first_comment field for form submission when section is hidden -->
@@ -1216,10 +1216,10 @@
                 <!-- Content Category -->
                 {% if categories %}
                 <div>
-                    <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Category</label>
+                    <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">分类</label>
                     <select name="category"
                             class="w-full text-sm px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-700 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all duration-150">
-                        <option value="">No category</option>
+                        <option value="">无分类</option>
                         {% for cat in categories %}
                         <option value="{{ cat.id }}" {% if post and post.category_id == cat.id %}selected{% endif %}
                                 style="padding-left: 24px;">
@@ -1274,8 +1274,8 @@
                     },
                 }" @click.away="tagDropdownOpen = false">
                     <div class="flex items-center gap-2 mb-2">
-                        <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Tags</label>
-                        <span class="text-[10px] font-semibold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Internal team only</span>
+                        <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider">标签</label>
+                        <span class="text-[10px] font-semibold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">仅限内部团队</span>
                     </div>
                     <input type="hidden" name="tags" :value="tags.join(',')">
 
@@ -1291,7 +1291,7 @@
                                 </button>
                             </span>
                         </template>
-                        <span x-show="!tags.length" class="text-sm text-stone-400">Select tags...</span>
+                        <span x-show="!tags.length" class="text-sm text-stone-400">选择标签...</span>
                         <svg class="w-4 h-4 ml-auto text-stone-400 shrink-0 transition-transform duration-150" :class="tagDropdownOpen && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </div>
 
@@ -1304,7 +1304,7 @@
                             <input type="text" x-ref="tagSearchInput" x-model="tagSearch"
                                    @keydown.enter.prevent="if (tagSearch.trim() && !filteredTags.includes(tagSearch.trim())) { createTag(); } else if (filteredTags.length === 1) { toggleTag(filteredTags[0]); tagSearch = ''; }"
                                    class="w-full text-sm px-2 py-1.5 rounded-lg border border-stone-200 outline-none focus:border-orange-400 transition-colors"
-                                   placeholder="Search or create tag...">
+                                   placeholder="搜索或创建标签...">
                         </div>
                         <!-- Tag list -->
                         <template x-for="tag in filteredTags" :key="tag">
@@ -1333,14 +1333,14 @@
                             </div>
                         </template>
                         <template x-if="!tagSearch.trim() && !allTags.length">
-                            <div class="px-3 py-2 text-xs text-stone-400">No tags yet. Type to create one.</div>
+                            <div class="px-3 py-2 text-xs text-stone-400">暂无标签。输入以创建。</div>
                         </template>
                         <!-- Create new tag -->
                         <div class="border-t border-stone-100 px-1 py-1">
                             <button type="button" @click="tagDropdownOpen = false; showCreateTagModal = true; newTagName = tagSearch; tagSearch = ''; $nextTick(() => $refs.newTagNameInput.focus())"
                                     class="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-stone-600 hover:bg-stone-50 rounded-md cursor-pointer transition-colors">
                                 <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                Create new tag
+                                新建标签
                             </button>
                         </div>
                     </div>
@@ -1350,22 +1350,22 @@
                         <div x-show="showCreateTagModal" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center" @keydown.escape.window="showCreateTagModal = false">
                             <div class="fixed inset-0 bg-black/30" @click="showCreateTagModal = false"></div>
                             <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6" @click.stop>
-                                <h3 class="text-base font-semibold text-stone-800 mb-4">Create new tag</h3>
+                                <h3 class="text-base font-semibold text-stone-800 mb-4">新建标签</h3>
                                 <input type="text" x-ref="newTagNameInput" x-model="newTagName"
                                        @keydown.enter.prevent="if(newTagName.trim()) { _persistTag(newTagName.trim()); showCreateTagModal = false; newTagName = ''; }"
                                        class="w-full text-sm px-3 py-2.5 rounded-xl border border-stone-200 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
-                                       placeholder="Tag name...">
+                                       placeholder="标签名称...">
                                 <div class="flex justify-end gap-2 mt-4">
                                     <button type="button" @click="showCreateTagModal = false; newTagName = ''"
                                             class="px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 rounded-lg cursor-pointer transition-colors">
-                                        Cancel
+                                        取消
                                     </button>
                                     <button type="button"
                                             @click="if(newTagName.trim()) { _persistTag(newTagName.trim()); showCreateTagModal = false; newTagName = ''; }"
                                             class="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
                                             style="background: var(--primary);"
                                             :class="newTagName.trim() ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'">
-                                        Create
+                                        创建
                                     </button>
                                 </div>
                             </div>
@@ -1377,12 +1377,12 @@
                 {% if can_view_internal_notes %}
                 <div>
                     <div class="flex items-center gap-2 mb-2">
-                        <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Notes</label>
-                        <span class="text-[10px] font-semibold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Internal team only</span>
+                        <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider">备注</label>
+                        <span class="text-[10px] font-semibold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">仅限内部团队</span>
                     </div>
                     <textarea name="internal_notes"
                               class="w-full text-sm font-normal px-4 py-3 rounded-xl border border-dashed border-stone-200 bg-stone-50/80 text-stone-600 outline-none focus:border-stone-300 transition-all duration-150 resize-none"
-                              placeholder="Internal team notes - not visible to clients…"
+                              placeholder="内部团队备注，客户不可见…"
                               rows="2">{{ form.internal_notes.value|default:"" }}</textarea>
                 </div>
                 {% endif %}
@@ -1395,14 +1395,14 @@
                 <button type="button" @click="$dispatch('open-delete-modal')"
                         class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-2 text-sm font-semibold text-red-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all duration-150 cursor-pointer flex-shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    <span class="hidden sm:inline">Delete</span>
+                    <span class="hidden sm:inline">删除</span>
                 </button>
                 {% endif %}
 
                 <!-- Autosave indicator -->
                 <div id="autosave-status" class="text-xs text-stone-400 mr-auto hidden sm:flex items-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-stone-300" :class="{ 'bg-emerald-400': lastSaved }"></span>
-                    <span x-text="lastSaved ? 'Saved ' + lastSaved : 'Not saved yet'"></span>
+                    <span x-text="lastSaved ? '已保存 ' + lastSaved : '尚未保存'"></span>
                 </div>
                 <div class="mr-auto sm:hidden"></div>
 
@@ -1445,7 +1445,7 @@
                             :class="selectedAccounts.length === 0 && 'opacity-50 cursor-not-allowed'"
                             class="inline-flex items-center gap-1.5 pl-2 sm:pl-3 pr-1.5 sm:pr-2 py-2 text-sm font-semibold text-orange-700 bg-orange-100 rounded-l-lg hover:bg-orange-200 border border-orange-200 border-r-0 transition-all duration-150 cursor-pointer">
                         <svg id="publish-mode-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span id="publish-mode-label" class="hidden sm:inline">Next available</span>
+                        <span id="publish-mode-label" class="hidden sm:inline">下一个可用时间</span>
                         <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <!-- Action button (right) -->
@@ -1453,7 +1453,7 @@
                             :disabled="selectedAccounts.length === 0"
                             :class="selectedAccounts.length === 0 && 'opacity-50 cursor-not-allowed'"
                             class="inline-flex items-center gap-1.5 pl-3 sm:pl-4 pr-3 sm:pr-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-r-lg hover:bg-orange-600 border border-orange-500 hover:border-orange-600 shadow-sm transition-all duration-150 cursor-pointer">
-                        <span id="publish-action-label">Add to Queue</span>
+                        <span id="publish-action-label">加入发布队列</span>
                     </button>
 
                     <!-- Mode popover - positioned above -->
@@ -1468,8 +1468,8 @@
                                         <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-stone-800">Next Available</div>
-                                        <div class="text-xs text-stone-400 mt-0.5">Place in next available slot</div>
+                                        <div class="text-sm font-semibold text-stone-800">下一个可用时间</div>
+                                        <div class="text-xs text-stone-400 mt-0.5">放入下一个可用时段</div>
                                     </div>
                                 </button>
 
@@ -1481,8 +1481,8 @@
                                         <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-stone-800">Prioritise</div>
-                                        <div class="text-xs text-stone-400 mt-0.5">Add to top of queue</div>
+                                        <div class="text-sm font-semibold text-stone-800">优先处理</div>
+                                        <div class="text-xs text-stone-400 mt-0.5">移至发布队列顶部</div>
                                     </div>
                                 </button>
 
@@ -1494,8 +1494,8 @@
                                         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/></svg>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-stone-800">Now</div>
-                                        <div class="text-xs text-stone-400 mt-0.5">Publish immediately</div>
+                                        <div class="text-sm font-semibold text-stone-800">立即</div>
+                                        <div class="text-xs text-stone-400 mt-0.5">立即发布</div>
                                     </div>
                                 </button>
 
@@ -1508,8 +1508,8 @@
                                         <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-stone-800">Set Date and Time</div>
-                                        <div class="text-xs text-stone-400 mt-0.5">Choose a specific time</div>
+                                        <div class="text-sm font-semibold text-stone-800">设置日期和时间</div>
+                                        <div class="text-xs text-stone-400 mt-0.5">选择具体时间</div>
                                     </div>
                                 </button>
                             </div>
@@ -1520,21 +1520,21 @@
                                     <button type="button" id="publish-schedule-back" class="w-6 h-6 rounded-md hover:bg-stone-100 flex items-center justify-center transition-colors">
                                         <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                                     </button>
-                                    <span class="text-sm font-semibold text-stone-800">Schedule Post</span>
+                                    <span class="text-sm font-semibold text-stone-800">排期内容</span>
                                 </div>
 
                                 <div class="space-y-3">
                                     <div>
-                                        <label class="block text-xs font-medium text-stone-500 mb-1">Date</label>
+                                        <label class="block text-xs font-medium text-stone-500 mb-1">日期</label>
                                         <input type="date" name="scheduled_date" class="form-datetime" value="{{ form.scheduled_date.value|default:'' }}">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-stone-500 mb-1">Time</label>
+                                        <label class="block text-xs font-medium text-stone-500 mb-1">时间</label>
                                         <input type="time" name="scheduled_time" class="form-datetime" value="{{ form.scheduled_time.value|default:'' }}">
                                     </div>
                                     <div class="text-xs text-stone-400 flex items-center gap-1">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        Timezone: {{ workspace.effective_timezone }}
+                                        时区：{{ workspace.effective_timezone }}
                                     </div>
                                 </div>
 
@@ -1542,12 +1542,12 @@
 
                                 {% if not post_is_scheduled %}
                                 <p class="mt-3 text-xs text-stone-400 leading-relaxed">
-                                    Saving as a draft keeps this as a <span class="font-medium text-stone-500">proposed</span> time. Use <span class="font-medium text-stone-500">Set Schedule</span> to publish at this time.
+                                    保存为草稿会将此时间设为 <span class="font-medium text-stone-500">建议</span> 时间。使用 <span class="font-medium text-stone-500">设置排期</span> 在此时间发布。
                                 </p>
                                 {% endif %}
 
                                 <button type="button" id="publish-schedule-confirm" class="mt-4 w-full py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors cursor-pointer">
-                                    Set Schedule
+                                    设置排期
                                 </button>
                             </div>
                     </div>
@@ -1567,32 +1567,32 @@
             {% if post.status == 'pending_review' %}
             <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-50 border border-orange-100 mb-3">
                 <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-sm font-medium text-orange-700">Awaiting internal review</span>
+                <span class="text-sm font-medium text-orange-700">等待内部审核</span>
             </div>
             {% elif post.status == 'pending_client' %}
             <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-100 mb-3">
                 <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-sm font-medium text-amber-700">Awaiting client approval</span>
+                <span class="text-sm font-medium text-amber-700">等待客户审批</span>
             </div>
             {% elif post.status == 'changes_requested' %}
             <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-50 border border-orange-100 mb-3">
                 <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                <span class="text-sm font-medium text-orange-700">Changes requested - edit and resubmit</span>
+                <span class="text-sm font-medium text-orange-700">已要求修改 - 请编辑后重新提交</span>
             </div>
             {% elif post.status == 'rejected' %}
             <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 mb-3">
                 <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                <span class="text-sm font-medium text-red-700">Rejected - edit and resubmit or delete</span>
+                <span class="text-sm font-medium text-red-700">已拒绝 - 请编辑后重新提交或删除</span>
             </div>
             {% elif post.status == 'approved' %}
             <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-teal-50 border border-teal-100 mb-3">
                 <svg class="w-4 h-4 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-sm font-medium text-teal-700">Approved - saving changes sends it back for re-approval</span>
+                <span class="text-sm font-medium text-teal-700">已批准 - 保存修改将重新提交审批</span>
             </div>
             {% elif post.status == 'on_hold' %}
             <div class="flex items-center gap-2 px-3 py-2 rounded-lg mb-3" style="background:#F5F3FF;border:1px solid #DDD6FE;">
                 <svg class="w-4 h-4 flex-shrink-0" style="color:#7C3AED;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-                <span class="text-sm font-medium" style="color:#6D28D9;">On hold - a client paused this; resume it from the approvals queue</span>
+                <span class="text-sm font-medium" style="color:#6D28D9;">已暂停 - 客户已暂停此内容；请在审批队列中恢复</span>
             </div>
             {% endif %}
 
@@ -1603,8 +1603,8 @@
                 <div class="min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-[0.8125rem] font-semibold text-stone-800">{{ latest_feedback.user.display_name|default:"Reviewer" }}</span>
-                        <span class="text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full" style="background:#FFEDD5;color:#C2410C;">{% if latest_feedback.action == 'rejected' %}rejected{% else %}requested changes{% endif %}</span>
-                        <span class="text-[0.6875rem] text-stone-400">{{ latest_feedback.created_at|timesince }} ago</span>
+                        <span class="text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full" style="background:#FFEDD5;color:#C2410C;">{% if latest_feedback.action == 'rejected' %}已拒绝{% else %}已要求修改{% endif %}</span>
+                        <span class="text-[0.6875rem] text-stone-400">{{ latest_feedback.created_at|timesince }}前</span>
                     </div>
                     <p class="text-[0.875rem] text-stone-700 mt-1 leading-relaxed">{{ latest_feedback.comment }}</p>
                 </div>
@@ -1620,28 +1620,28 @@
             {% elif can_approve and post.status == 'pending_review' or can_approve and post.status == 'pending_client' %}
             <div class="flex gap-2 mb-3 relative" x-data="{ showReviewComment: false, reviewComment: '' }">
                 <button hx-post="{% url 'approvals:approve' workspace_id=workspace.id post_id=post.id %}" hx-swap="none"
-                        class="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors">Approve</button>
-                <button @click="showReviewComment = !showReviewComment" class="px-3 py-1.5 text-xs font-semibold rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors">Request Changes</button>
+                        class="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors">批准</button>
+                <button @click="showReviewComment = !showReviewComment" class="px-3 py-1.5 text-xs font-semibold rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors">要求修改</button>
                 <div x-show="showReviewComment" x-cloak class="absolute mt-9 z-10 bg-white rounded-lg shadow-lg border border-stone-200 p-3 w-80">
-                    <textarea id="composer-review-comment" name="comment" rows="2" x-model="reviewComment" class="w-full px-2 py-1.5 text-sm border border-stone-200 rounded-lg resize-none" placeholder="What needs to change?"></textarea>
+                    <textarea id="composer-review-comment" name="comment" rows="2" x-model="reviewComment" class="w-full px-2 py-1.5 text-sm border border-stone-200 rounded-lg resize-none" placeholder="需要修改哪些内容？"></textarea>
                     <button hx-post="{% url 'approvals:request_changes' workspace_id=workspace.id post_id=post.id %}"
                             hx-include="#composer-review-comment" hx-swap="none"
                             :disabled="!reviewComment.trim()" :class="!reviewComment.trim() && 'opacity-50 cursor-not-allowed'"
-                            class="mt-2 px-3 py-1 text-xs font-semibold rounded-full bg-amber-500 text-white">Submit</button>
+                            class="mt-2 px-3 py-1 text-xs font-semibold rounded-full bg-amber-500 text-white">提交</button>
                 </div>
             </div>
             {% endif %}
 
             <!-- Approval timeline -->
-            <h4 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Approval History</h4>
+            <h4 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">审批历史</h4>
             <div class="space-y-2 mb-4">
                 {% for action in approval_history %}
                 <div class="flex items-start gap-2">
                     <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 {% if action.action == 'approved' %}bg-emerald-400{% elif action.action == 'rejected' %}bg-red-400{% elif action.action == 'changes_requested' %}bg-amber-400{% else %}bg-stone-300{% endif %}"></div>
                     <div>
-                        <p class="text-xs text-stone-600"><span class="font-semibold">{{ action.user.display_name }}</span> {{ action.get_action_display|lower }}</p>
+                        <p class="text-xs text-stone-600"><span class="font-semibold">{{ action.user.display_name }}</span> {{ action.get_action_display|zh_ui_label }}</p>
                         {% if action.comment %}<p class="text-xs text-stone-400 mt-0.5">"{{ action.comment|truncatechars:80 }}"</p>{% endif %}
-                        <p class="text-[10px] text-stone-400">{{ action.created_at|timesince }} ago</p>
+                        <p class="text-[10px] text-stone-400">{{ action.created_at|timesince }} 前</p>
                     </div>
                 </div>
                 {% endfor %}
@@ -1649,7 +1649,7 @@
 
             <!-- Comments -->
             {% if post_comments or post %}
-            <h4 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Comments</h4>
+            <h4 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">评论</h4>
             <div id="composer-comments">
                 {% include "approvals/partials/comment_list.html" with comments=post_comments post=post %}
             </div>
@@ -1695,7 +1695,7 @@
             <div class="flex items-center gap-2">
                 <span class="text-xs text-stone-400 tabular-nums"
                       x-show="selectedAccounts.length > 0"
-                      x-text="selectedAccounts.length + (selectedAccounts.length === 1 ? ' platform' : ' platforms')">
+                      x-text="selectedAccounts.length + ' 个平台'">
                 </span>
                 <button type="button" @click="showPreviewPanel = false"
                         class="lg:hidden w-7 h-7 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-100 flex items-center justify-center transition-colors cursor-pointer">
@@ -1732,7 +1732,7 @@
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100">
             <div class="px-4 sm:px-6 py-4 border-b border-stone-100 flex items-center justify-between">
-                <h2 class="text-base font-semibold text-stone-900">Media Library</h2>
+                <h2 class="text-base font-semibold text-stone-900">素材库</h2>
                 <button @click="showMediaPicker = false"
                         class="w-8 h-8 rounded-lg border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 flex items-center justify-center transition-all duration-150 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1763,7 +1763,7 @@
         <div class="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" @click="showThumbnailPicker = false"></div>
         <div class="relative bg-white rounded-2xl shadow-xl border border-stone-200 w-[calc(100vw-1rem)] sm:w-[640px] mx-2 sm:mx-0 max-h-[85vh] sm:max-h-[70vh] overflow-hidden">
             <div class="px-4 sm:px-6 py-4 border-b border-stone-100 flex items-center justify-between">
-                <h2 class="text-base font-semibold text-stone-900">Select Thumbnail</h2>
+                <h2 class="text-base font-semibold text-stone-900">选择缩略图</h2>
                 <button @click="showThumbnailPicker = false"
                         class="w-8 h-8 rounded-lg border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 flex items-center justify-center transition-all duration-150 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1801,8 +1801,8 @@
                     <svg class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6.75V0h9v6.75h-9zm9 3.75H24V24H0V10.5h7.5v6.75h9V10.5z"/></svg>
                 </span>
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-stone-900">Search Unsplash</h2>
-                    <p class="text-xs text-stone-400 truncate">Free high-resolution photos &middot; add one or many</p>
+                    <h2 class="text-base font-semibold text-stone-900">搜索 Unsplash</h2>
+                    <p class="text-xs text-stone-400 truncate">免费高清图片 &middot; 添加一个或多个</p>
                 </div>
                 <button @click="closeUnsplashModal()"
                         class="ml-auto w-8 h-8 rounded-lg border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 flex items-center justify-center transition-all duration-150 cursor-pointer flex-shrink-0">
@@ -1814,10 +1814,10 @@
                     <svg class="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text" x-model="unsplashQuery"
                            @keydown.enter.prevent="unsplashActiveChip = ''; searchUnsplash()"
-                           placeholder="Search free high-resolution photos…"
+                           placeholder="搜索免费高清图片…"
                            class="flex-1 text-sm bg-transparent outline-none border-none placeholder-stone-400 text-stone-900">
                     <button type="button" @click="unsplashActiveChip = ''; searchUnsplash()"
-                            class="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors cursor-pointer flex-shrink-0">Search</button>
+                            class="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors cursor-pointer flex-shrink-0">搜索</button>
                 </div>
                 <div class="flex flex-wrap gap-1.5">
                     <template x-for="chip in unsplashChips" :key="chip">
@@ -1834,7 +1834,7 @@
                 </div>
                 <div x-show="!unsplashLoading && unsplashError" class="py-12 text-center text-sm text-stone-500" x-text="unsplashError"></div>
                 <div x-show="!unsplashLoading && !unsplashError && !unsplashResults.length" class="py-12 text-center text-sm text-stone-400">
-                    No results. Try another search.
+                    无结果。请尝试其他搜索。
                 </div>
                 <div x-show="!unsplashLoading && !unsplashError" class="columns-2 sm:columns-3 gap-3">
                     <template x-for="photo in unsplashResults" :key="photo.id">
@@ -1855,15 +1855,15 @@
             </div>
             <div class="px-4 sm:px-6 py-4 border-t border-stone-100 flex items-center gap-3 flex-shrink-0">
                 <span class="text-sm text-stone-400"
-                      x-text="unsplashSelectedCount ? unsplashSelectedCount + (unsplashSelectedCount === 1 ? ' photo selected' : ' photos selected') : 'Select photos to add'"></span>
+                      x-text="unsplashSelectedCount ? '已选择 ' + unsplashSelectedCount + ' 张图片' : '选择要添加的图片'"></span>
                 <div class="ml-auto flex items-center gap-2">
                     <button type="button" @click="closeUnsplashModal()"
-                            class="px-4 py-2 rounded-lg text-sm font-semibold text-stone-600 hover:text-stone-900 transition-colors cursor-pointer">Cancel</button>
+                            class="px-4 py-2 rounded-lg text-sm font-semibold text-stone-600 hover:text-stone-900 transition-colors cursor-pointer">取消</button>
                     <button type="button"
                             :disabled="!unsplashSelectedCount || unsplashImporting"
                             @click="importUnsplashPhotos()"
                             class="px-5 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            x-text="unsplashImporting ? 'Adding…' : (unsplashSelectedCount > 1 ? 'Add ' + unsplashSelectedCount + ' images' : 'Add images')"></button>
+                            x-text="unsplashImporting ? '添加中…' : (unsplashSelectedCount > 1 ? '添加 ' + unsplashSelectedCount + ' 张图片' : '添加图片')"></button>
                 </div>
             </div>
         </div>
@@ -1889,8 +1889,8 @@
              x-transition:enter-end="opacity-100 scale-100">
             <div class="px-4 sm:px-6 py-4 border-b border-stone-100 flex items-center justify-between">
                 <div>
-                    <h2 class="text-base font-semibold text-stone-900">Choose thumbnail from video</h2>
-                    <p class="text-xs text-stone-400">Scrub to the frame you want, then grab it</p>
+                    <h2 class="text-base font-semibold text-stone-900">从视频中选择缩略图</h2>
+                    <p class="text-xs text-stone-400">拖动至目标帧，然后抓取</p>
                 </div>
                 <button @click="closeFramePicker()"
                         class="w-8 h-8 rounded-lg border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 flex items-center justify-center transition-all duration-150 cursor-pointer flex-shrink-0">
@@ -1930,17 +1930,17 @@
             <div class="px-4 sm:px-6 py-4 border-t border-stone-100 flex items-center gap-3 flex-shrink-0">
                 <p x-show="frameError" class="text-xs text-red-500 flex-1" x-text="frameError"></p>
                 <span x-show="!frameError" class="text-sm text-stone-400">
-                    Frame at <span class="font-mono font-semibold text-stone-700 tabular-nums" x-text="formatTimecode(frameCurrentTime)"></span>
+                    第 <span class="font-mono font-semibold text-stone-700 tabular-nums" x-text="formatTimecode(frameCurrentTime)"></span>
                 </span>
                 <div class="ml-auto flex items-center gap-2">
                     <button type="button" @click="closeFramePicker()"
-                            class="px-4 py-2 rounded-lg text-sm font-semibold text-stone-600 hover:text-stone-900 transition-colors cursor-pointer">Cancel</button>
+                            class="px-4 py-2 rounded-lg text-sm font-semibold text-stone-600 hover:text-stone-900 transition-colors cursor-pointer">取消</button>
                     <button type="button"
                             :disabled="frameCapturing"
                             @click="captureFrame()"
                             class="px-5 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5">
                         <svg x-show="!frameCapturing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        <span x-text="frameCapturing ? 'Saving…' : 'Use this frame'"></span>
+                        <span x-text="frameCapturing ? '保存中…' : '使用此画面'"></span>
                     </button>
                 </div>
             </div>
@@ -1957,7 +1957,7 @@
          x-transition:leave-end="opacity-0 translate-y-4">
         <span class="flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-            Post saved
+            内容已保存
         </span>
     </div>
 
@@ -2003,13 +2003,13 @@
                     <div class="w-12 h-12 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
                         <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </div>
-                    <h3 class="text-base font-semibold text-stone-900 mb-1">Delete post?</h3>
-                    <p class="text-sm text-stone-500 mb-6">This action cannot be undone. The post and all associated data will be permanently removed.</p>
+                    <h3 class="text-base font-semibold text-stone-900 mb-1">删除内容？</h3>
+                    <p class="text-sm text-stone-500 mb-6">此操作无法撤销。该内容及所有关联数据将被永久删除。</p>
                 </div>
                 <div class="flex gap-3">
                     <button @click="showDeleteModal = false"
                             class="flex-1 px-4 py-2 text-sm font-semibold text-stone-700 bg-stone-100 rounded-full hover:bg-stone-200 transition-colors cursor-pointer">
-                        Cancel
+                        取消
                     </button>
                     <button :disabled="deleting"
                             @click="
@@ -2028,7 +2028,7 @@
                             "
                             :class="deleting && 'opacity-50 cursor-not-allowed'"
                             class="flex-1 px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 transition-colors cursor-pointer">
-                        <span x-text="deleting ? 'Deleting...' : 'Delete'"></span>
+                        <span x-text="deleting ? '删除中…' : '删除'"></span>
                     </button>
                 </div>
             </div>
@@ -2240,13 +2240,16 @@ function composerApp() {
                 .map(c => c.title_max_length);
             return lengths.length ? Math.min(...lengths) : 100;
         },
+        titleLabelFor(label) {
+            return ({'Video Title': '视频标题', 'Pin Title': '图钉标题', 'Article Title': '文章标题', 'Title': '标题'})[label] || label || '标题';
+        },
         get titleLabel() {
             const labels = this.selectedAccounts
                 .map(id => this.charLimits[id])
                 .filter(c => c?.needs_title)
                 .map(c => c.title_label);
             // If multiple platforms need title, use generic "Title"; otherwise use platform-specific label
-            if (labels.length === 1) return labels[0];
+            if (labels.length === 1) return this.titleLabelFor(labels[0]);
             return '共享标题';
         },
         get captionLabel() {
@@ -2407,7 +2410,7 @@ function composerApp() {
             event.target.value = '';
             if (!file) return;
             if (!file.type.startsWith('image/')) {
-                this.formError = 'Thumbnail must be an image (JPG or PNG).';
+                this.formError = '缩略图必须是 JPG 或 PNG 图片。';
                 setTimeout(() => { this.formError = ''; }, 4000);
                 return;
             }
@@ -2418,7 +2421,7 @@ function composerApp() {
             const file = event.dataTransfer.files && event.dataTransfer.files[0];
             if (!file) return;
             if (!file.type.startsWith('image/')) {
-                this.formError = 'Thumbnail must be an image (JPG or PNG).';
+                this.formError = '缩略图必须是 JPG 或 PNG 图片。';
                 setTimeout(() => { this.formError = ''; }, 4000);
                 return;
             }
@@ -2443,7 +2446,7 @@ function composerApp() {
                     return data;
                 })
                 .catch(err => {
-                    this.formError = (err && err.error) || 'Thumbnail upload failed.';
+                    this.formError = (err && err.error) || '缩略图上传失败。';
                     setTimeout(() => { this.formError = ''; }, 4000);
                     return Promise.reject(err);
                 })
@@ -2497,14 +2500,14 @@ function composerApp() {
                 .then(({ ok, data }) => {
                     if (!ok) {
                         this.unsplashResults = [];
-                        this.unsplashError = data.error || 'Unsplash search failed.';
+                        this.unsplashError = data.error || 'Unsplash 搜索失败。';
                         return;
                     }
                     this.unsplashResults = data.results || [];
                 })
                 .catch(() => {
                     this.unsplashResults = [];
-                    this.unsplashError = 'Unsplash search failed. Try again.';
+                    this.unsplashError = 'Unsplash 搜索失败，请重试。';
                 })
                 .finally(() => { this.unsplashLoading = false; });
         },
@@ -2521,7 +2524,7 @@ function composerApp() {
             if (!this.unsplashSelectedCount || this.unsplashImporting) return;
             // Same rule as file uploads: a post holds one video OR images.
             if (document.querySelector('#media-list video')) {
-                this.unsplashError = 'You cannot mix images and video in one post.';
+                this.unsplashError = '同一条内容不能同时包含图片和视频。';
                 return;
             }
             this.unsplashImporting = true;
@@ -2538,7 +2541,7 @@ function composerApp() {
                 .then(r => r.json().then(data => ({ ok: r.ok, data })))
                 .then(({ ok, data }) => {
                     if (!ok) {
-                        this.unsplashError = data.error || 'Import failed. Try again.';
+                        this.unsplashError = data.error || '导入失败，请重试。';
                         return;
                     }
                     const list = document.getElementById('media-list');
@@ -2552,7 +2555,7 @@ function composerApp() {
                     this.triggerPreviewUpdate();
                     this.closeUnsplashModal();
                 })
-                .catch(() => { this.unsplashError = 'Import failed. Try again.'; })
+                .catch(() => { this.unsplashError = '导入失败，请重试。'; })
                 .finally(() => { this.unsplashImporting = false; });
         },
 
@@ -2718,7 +2721,7 @@ function composerApp() {
 
                     const frames = results.filter(Boolean);
                     if (!frames.length) {
-                        this.filmstripError = 'Frame previews unavailable for this video — use the scrubber instead.';
+                        this.filmstripError = '此视频无法显示帧预览，请使用进度条选择画面。';
                     } else {
                         this.filmstrip = frames;
                     }
@@ -2727,14 +2730,14 @@ function composerApp() {
                 .catch(() => {
                     if (cancelled()) return;
                     this.filmstripLoading = false;
-                    this.filmstripError = 'Could not load video frames.';
+                    this.filmstripError = '无法加载视频画面。';
                 });
         },
 
         captureFrame() {
             const v = this.$refs.frameVideo;
             if (!v || !v.videoWidth) {
-                this.frameError = 'Video is still loading — try again in a moment.';
+                this.frameError = '视频仍在加载，请稍后重试。';
                 return;
             }
             v.pause();
@@ -2771,7 +2774,7 @@ function composerApp() {
                 canvas.toBlob((blob) => {
                     if (!blob) {
                         this.frameCapturing = false;
-                        this.frameError = 'Could not capture this frame.';
+                        this.frameError = '无法截取当前画面。';
                         return;
                     }
                     const name = 'video-frame-' + this.formatTimecode(v.currentTime).replaceAll(':', '-') + '.jpg';
@@ -2782,7 +2785,7 @@ function composerApp() {
                 }, 'image/jpeg', 0.9);
             } catch (e) {
                 this.frameCapturing = false;
-                this.frameError = 'Cannot capture frames from this video (cross-origin storage). Upload a thumbnail instead.';
+                this.frameError = '无法截取此视频的画面（跨域存储限制），请上传封面图。';
             }
         },
 
@@ -2825,7 +2828,7 @@ function composerApp() {
                 }
                 this.showSaveToast = true;
                 const now = new Date();
-                this.lastSaved = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                this.lastSaved = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
                 setTimeout(() => { this.showSaveToast = false; }, 2000);
             } else if (xhr && xhr.status >= 400) {
                 try {
@@ -2836,7 +2839,7 @@ function composerApp() {
                         setTimeout(() => { this.formError = ''; }, 5000);
                     }
                 } catch (e) {
-                    this.formError = 'Something went wrong. Please try again.';
+                    this.formError = '出错了，请重试。';
                     setTimeout(() => { this.formError = ''; }, 5000);
                 }
             }
@@ -2867,12 +2870,12 @@ function composerApp() {
             const images = files.filter(f => f.type.startsWith('image/'));
 
             if (videos.length > 1) {
-                alert('Only one video file can be uploaded at a time.');
+                alert('每次只能上传一个视频文件。');
                 return;
             }
 
             if (videos.length === 1 && images.length > 0) {
-                alert('You cannot mix images and video. Please upload either images or a single video.');
+                alert('图片和视频不能混合上传。请选择图片或一个视频。');
                 return;
             }
 
@@ -3089,13 +3092,13 @@ function composerApp() {
             var dateVal = document.querySelector('input[name="scheduled_date"]').value;
             var timeVal = document.querySelector('input[name="scheduled_time"]').value;
             if (!dateVal || !timeVal) {
-                if (errEl) { errEl.textContent = 'Please select both a date and time.'; errEl.classList.remove('hidden'); }
+                if (errEl) { errEl.textContent = '请选择日期和时间。'; errEl.classList.remove('hidden'); }
                 return;
             }
             // Check if the selected datetime is in the past
             var selected = new Date(dateVal + 'T' + timeVal);
             if (selected <= new Date()) {
-                if (errEl) { errEl.textContent = 'Scheduled time must be in the future.'; errEl.classList.remove('hidden'); }
+                if (errEl) { errEl.textContent = '排期时间必须晚于现在。'; errEl.classList.remove('hidden'); }
                 return;
             }
             if (errEl) { errEl.classList.add('hidden'); }

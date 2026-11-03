@@ -7,7 +7,7 @@ Context:
 {% endcomment %}
 <div>
     <label class="block text-sm font-semibold mb-1" style="color: var(--text-primary);">
-        Connected accounts
+        已连接账号
     </label>
     {% if accounts %}
     <div class="space-y-1.5">
@@ -22,19 +22,19 @@ Context:
         {% endfor %}
     </div>
     <p class="text-xs mt-1" style="color: var(--text-tertiary);">
-        Select at least one. The key can only act on these accounts.
+        请至少选择一项。该密钥仅能操作这些账号。
     </p>
     {% else %}
     <p class="text-xs px-3 py-2 rounded-lg"
        style="background: var(--warning-soft, #FEF3C7); color: var(--warning-700, #B45309);">
-        No connected accounts in this workspace. Connect one before issuing a key.
+        此工作区暂无已连接的账号。请先连接一个账号再签发密钥。
     </p>
     {% endif %}
 </div>
 
 <div>
     <label class="block text-sm font-semibold mb-1" style="color: var(--text-primary);">
-        Permissions
+        权限
     </label>
     {% if grantable_permissions %}
     <div class="space-y-1.5">
@@ -51,12 +51,12 @@ Context:
         {% endfor %}
     </div>
     <p class="text-xs mt-1" style="color: var(--text-tertiary);">
-        Only permissions you currently hold in this workspace are listed.
+        仅列出您在此工作区当前持有的权限。
     </p>
     {% else %}
     <p class="text-xs px-3 py-2 rounded-lg"
        style="background: var(--warning-soft, #FEF3C7); color: var(--warning-700, #B45309);">
-        You don't hold any grantable permissions in this workspace.
+        您在此工作区中没有任何可授予的权限。
     </p>
     {% endif %}
 </div>

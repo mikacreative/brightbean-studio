@@ -137,11 +137,11 @@ def upload(request, workspace_id):
 
     files = request.FILES.getlist("files")
     if not files:
-        return JsonResponse({"error": "No files provided"}, status=400)
+        return JsonResponse({"error": "请选择要上传的文件。"}, status=400)
 
     max_bulk = getattr(settings, "MEDIA_LIBRARY_MAX_BULK_UPLOAD", 50)
     if len(files) > max_bulk:
-        return JsonResponse({"error": f"Maximum {max_bulk} files per upload"}, status=400)
+        return JsonResponse({"error": f"每次最多上传 {max_bulk} 个文件。"}, status=400)
 
     folder_id = request.POST.get("folder_id")
     folder = None
@@ -284,7 +284,7 @@ def asset_edit(request, workspace_id, asset_id):
                         "height": crop_h,
                     }
                 except (ValueError, TypeError):
-                    return JsonResponse({"error": "Invalid crop parameters"}, status=400)
+                    return JsonResponse({"error": "裁剪参数无效。"}, status=400)
             if request.POST.get("rotate"):
                 try:
                     rotate_val = int(request.POST["rotate"])
@@ -292,11 +292,11 @@ def asset_edit(request, workspace_id, asset_id):
                         raise ValueError("Rotate must be 0, 90, 180, or 270")
                     operations["rotate"] = rotate_val
                 except (ValueError, TypeError):
-                    return JsonResponse({"error": "Invalid rotate parameter"}, status=400)
+                    return JsonResponse({"error": "旋转参数无效。"}, status=400)
             if request.POST.get("flip"):
                 flip_val = request.POST["flip"]
                 if flip_val not in ("horizontal", "vertical"):
-                    return JsonResponse({"error": "Invalid flip parameter"}, status=400)
+                    return JsonResponse({"error": "翻转参数无效。"}, status=400)
                 operations["flip"] = flip_val
             if request.POST.get("resize_width") and request.POST.get("resize_height"):
                 try:
@@ -306,7 +306,7 @@ def asset_edit(request, workspace_id, asset_id):
                         raise ValueError("Resize dimensions out of range")
                     operations["resize"] = {"width": rw, "height": rh}
                 except (ValueError, TypeError):
-                    return JsonResponse({"error": "Invalid resize parameters"}, status=400)
+                    return JsonResponse({"error": "尺寸调整参数无效。"}, status=400)
 
             if operations:
                 # Build change description
@@ -457,7 +457,7 @@ def asset_delete(request, workspace_id, asset_id):
 
     # Shared assets cannot be deleted from workspace context
     if asset.is_shared:
-        return JsonResponse({"error": "Cannot delete shared assets from workspace context"}, status=403)
+        return JsonResponse({"error": "不能在工作区中删除共享素材。"}, status=403)
 
     try:
         delete_asset(asset)
@@ -474,7 +474,7 @@ def asset_delete(request, workspace_id, asset_id):
             )
         return JsonResponse(
             {
-                "error": "Asset is referenced by scheduled posts",
+                "error": "此素材正被排期内容引用。",
                 "posts": e.referencing_posts,
             },
             status=409,
@@ -527,7 +527,7 @@ def folder_create(request, workspace_id):
 
     name = request.POST.get("name", "").strip()
     if not name:
-        return JsonResponse({"error": "Folder name is required"}, status=400)
+        return JsonResponse({"error": "请输入文件夹名称。"}, status=400)
 
     parent_id = request.POST.get("parent_folder_id")
     parent = None
@@ -569,7 +569,7 @@ def folder_rename(request, workspace_id, folder_id):
 
     name = request.POST.get("name", "").strip()
     if not name:
-        return JsonResponse({"error": "Folder name is required"}, status=400)
+        return JsonResponse({"error": "请输入文件夹名称。"}, status=400)
 
     # Check for duplicate sibling name before saving
     duplicate = (
@@ -583,7 +583,7 @@ def folder_rename(request, workspace_id, folder_id):
     )
     if duplicate:
         return JsonResponse(
-            {"error": f"A folder named '{name}' already exists in this location."},
+            {"error": f"此位置已存在名为“{name}”的文件夹。"},
             status=400,
         )
 
@@ -840,11 +840,11 @@ def shared_upload(request):
 
     files = request.FILES.getlist("files")
     if not files:
-        return JsonResponse({"error": "No files provided"}, status=400)
+        return JsonResponse({"error": "请选择要上传的文件。"}, status=400)
 
     max_bulk = getattr(settings, "MEDIA_LIBRARY_MAX_BULK_UPLOAD", 50)
     if len(files) > max_bulk:
-        return JsonResponse({"error": f"Maximum {max_bulk} files per upload"}, status=400)
+        return JsonResponse({"error": f"每次最多上传 {max_bulk} 个文件。"}, status=400)
 
     results = []
     for uploaded_file in files:
@@ -942,7 +942,7 @@ def shared_asset_edit(request, asset_id):
                         "height": crop_h,
                     }
                 except (ValueError, TypeError):
-                    return JsonResponse({"error": "Invalid crop parameters"}, status=400)
+                    return JsonResponse({"error": "裁剪参数无效。"}, status=400)
             if request.POST.get("rotate"):
                 try:
                     rotate_val = int(request.POST["rotate"])
@@ -950,11 +950,11 @@ def shared_asset_edit(request, asset_id):
                         raise ValueError("Rotate must be 0, 90, 180, or 270")
                     operations["rotate"] = rotate_val
                 except (ValueError, TypeError):
-                    return JsonResponse({"error": "Invalid rotate parameter"}, status=400)
+                    return JsonResponse({"error": "旋转参数无效。"}, status=400)
             if request.POST.get("flip"):
                 flip_val = request.POST["flip"]
                 if flip_val not in ("horizontal", "vertical"):
-                    return JsonResponse({"error": "Invalid flip parameter"}, status=400)
+                    return JsonResponse({"error": "翻转参数无效。"}, status=400)
                 operations["flip"] = flip_val
             if request.POST.get("resize_width") and request.POST.get("resize_height"):
                 try:
@@ -964,7 +964,7 @@ def shared_asset_edit(request, asset_id):
                         raise ValueError("Resize dimensions out of range")
                     operations["resize"] = {"width": rw, "height": rh}
                 except (ValueError, TypeError):
-                    return JsonResponse({"error": "Invalid resize parameters"}, status=400)
+                    return JsonResponse({"error": "尺寸调整参数无效。"}, status=400)
 
             if operations:
                 parts = []
@@ -1036,7 +1036,7 @@ def shared_asset_delete(request, asset_id):
                 },
             )
         return JsonResponse(
-            {"error": "Asset is referenced by scheduled posts", "posts": e.referencing_posts},
+            {"error": "此素材正被排期内容引用。", "posts": e.referencing_posts},
             status=409,
         )
 

@@ -145,9 +145,9 @@ class TestListPage:
     def test_admin_can_view_list(self, admin_client):
         r = admin_client.get(reverse("api_keys:list"))
         assert r.status_code == 200
-        assert b"API Keys" in r.content
+        assert "API 密钥".encode() in r.content
         # Empty state — no rows yet.
-        assert b"No API keys issued yet." in r.content
+        assert "尚未签发任何 API 密钥。".encode() in r.content
 
     def test_active_key_row_uses_modal_not_native_confirm(self, admin_client, admin_user, workspace, social_account):
         """An active key renders the Alpine revoke-confirmation modal rather
@@ -174,7 +174,7 @@ class TestListPage:
         assert "render-me" in html
         assert "showRevokeModal" in html
         assert 'x-teleport="body"' in html
-        assert "Revoke key" in html  # modal's submit button
+        assert "撤销密钥" in html  # modal's submit button
         # The native confirm() dialog wiring is gone.
         assert "if (confirm(" not in html
         # The explanatory comment must NOT leak into the page. A multi-line
@@ -286,7 +286,7 @@ class TestIssue:
         assert r.status_code == 200, r.content[:300]
         body = r.content.decode()
         # Reveal modal markers.
-        assert "Save this token now." in body
+        assert "请立即保存此令牌。" in body
         assert "bb_studio_" in body
         # Row persisted.
         keys = list(ApiKey.objects.filter(workspace=workspace))
@@ -315,7 +315,7 @@ class TestIssue:
         # Following the redirect reveals the token once.
         r1 = admin_client.get(r0.headers["Location"])
         body1 = r1.content.decode()
-        assert "Save this token now." in body1
+        assert "请立即保存此令牌。" in body1
         assert "bb_studio_" in body1
         assert ApiKey.objects.filter(workspace=workspace).count() == 1
 
@@ -324,7 +324,7 @@ class TestIssue:
         # re-POSTed and minted a fresh key on every refresh).
         r2 = admin_client.get(reverse("api_keys:list"))
         body2 = r2.content.decode()
-        assert "Save this token now." not in body2
+        assert "请立即保存此令牌。" not in body2
         assert "bb_studio_" not in body2
         assert ApiKey.objects.filter(workspace=workspace).count() == 1
 
@@ -632,8 +632,8 @@ class TestEditKey:
         r = admin_client.get(reverse("api_keys:list"))
         html = r.content.decode()
         assert "showEditModal" in html
-        assert "Edit API key" in html
-        assert "Save changes" in html
+        assert "编辑 API 密钥" in html
+        assert "保存更改" in html
         assert reverse("api_keys:edit", args=[ApiKey.objects.first().id]) in html
 
     def test_malformed_account_id_redirects_not_500(self, admin_client, admin_user, workspace, social_account):

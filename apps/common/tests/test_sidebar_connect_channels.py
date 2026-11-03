@@ -42,7 +42,7 @@ class SidebarConnectChannelsTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         html = resp.content.decode()
         block = html[html.index('<div class="sidebar-connect-channels"') :]
-        block = block[: block.index("More channels")]
+        block = block[: block.index("更多账号")]
         rows = re.findall(r'<a [^>]*class="sidebar-nav-item">(.*?)</a>', block, re.S)
         return {re.search(r'<span class="sidebar-nav-label">([^<]+)</span>', r).group(1): r for r in rows}
 

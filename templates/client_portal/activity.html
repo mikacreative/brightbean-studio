@@ -1,12 +1,13 @@
 {% extends "client_portal/portal_base.html" %}
+{% load common_extras %}
 {% load humanize %}
-{% block title %}Activity - {{ workspace.name }}{% endblock %}
+{% block title %}动态 - {{ workspace.name }}{% endblock %}
 
 {% block content %}
 <div>
     <div class="mb-6">
-        <h1 class="text-xl font-bold tracking-tight" style="color: var(--text-primary);">Your Activity</h1>
-        <p class="text-sm mt-0.5" style="color: var(--text-secondary);">Your review history and actions</p>
+        <h1 class="text-xl font-bold tracking-tight" style="color: var(--text-primary);">我的动态</h1>
+        <p class="text-sm mt-0.5" style="color: var(--text-secondary);">您的审批历史与操作记录</p>
     </div>
 
     <div class="rounded-xl border overflow-hidden" style="background: var(--surface-0); border-color: var(--border);">
@@ -34,7 +35,7 @@
             <!-- Details -->
             <div class="flex-1 min-w-0">
                 <p class="text-[0.8125rem] font-medium" style="color: var(--text-primary);">
-                    {{ action.get_action_display }}
+                    {{ action.get_action_display|zh_ui_label }}
                 </p>
                 {% if action.comment %}
                 <p class="text-[0.75rem] mt-0.5 line-clamp-1" style="color: var(--text-tertiary);">"{{ action.comment|truncatechars:80 }}"</p>
@@ -43,13 +44,13 @@
             </div>
 
             <!-- Time -->
-            <span class="text-[0.6875rem] flex-shrink-0" style="color: var(--text-ghost);">{{ action.created_at|timesince }} ago</span>
+            <span class="text-[0.6875rem] flex-shrink-0" style="color: var(--text-ghost);">{{ action.created_at|timesince }} 前</span>
         </div>
         {% empty %}
         <div class="text-center py-16">
             <svg class="mx-auto w-14 h-14 mb-3" style="color: var(--neutral-300);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
-            <p class="font-medium" style="color: var(--text-secondary);">No activity yet</p>
-            <p class="text-sm mt-1" style="color: var(--text-tertiary);">Your review actions will be logged here</p>
+            <p class="font-medium" style="color: var(--text-secondary);">暂无活动</p>
+            <p class="text-sm mt-1" style="color: var(--text-tertiary);">您的审批操作将记录在此处</p>
         </div>
         {% endfor %}
     </div>

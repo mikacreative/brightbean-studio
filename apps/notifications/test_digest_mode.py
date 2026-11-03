@@ -101,7 +101,7 @@ class TestDigestModeUser:
         assert len(mailoutbox) == 1
         sent = mailoutbox[0]
         assert sent.to == [user.email]
-        assert "daily digest" in sent.subject.lower()
+        assert "每日摘要" in sent.subject
         assert "Changes requested" in sent.body
         assert "Account disconnected" in sent.body
         assert "You were invited" in sent.body

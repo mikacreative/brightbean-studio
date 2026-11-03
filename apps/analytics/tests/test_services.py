@@ -326,10 +326,7 @@ def test_calculated_note_with_only_the_change_chips():
 
     note = calculated_metrics_note(SocialAccount(platform="bluesky"), cards=[], engagement=None)
 
-    assert note == (
-        "Underlying data comes from Bluesky. The % changes vs. the previous period are calculated by "
-        "BrightBean, not reported by Bluesky."
-    )
+    assert note == "基础数据来自 Bluesky。与上一周期的百分比变化由 BrightBean 计算，非 Bluesky 直接提供。"
 
 
 def test_calculated_note_names_estimates_and_follower_growth():
@@ -346,8 +343,7 @@ def test_calculated_note_names_estimates_and_follower_growth():
     )
 
     assert note == (
-        "Underlying data comes from Instagram. The estimates built from per-post counts, follower growth and "
-        "% changes vs. the previous period are calculated by BrightBean, not reported by Instagram."
+        "基础数据来自 Instagram。基于单条内容数据的估算、粉丝增长、与上一周期的百分比变化由 BrightBean 计算，非 Instagram 直接提供。"
     )
 
 

@@ -63,7 +63,7 @@ def test_a_password_reset_reaches_a_recipient_whose_allowance_is_spent(client, a
 
     assert res.status_code in (200, 302)
     assert len(mail.outbox) == 1, "a password reset must not be eaten by the notification cap"
-    assert "reset" in mail.outbox[0].subject.lower()
+    assert "重置" in mail.outbox[0].subject
 
 
 @pytest.mark.django_db

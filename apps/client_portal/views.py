@@ -11,6 +11,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from apps.approvals import services as approval_services
 from apps.approvals.models import ApprovalAction, PostComment
 from apps.common.htmx import toast_response
+from apps.common.ui_messages import localize_ui_error
 from apps.composer.manual_content import manual_preview_data
 from apps.composer.models import PlatformPost, Post
 from apps.members.models import WorkspaceMembership
@@ -32,8 +33,9 @@ def _portal_response(post_id, action, *, tone, title, body=""):
 
 def _portal_error(request, message):
     """Feedback for a failed portal action: an error toast for htmx, 400 otherwise."""
+    message = localize_ui_error(message)
     if request.htmx:
-        return toast_response(tone="error", title="Couldn't complete that", body=message)
+        return toast_response(tone="error", title="无法完成操作", body=message)
     return HttpResponse(message, status=400)
 
 
@@ -323,9 +325,7 @@ def portal_request_changes(request, post_id):
         return _portal_error(request, str(e))
 
     if request.htmx:
-        return _portal_response(
-            post.id, "changes_requested", tone="info", title="Feedback sent", body="The team will take a look."
-        )
+        return _portal_response(post.id, "changes_requested", tone="info", title="意见已提交", body="团队会查看反馈。")
     return redirect("client_portal:approval_queue")
 
 
@@ -350,7 +350,7 @@ def portal_reject(request, post_id):
         return _portal_error(request, str(e))
 
     if request.htmx:
-        return _portal_response(post.id, "rejected", tone="error", title="Post rejected", body="The team was notified.")
+        return _portal_response(post.id, "rejected", tone="error", title="内容已驳回", body="已通知团队。")
     return redirect("client_portal:approval_queue")
 
 
@@ -374,8 +374,8 @@ def portal_request_hold(request, post_id):
             post.id,
             "on_hold",
             tone="warn",
-            title="Hold requested",
-            body="The team was notified. Nothing publishes while held.",
+            title="已请求暂停",
+            body="已通知团队，暂停期间内容不会发布。",
         )
     return redirect("client_portal:approval_queue")
 

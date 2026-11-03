@@ -360,7 +360,7 @@ def test_org_request_purges_youtube_immediately_and_preserves_other_platforms(ch
     assert org.is_deletion_pending
     assert org.deletion_scheduled_for > timezone.now() + timedelta(days=13)
     page = client.get(reverse("organizations:settings"))
-    assert "reconnecting YouTube" in page.content.decode()
+    assert "重新连接 YouTube" in page.content.decode()
 
 
 def test_daily_task_covers_every_status_and_dry_run_is_read_only(channel, settings):

@@ -69,7 +69,7 @@ logger = logging.getLogger(__name__)
 MAX_CSV_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB cap on CSV planner imports
 
 # Shown when every posting slot within the lookahead horizon is already taken.
-_QUEUE_FULL_MSG = "No open posting slot within the scheduling horizon — add posting slots or free one up."
+_QUEUE_FULL_MSG = "排期范围内没有空闲时段，请添加发布时段或释放已有时段。"
 
 
 def _get_workspace(request, workspace_id):
@@ -1234,7 +1234,7 @@ def save_post(request, workspace_id, post_id=None):
         queue_id = request.POST.get("queue_id")
         queues = _resolve_queues_for_post(queue_id, workspace, request.POST)
         if not queues:
-            return JsonResponse({"errors": {"queue": "No active queue found for the selected channel."}}, status=400)
+            return JsonResponse({"errors": {"queue": "所选渠道没有可用队列。"}}, status=400)
         # Queueing assigns real per-platform slots below — drop any proposal.
         post.proposed_publish_at = None
         post.save()
@@ -1275,7 +1275,7 @@ def save_post(request, workspace_id, post_id=None):
         queue_id = request.POST.get("queue_id")
         queues = _resolve_queues_for_post(queue_id, workspace, request.POST)
         if not queues:
-            return JsonResponse({"errors": {"queue": "No active queue found for the selected channel."}}, status=400)
+            return JsonResponse({"errors": {"queue": "所选渠道没有可用队列。"}}, status=400)
         # Queueing assigns real per-platform slots below — drop any proposal.
         post.proposed_publish_at = None
         post.save()
@@ -1635,7 +1635,7 @@ def autosave(request, workspace_id, post_id=None):
         # indicator markup on purpose — the response swaps into #autosave-status,
         # so a 4xx here would fire the global error toast on every tick.
         if _is_readonly_write(request, post):
-            return HttpResponse('<span class="text-xs text-gray-400">Read-only — not saved</span>')
+            return HttpResponse('<span class="text-xs text-gray-400">只读，未保存</span>')
         orig_content = _base_content_snapshot(post)
         orig_manual_content = _manual_content_snapshots(post)
     else:
@@ -1704,7 +1704,7 @@ def autosave(request, workspace_id, post_id=None):
     _revert_changed_manual_versions(post, orig_manual_content)
 
     return HttpResponse(
-        f'<span class="text-xs text-gray-400">Saved {timezone.now().strftime("%H:%M")}</span>',
+        f'<span class="text-xs text-gray-400">已保存 {timezone.now().strftime("%H:%M")}</span>',
         headers={"HX-Trigger": json.dumps({"autosaved": {"postId": str(post.id), "isNew": is_new}})},
     )
 
@@ -1889,11 +1889,11 @@ def thumbnail_upload(request, workspace_id):
     uploaded_file = request.FILES.get("file")
 
     if not uploaded_file:
-        return JsonResponse({"error": "No file provided"}, status=400)
+        return JsonResponse({"error": "请选择文件。"}, status=400)
 
     content_type = uploaded_file.content_type or ""
     if not content_type.startswith("image/"):
-        return JsonResponse({"error": "Only image files are allowed"}, status=400)
+        return JsonResponse({"error": "只允许上传图片文件。"}, status=400)
 
     from apps.media_library.models import MediaAsset
 
@@ -2146,7 +2146,7 @@ def media_filmstrip(request, workspace_id, asset_id):
     try:
         duration = asset.duration or extract_video_metadata(tmp_path).get("duration_seconds") or 0
         if not duration:
-            return JsonResponse({"error": "Could not read video duration."}, status=502)
+            return JsonResponse({"error": "无法读取视频时长。"}, status=502)
 
         count = 8
         timestamps = [round(duration * (i + 0.5) / count, 3) for i in range(count)]
@@ -2161,7 +2161,7 @@ def media_filmstrip(request, workspace_id, asset_id):
         if jpg
     ]
     if not frames:
-        return JsonResponse({"error": "Could not extract frames."}, status=502)
+        return JsonResponse({"error": "无法提取视频画面。"}, status=502)
     payload = {"frames": frames, "duration": duration}
     filmstrip_cache.set(cache_key, payload, FILMSTRIP_CACHE_SECONDS)
     return JsonResponse(payload)
@@ -2169,9 +2169,7 @@ def media_filmstrip(request, workspace_id, asset_id):
 
 UNSPLASH_API_BASE = "https://api.unsplash.com"
 UNSPLASH_IMAGE_HOST = "https://images.unsplash.com/"
-UNSPLASH_NOT_CONFIGURED = (
-    "Unsplash is not configured. Add UNSPLASH_ACCESS_KEY to your environment to enable stock-photo search."
-)
+UNSPLASH_NOT_CONFIGURED = "尚未配置 Unsplash。请在环境中设置 UNSPLASH_ACCESS_KEY 以启用图片搜索。"
 UNSPLASH_MAX_IMPORT = 10
 UNSPLASH_MAX_IMAGE_BYTES = 15 * 1024 * 1024
 
@@ -2202,7 +2200,7 @@ def unsplash_search(request, workspace_id):
 
     query = request.GET.get("q", "").strip()
     if not query:
-        return JsonResponse({"error": "Missing search query"}, status=400)
+        return JsonResponse({"error": "请输入搜索词。"}, status=400)
 
     try:
         resp = httpx.get(
@@ -2215,14 +2213,14 @@ def unsplash_search(request, workspace_id):
             timeout=10.0,
         )
     except httpx.RequestError:
-        return JsonResponse({"error": "Could not reach Unsplash. Try again."}, status=502)
+        return JsonResponse({"error": "无法连接 Unsplash，请重试。"}, status=502)
 
     if resp.status_code in (401, 403):
-        return JsonResponse({"error": "Unsplash rejected the API key. Check UNSPLASH_ACCESS_KEY."}, status=502)
+        return JsonResponse({"error": "Unsplash 拒绝了 API 密钥，请检查 UNSPLASH_ACCESS_KEY。"}, status=502)
     if resp.status_code == 429:
-        return JsonResponse({"error": "Unsplash rate limit reached. Try again in a few minutes."}, status=429)
+        return JsonResponse({"error": "已达到 Unsplash 请求频率限制，请几分钟后重试。"}, status=429)
     if resp.status_code != 200:
-        return JsonResponse({"error": "Unsplash search failed. Try again."}, status=502)
+        return JsonResponse({"error": "Unsplash 搜索失败，请重试。"}, status=502)
 
     # A 200 with a malformed body or an unexpected result shape (e.g. a bare
     # list or null instead of an object) must surface as a friendly 502, not
@@ -2249,7 +2247,7 @@ def unsplash_search(request, workspace_id):
         ]
         total = data.get("total", 0)
     except (ValueError, KeyError, TypeError, AttributeError):
-        return JsonResponse({"error": "Unexpected response from Unsplash. Try again."}, status=502)
+        return JsonResponse({"error": "Unsplash 返回了异常响应，请重试。"}, status=502)
     return JsonResponse({"results": results, "total": total})
 
 
@@ -2272,12 +2270,12 @@ def unsplash_import(request, workspace_id, post_id=None):
         payload = json.loads(request.body)
         photos = payload["photos"]
     except (json.JSONDecodeError, KeyError, TypeError):
-        return JsonResponse({"error": "Invalid request body"}, status=400)
+        return JsonResponse({"error": "请求内容无效。"}, status=400)
 
     if not isinstance(photos, list) or not photos:
-        return JsonResponse({"error": "No photos selected"}, status=400)
+        return JsonResponse({"error": "请选择图片。"}, status=400)
     if len(photos) > UNSPLASH_MAX_IMPORT:
-        return JsonResponse({"error": f"Select at most {UNSPLASH_MAX_IMPORT} photos per import."}, status=400)
+        return JsonResponse({"error": f"每次最多导入 {UNSPLASH_MAX_IMPORT} 张图片。"}, status=400)
 
     from django.core.files.base import ContentFile
 
@@ -2386,10 +2384,10 @@ def unsplash_import(request, workspace_id, post_id=None):
     if not new_assets:
         if quota_exceeded:
             return JsonResponse(
-                {"error": "Storage quota exceeded. Free up space or upgrade your plan."},
+                {"error": "存储空间已用完，请释放空间或升级套餐。"},
                 status=413,
             )
-        return JsonResponse({"error": "Could not import the selected photos."}, status=502)
+        return JsonResponse({"error": "无法导入所选图片。"}, status=502)
 
     if post is not None:
         html = render_to_string(
@@ -2643,7 +2641,7 @@ def upload_media(request, workspace_id, post_id=None):
     uploaded_file = request.FILES.get("file")
 
     if not uploaded_file:
-        return JsonResponse({"error": "No file provided"}, status=400)
+        return JsonResponse({"error": "请选择文件。"}, status=400)
 
     from apps.media_library.models import MediaAsset
 
@@ -2877,14 +2875,14 @@ def _idea_columns(workspace, tag=None):
     # Ensure default groups exist for this workspace
     if not groups.exists():
         created_groups = {}
-        for name, pos in [("Unassigned", 0), ("To Do", 1), ("In Progress", 2), ("Done", 3)]:
+        for name, pos in [("待分配", 0), ("待开始", 1), ("进行中", 2), ("已完成", 3)]:
             created_groups[name] = IdeaGroup.objects.create(workspace=workspace, name=name, position=pos)
         # Seed an introductory idea in the Unassigned column
         Idea.objects.create(
             workspace=workspace,
-            group=created_groups["Unassigned"],
-            title="This is a place to plan \u270d\ufe0f your content",
-            description="Save your Ideas before converting them into posts. Brainstorm, plan ahead, and keep everything organized in one place.",
+            group=created_groups["待分配"],
+            title="在这里规划你的内容 ✍️",
+            description="在将选题转为内容前，先在这里记录灵感、安排计划并整理思路。",
             status=Idea.Status.UNASSIGNED,
             position=0,
         )
@@ -3151,7 +3149,7 @@ def idea_upload_media(request, workspace_id):
     workspace = _get_workspace(request, workspace_id)
     uploaded_file = request.FILES.get("file") or request.FILES.get("media")
     if not uploaded_file:
-        return JsonResponse({"error": "No file provided"}, status=400)
+        return JsonResponse({"error": "请选择文件。"}, status=400)
 
     asset = _create_idea_media_asset(workspace, request.user, uploaded_file)
     return JsonResponse(
@@ -3176,7 +3174,7 @@ def idea_create(request, workspace_id):
     tags = parse_and_truncate_tag_string(request.POST.get("tags", ""))
 
     if not title:
-        return HttpResponse("Title is required.", status=400)
+        return HttpResponse("请输入标题。", status=400)
 
     # Assign to the specified group or default to the first group
     group_id = request.POST.get("group")
@@ -3496,8 +3494,8 @@ def idea_group_create(request, workspace_id):
     name = request.POST.get("name", "").strip()
     if not name:
         if _wants_json_response(request):
-            return JsonResponse({"error": "Name is required."}, status=400)
-        return HttpResponse("Name is required.", status=400)
+            return JsonResponse({"error": "请输入名称。"}, status=400)
+        return HttpResponse("请输入名称。", status=400)
 
     max_pos = IdeaGroup.objects.for_workspace(workspace.id).aggregate(models.Max("position"))["position__max"] or 0
     group = IdeaGroup.objects.create(workspace=workspace, name=name, position=max_pos + 1)
@@ -3525,8 +3523,8 @@ def idea_group_delete(request, workspace_id, group_id):
 
     if group.ideas.exists():
         if _wants_json_response(request):
-            return JsonResponse({"error": "Column must be empty before deleting."}, status=400)
-        return HttpResponse("Column must be empty before deleting.", status=400)
+            return JsonResponse({"error": "删除前请先清空此列。"}, status=400)
+        return HttpResponse("删除前请先清空此列。", status=400)
 
     deleted_group_id = str(group.id)
     group.delete()
@@ -3831,7 +3829,7 @@ def csv_preview(request, workspace_id):
     csv_data = request.session.get(f"csv_import_{workspace.id}")
 
     if not csv_data:
-        return HttpResponse("No CSV data found. Please upload again.", status=400)
+        return HttpResponse("未找到 CSV 数据，请重新上传。", status=400)
 
     # Parse column mapping from POST
     mapping = {}
@@ -3920,7 +3918,7 @@ def csv_confirm_import(request, workspace_id):
     mapping = request.session.get(f"csv_mapping_{workspace.id}")
 
     if not csv_data or not mapping:
-        return HttpResponse("No CSV data found. Please upload again.", status=400)
+        return HttpResponse("未找到 CSV 数据，请重新上传。", status=400)
 
     from apps.social_accounts.models import SocialAccount
 
@@ -4490,13 +4488,13 @@ def feed_add(request, workspace_id):
 
     if not rss_url:
         if source == "explore":
-            return HttpResponse("Feed URL is required.", status=400)
+            return HttpResponse("请输入订阅源地址。", status=400)
         return _render_feeds_tab(
             request,
             workspace,
             show_add_modal=True,
             add_rss_url=rss_url,
-            add_error="Feed URL is required.",
+            add_error="请输入订阅源地址。",
             selected_feed_id=selected_feed_id,
         )
 

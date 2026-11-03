@@ -10,16 +10,16 @@
     <div class="flex-1 min-w-0">
         <div class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ invite.email }}</div>
         <div class="text-xs" style="color: var(--text-tertiary);">
-            Invited by {{ invite.invited_by.display_name }} · Expires {{ invite.expires_at|timesince }} from now
+            由 {{ invite.invited_by.display_name }} 邀请 · 将于 {{ invite.expires_at|timesince }} 后过期
         </div>
     </div>
 
     <!-- Role Badge -->
     <div class="flex-shrink-0">
         {% if invite.org_role == "admin" %}
-        <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: #DBEAFE; color: #1E40AF;">Admin</span>
+        <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: #DBEAFE; color: #1E40AF;">管理员</span>
         {% else %}
-        <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: var(--neutral-100); color: var(--text-secondary);">Member</span>
+        <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: var(--neutral-100); color: var(--text-secondary);">成员</span>
         {% endif %}
     </div>
 
@@ -42,18 +42,18 @@
             <button type="submit"
                     class="btn-neutral-surface text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-colors"
                     style="border: 1px solid var(--border); color: var(--text-primary); background: var(--surface-0);">
-                Resend
+                重新发送
             </button>
         </form>
         <form hx-post="{% url 'members:revoke_invite' invitation_id=invite.id %}"
               hx-target="#invite-{{ invite.id }}"
               hx-swap="delete"
-              hx-confirm="Revoke invitation to {{ invite.email }}?">
+              hx-confirm="确定撤销发给 {{ invite.email }} 的邀请吗？">
             {% csrf_token %}
             <button type="submit"
                     class="btn-danger-soft-bg text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-colors"
                     style="color: #DC2626; background: transparent;">
-                Revoke
+                撤销
             </button>
         </form>
     </div>

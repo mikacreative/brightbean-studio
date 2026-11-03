@@ -48,6 +48,29 @@ COMMON_TIMEZONES = [
     "America/New_York",
 ]
 
+TIMEZONE_LABELS = {
+    "US/Eastern": "美国东部",
+    "US/Central": "美国中部",
+    "US/Mountain": "美国山区",
+    "US/Pacific": "美国太平洋",
+    "Europe/London": "伦敦",
+    "Europe/Paris": "巴黎",
+    "Europe/Berlin": "柏林",
+    "Europe/Amsterdam": "阿姆斯特丹",
+    "Asia/Tokyo": "东京",
+    "Asia/Shanghai": "北京时间",
+    "Asia/Kolkata": "加尔各答",
+    "Asia/Dubai": "迪拜",
+    "Australia/Sydney": "悉尼",
+    "Pacific/Auckland": "奥克兰",
+    "America/Sao_Paulo": "圣保罗",
+    "America/Toronto": "多伦多",
+    "America/Chicago": "芝加哥",
+    "America/Denver": "丹佛",
+    "America/Los_Angeles": "洛杉矶",
+    "America/New_York": "纽约",
+}
+
 # Statuses a calendar drop promotes to ``scheduled`` (implicit schedule / retry)
 # rather than merely re-timing. Because that promotion hands the row to the
 # publisher, it is gated on ``publish_directly`` — see ``reschedule_post``.
@@ -424,7 +447,7 @@ def _get_publish_context(workspace, request):
     tz_options = [
         {
             "value": tz,
-            "label": tz.split("/")[-1] + (" (workspace)" if tz == ws_tz else ""),
+            "label": TIMEZONE_LABELS.get(tz, tz.split("/")[-1]) + ("（工作区）" if tz == ws_tz else ""),
         }
         for tz in tz_list
     ]

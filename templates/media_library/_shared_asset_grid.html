@@ -20,11 +20,11 @@
      hx-get="{% url 'media_library_org:shared_index' %}?page={{ page.previous_page_number }}&q={{ query|urlencode }}"
      hx-target="#shared-grid"
      hx-swap="innerHTML">
-    Previous
+    上一页
   </a>
   {% endif %}
   <span class="text-xs px-3" style="color: var(--text-tertiary, #78716C);">
-    Page {{ page.number }} of {{ page.paginator.num_pages }}
+    第 {{ page.number }} 页，共 {{ page.paginator.num_pages }} 页
   </span>
   {% if page.has_next %}
   <a href="?page={{ page.next_page_number }}&q={{ query|urlencode }}"
@@ -33,7 +33,7 @@
      hx-get="{% url 'media_library_org:shared_index' %}?page={{ page.next_page_number }}&q={{ query|urlencode }}"
      hx-target="#shared-grid"
      hx-swap="innerHTML">
-    Next
+    下一步
   </a>
   {% endif %}
 </div>
@@ -48,11 +48,11 @@
     </svg>
   </div>
   {% if query %}
-    <h3 class="text-base font-semibold mb-1" style="color: var(--text-primary, #1C1917);">No media matches your search</h3>
-    <p class="text-sm mb-4" style="color: var(--text-secondary, #57534E);">Try adjusting your search terms.</p>
+    <h3 class="text-base font-semibold mb-1" style="color: var(--text-primary, #1C1917);">没有素材符合您的搜索条件</h3>
+    <p class="text-sm mb-4" style="color: var(--text-secondary, #57534E);">请尝试调整搜索关键词。</p>
   {% else %}
-    <h3 class="text-base font-semibold mb-1" style="color: var(--text-primary, #1C1917);">No shared media yet</h3>
-    <p class="text-sm" style="color: var(--text-secondary, #57534E);">Organization admins can upload assets here for use across all workspaces.</p>
+    <h3 class="text-base font-semibold mb-1" style="color: var(--text-primary, #1C1917);">暂无共享素材</h3>
+    <p class="text-sm" style="color: var(--text-secondary, #57534E);">组织管理员可在此处上传素材，供所有工作区使用。</p>
   {% endif %}
 </div>
 {% endif %}

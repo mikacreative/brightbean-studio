@@ -1,3 +1,4 @@
+{% load common_extras %}
 <!-- Workspace Assignment Form (loaded via HTMX into modal) -->
 <form hx-post="{% url 'members:manage_workspaces' membership_id=membership.id %}"
       hx-target="#member-{{ membership.id }}"
@@ -18,12 +19,12 @@
                     class="text-xs px-2 py-1 rounded border outline-none"
                     style="border-color: var(--border); background: var(--surface-0); color: var(--text-primary);">
                 {% for value, label in workspace_role_choices %}
-                <option value="{{ value }}" {% if value == wd.current_role %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ value }}" {% if value == wd.current_role %}selected{% endif %}>{{ label|zh_ui_label }}</option>
                 {% endfor %}
             </select>
         </div>
         {% empty %}
-        <p class="text-sm" style="color: var(--text-tertiary);">No workspaces available.</p>
+        <p class="text-sm" style="color: var(--text-tertiary);">暂无可用工作区。</p>
         {% endfor %}
     </div>
 
@@ -31,7 +32,7 @@
         <button type="submit"
                 class="btn-opacity px-5 py-2 text-sm font-medium rounded-full cursor-pointer transition-colors"
                 style="background: var(--primary); color: white;">
-            Save Assignments
+            保存分配
         </button>
     </div>
 </form>

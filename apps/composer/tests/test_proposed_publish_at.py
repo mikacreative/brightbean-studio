@@ -227,12 +227,12 @@ class ProposedPublishAtSaveTests(TestCase):
         body = resp.content.decode("utf-8")
         # The proposed-time badge renders with its distinguishing title + accent
         # and the "Proposed Publishing <datetime>" copy.
-        self.assertIn('title="Proposed publishing time"', body)
-        self.assertIn("Proposed Publishing", body)
+        self.assertIn('title="建议发布时间"', body)
+        self.assertIn("建议发布", body)
         # Rendered in the workspace timezone (Europe/Berlin, UTC+2 on this date),
         # not server/UTC time.
-        self.assertIn("Sep 1, 9:00", body)
-        self.assertNotIn("Sep 1, 7:00", body)
+        self.assertIn("9月1日 09:00", body)
+        self.assertNotIn("9月1日 07:00", body)
 
     def test_submit_for_approval_with_blank_panel_preserves_proposed(self):
         # A proposal set via the API must survive being routed through approval

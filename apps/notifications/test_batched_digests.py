@@ -57,7 +57,7 @@ def test_a_storm_of_failures_becomes_one_email(user):
 
     assert send_batched_email_digests() == 1
     assert len(mail.outbox) == 1
-    assert mail.outbox[0].subject == "300 posts failed to publish"
+    assert mail.outbox[0].subject == "300 条内容发布失败"
     assert mail.outbox[0].to == [user.email]
 
     assert NotificationDelivery.objects.filter(channel=Channel.EMAIL, status=DeliveryStatus.DELIVERED).count() == 300
@@ -68,7 +68,7 @@ def test_one_failure_says_post_not_posts(user):
     fail(user, 1)
     age_the_queue(BATCH_WINDOW_MINUTES + 1)
     send_batched_email_digests()
-    assert mail.outbox[0].subject == "1 post failed to publish"
+    assert mail.outbox[0].subject == "1 条内容发布失败"
 
 
 @pytest.mark.django_db
@@ -98,7 +98,7 @@ def test_a_storm_does_not_wait(user):
 def test_long_lists_are_truncated(user):
     fail(user, BATCH_MAX_ITEMS + 7)
     send_batched_email_digests()
-    assert "and 7 more" in mail.outbox[0].body
+    assert "另有 7 条通知" in mail.outbox[0].body
 
 
 @pytest.mark.django_db

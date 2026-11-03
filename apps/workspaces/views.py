@@ -76,17 +76,17 @@ def workspace_settings(request, workspace_id):
                     .count()
                 )
                 if active_count <= 1:
-                    messages.error(request, "Cannot archive the last workspace in the organization.")
+                    messages.error(request, "不能归档组织中最后一个工作区。")
                     return redirect("workspaces:settings", workspace_id=workspace.id)
                 workspace.is_archived = True
                 workspace.save(update_fields=["is_archived"])
-            messages.success(request, f'Workspace "{workspace.name}" has been archived.')
+            messages.success(request, f"工作区「{workspace.name}」已归档。")
             return redirect("organizations:workspaces")
 
         if action == "unarchive_workspace" and is_owner_or_manager:
             workspace.is_archived = False
             workspace.save(update_fields=["is_archived"])
-            messages.success(request, f'Workspace "{workspace.name}" has been restored.')
+            messages.success(request, f"工作区「{workspace.name}」已恢复。")
             return redirect("workspaces:settings", workspace_id=workspace.id)
 
         if action == "delete_workspace" and is_owner_or_manager:
@@ -97,11 +97,11 @@ def workspace_settings(request, workspace_id):
                     .count()
                 )
                 if active_count <= 1 and not workspace.is_archived:
-                    messages.error(request, "Cannot delete the last workspace in the organization.")
+                    messages.error(request, "不能删除组织中最后一个工作区。")
                     return redirect("workspaces:settings", workspace_id=workspace.id)
                 workspace_name = workspace.name
                 workspace.delete()
-            messages.success(request, f'Workspace "{workspace_name}" has been permanently deleted.')
+            messages.success(request, f"工作区「{workspace_name}」已永久删除。")
             return redirect("organizations:workspaces")
 
         name = request.POST.get("name", "").strip()
@@ -120,13 +120,13 @@ def workspace_settings(request, workspace_id):
             # Validate file type
             allowed_types = ("image/jpeg", "image/png", "image/webp", "image/gif")
             if icon.content_type not in allowed_types:
-                messages.error(request, "Logo must be a JPEG, PNG, WebP, or GIF image.")
+                messages.error(request, "Logo 须为 JPEG、PNG、WebP 或 GIF 图片。")
                 return redirect("workspaces:settings", workspace_id=workspace.id)
 
             # Validate file size (2 MB max)
             max_size = 2 * 1024 * 1024
             if icon.size > max_size:
-                messages.error(request, "Logo must be under 2 MB.")
+                messages.error(request, "Logo 大小须小于 2 MB。")
                 return redirect("workspaces:settings", workspace_id=workspace.id)
 
             # Delete old icon before saving new one
@@ -135,7 +135,7 @@ def workspace_settings(request, workspace_id):
             workspace.icon = icon
 
         workspace.save()
-        messages.success(request, "Workspace settings updated.")
+        messages.success(request, "工作区设置已更新。")
         return redirect("workspaces:settings", workspace_id=workspace.id)
 
     active_count = Workspace.objects.filter(organization=workspace.organization, is_archived=False).count()
@@ -180,12 +180,12 @@ def approvals_settings(request, workspace_id):
         mode = request.POST.get("approval_workflow_mode", "")
         valid_modes = Workspace.ApprovalWorkflowMode.values
         if mode not in valid_modes:
-            messages.error(request, "Invalid approval workflow mode.")
+            messages.error(request, "审批流程设置无效。")
             return redirect("workspaces:approvals_settings", workspace_id=workspace.id)
 
         workspace.approval_workflow_mode = mode
         workspace.save(update_fields=["approval_workflow_mode", "updated_at"])
-        messages.success(request, "Approval workflow updated.")
+        messages.success(request, "审批流程已更新。")
         return redirect("workspaces:approvals_settings", workspace_id=workspace.id)
 
     return render(

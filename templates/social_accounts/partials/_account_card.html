@@ -34,7 +34,7 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
                 {% include "social_accounts/partials/_status_badge.html" with status=account.connection_status error=account.last_error %}
                 {% endif %}
                 {% if account.follower_count %}
-                <span class="text-xs text-stone-400">{{ account.follower_count|format_number }} {% if account.platform == "youtube" %}subscribers{% else %}followers{% endif %}</span>
+                <span class="text-xs text-stone-400">{{ account.follower_count|format_number }} {% if account.platform == "youtube" %}订阅者{% else %}粉丝{% endif %}</span>
                 {% endif %}
             </div>
         </div>
@@ -45,20 +45,20 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
             <form method="post" action="{% url 'social_accounts:reconnect' workspace_id=workspace_id account_id=account.id %}">
                 {% csrf_token %}
                 <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-orange-700 bg-orange-50 rounded-full hover:bg-orange-100 transition-colors">
-                    Reconnect
+                    重新连接
                 </button>
             </form>
             {% endif %}
 
             <!-- Disconnect -->
-            <button @click="confirmDisconnect = true" class="inline-flex items-center p-1.5 text-stone-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" title="{% if account.is_manual %}删除人工账号{% else %}Disconnect{% endif %}">
+            <button @click="confirmDisconnect = true" class="inline-flex items-center p-1.5 text-stone-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" title="{% if account.is_manual %}删除人工账号{% else %}断开连接{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
 
             <!-- Disconnect confirmation -->
             <div x-show="confirmDisconnect" x-cloak @click.away="confirmDisconnect = false"
                  class="absolute right-4 top-12 z-10 w-72 bg-white rounded-xl shadow-xl border border-stone-200 p-4">
-                <p class="text-sm text-stone-700 mb-2">{% if account.is_manual %}删除人工账号{% else %}Disconnect{% endif %} <strong>{{ account.account_name|default:account.account_handle }}</strong>?</p>
+                <p class="text-sm text-stone-700 mb-2">{% if account.is_manual %}确定删除人工账号{% else %}确定断开{% endif %} <strong>{{ account.account_name|default:account.account_handle }}</strong> 吗？</p>
                 {% comment %}
                 Say what disconnect really does; the privacy policy promises it
                 and platform reviewers read this against the policy. Only claim
@@ -71,26 +71,24 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
                     {% if account.is_manual %}
                     这是本地人工管理账号，不涉及平台授权。
                     {% elif account.revokes_platform_grant_on_disconnect %}
-                    This revokes BrightBean's access to the account.
+                    此操作将撤销 BrightBean 对该账号的访问权限。
                     {% elif account.keeps_platform_grant_on_disconnect %}
-                    This removes the account from BrightBean only. To revoke our access entirely,
-                    remove BrightBean in Facebook &rsaquo; Settings &rsaquo; Apps and Websites.
+                    此操作仅将该账号从 BrightBean 中移除。若要完全撤销访问权限，请在 Facebook &rsaquo; 设置 &rsaquo; 应用和网站中移除 BrightBean。
                     {% else %}
-                    This removes the account from BrightBean only. To revoke our access entirely,
-                    remove BrightBean in your {{ account.get_platform_display }} settings.
+                    此操作仅将该账号从 BrightBean 中移除。若要完全撤销我们的访问权限，请在您的 {{ account.get_platform_display }} 设置中移除 BrightBean。
                     {% endif %}
                 </p>
                 <p class="text-xs text-stone-500 mb-3">
                     {% if account.is_manual %}
                     仅属于此账号的选题会从本地删除；多平台选题会保留其他账号的版本。此操作不可撤销。
                     {% elif account.platform == "youtube" %}
-                    YouTube data, analytics and copied comments are deleted immediately, including notification copies. Your original uploads and posts shared with other channels stay.
+                    YouTube 数据、分析数据及复制的评论将被立即删除，包括通知副本。YouTube 原始上传内容以及与其他账号共享的内容将保留。
                     {% else %}
-                    Its analytics, inbox messages and posts made only for it are deleted from BrightBean. Posts shared with other channels stay.
+                    其数据分析、互动消息及只关联此账号的内容将从 BrightBean 中删除。与其他账号共享的内容将保留。
                     {% endif %}
                 </p>
                 <div class="flex gap-2 justify-end">
-                    <button @click="confirmDisconnect = false" class="px-3 py-1.5 text-xs font-semibold text-stone-600 bg-stone-100 rounded-full hover:bg-stone-200 transition-colors cursor-pointer">Cancel</button>
+                    <button @click="confirmDisconnect = false" class="px-3 py-1.5 text-xs font-semibold text-stone-600 bg-stone-100 rounded-full hover:bg-stone-200 transition-colors cursor-pointer">取消</button>
                     <form method="post"
                           action="{% url 'social_accounts:disconnect' workspace_id=workspace_id account_id=account.id %}"
                           hx-post="{% url 'social_accounts:disconnect' workspace_id=workspace_id account_id=account.id %}"
@@ -102,7 +100,7 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
                         {% csrf_token %}
                         <button type="submit" :disabled="disconnecting" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                             <svg x-show="disconnecting" class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                            <span x-text="disconnecting ? '{% if account.is_manual %}删除中…{% else %}Disconnecting…{% endif %}' : '{% if account.is_manual %}确认删除{% else %}Disconnect{% endif %}'">{% if account.is_manual %}确认删除{% else %}Disconnect{% endif %}</span>
+                            <span x-text="disconnecting ? '{% if account.is_manual %}删除中…{% else %}断开中…{% endif %}' : '{% if account.is_manual %}确认删除{% else %}断开连接{% endif %}'">{% if account.is_manual %}确认删除{% else %}断开连接{% endif %}</span>
                         </button>
                     </form>
                 </div>
@@ -120,17 +118,16 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
     {% if account.connection_missing_scopes %}
     <div class="mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
         <p class="text-xs text-amber-800">
-            <span class="font-semibold">Some features are unavailable.</span>
-            This account was connected without {{ account.connection_missing_scopes|join:", " }}.
-            Anything relying on them will fail until the permission is granted — reconnect to try again.
+            <span class="font-semibold">部分功能不可用。</span>
+            该账号连接时缺少 {{ account.connection_missing_scopes|join:", " }} 权限。依赖这些权限的功能将失败，请重新连接以获取权限。
         </p>
     </div>
     {% endif %}
 
     {% if account.instagram_dm_permission_request_disabled %}
-    <p class="mt-3 text-xs text-amber-800">Instagram DM access is unavailable for this connection. Contact your administrator to enable it.</p>
+    <p class="mt-3 text-xs text-amber-800">此连接无法访问 Instagram 私信。请联系管理员启用该功能。</p>
     {% elif account.messaging_access is False %}
-    <p class="mt-3 text-xs text-amber-800">DMs unavailable: grant messaging access on the linked Facebook Page, then reconnect this account.</p>
+    <p class="mt-3 text-xs text-amber-800">私信功能不可用：请在关联的 Facebook 主页授予消息访问权限，然后重新连接此账号。</p>
     {% endif %}
     {% if account.last_error and account.connection_status == "error" %}
     <div class="mt-3 px-3 py-2 bg-red-50 rounded-lg">
@@ -157,15 +154,15 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
     <div class="mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
         <div class="flex items-start justify-between gap-3">
             <p class="text-xs text-amber-800">
-                <span class="font-semibold">Some real-time inbox updates are unavailable.</span>
-                {{ webhook_warning.message|default:"We couldn't set up real-time updates for this account." }}
-                Activity with the required permissions can still arrive through polling.
+                <span class="font-semibold">部分实时互动消息更新不可用。</span>
+                {{ webhook_warning.message|default:"无法为此账号设置实时更新。" }}
+                在具备相应权限时，互动消息仍可通过定时同步获取。
             </p>
             {% if webhook_warning.needs_reconnect %}
             <form method="post" action="{% url 'social_accounts:reconnect' workspace_id=workspace_id account_id=account.id %}">
                 {% csrf_token %}
                 <button type="submit" class="inline-flex flex-shrink-0 items-center whitespace-nowrap px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-100 rounded-full hover:bg-amber-200 transition-colors cursor-pointer">
-                    Reconnect
+                    重新连接
                 </button>
             </form>
             {% else %}
@@ -187,7 +184,7 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
                 {% csrf_token %}
                 <button type="submit" :disabled="retrying" class="inline-flex flex-shrink-0 items-center whitespace-nowrap gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-100 rounded-full hover:bg-amber-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg x-show="retrying" x-cloak class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    <span x-text="retrying ? 'Trying…' : 'Try again'">Try again</span>
+                    <span x-text="retrying ? '正在重试…' : '重试'">重试</span>
                 </button>
             </form>
             {% endif %}
@@ -200,8 +197,8 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
     {% if account.connection_status == "connected" and not account.is_manual %}
     <div class="border-t border-stone-100 mt-4 pt-4">
         <div class="mb-3">
-            <h4 class="text-xs font-semibold text-stone-700 uppercase tracking-wider">Posting Schedule</h4>
-            <p class="text-xs text-stone-400 mt-0.5">Set recurring time slots for when queued posts are automatically published.</p>
+            <h4 class="text-xs font-semibold text-stone-700 uppercase tracking-wider">发布排期</h4>
+            <p class="text-xs text-stone-400 mt-0.5">设置自动发布排期内容的定期时间段。</p>
         </div>
         {% include "social_accounts/partials/_posting_slots_grid.html" with account=account workspace_id=workspace_id %}
     </div>

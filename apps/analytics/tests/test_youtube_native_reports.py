@@ -210,7 +210,7 @@ def test_html_htmx_rest_and_mcp_share_native_metrics(channel, user):
         html = client.get(url, **headers)
         assert html.status_code == 200
         assert "103.1%" in html.content.decode()
-        assert "Engagement rate" not in html.content.decode()
+        assert "互动率" not in html.content.decode()
         assert "Daily average" not in html.content.decode()
 
 

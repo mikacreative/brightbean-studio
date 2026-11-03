@@ -98,7 +98,7 @@ def test_disabled_platform_account_stays_listed_with_a_reason(owner_client, work
     body = response.content.decode()
     assert 'id="analytics-disabled-admin-note"' in body
     # The switcher marks it rather than listing it indistinguishably.
-    assert "No data" in body
+    assert "暂无数据" in body
 
 
 @pytest.mark.django_db
@@ -228,9 +228,9 @@ def test_youtube_dashboard_ignores_legacy_account_estimates(owner_client, worksp
     body = response.content.decode()
 
     assert response.context["engagement"] is None
-    assert "Engagement rate" not in body
-    assert "Daily average · calculated by BrightBean" not in body
-    assert "Metrics reported by YouTube" in body
+    assert "互动率" not in body
+    assert "日均值 · 由 BrightBean 计算" not in body
+    assert "数据由 YouTube 提供" in body
     assert all(not card["derived"].available for card in response.context["hero_cards"])
 
 

@@ -1,3 +1,4 @@
+{% load common_extras %}
 <!-- Invite Team Member Modal -->
 <template x-teleport="body">
     <div x-show="showInviteModal" x-transition.opacity
@@ -11,7 +12,7 @@
 
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 flex-shrink-0" style="border-bottom: 1px solid var(--border);">
-                <h3 class="text-base font-semibold" style="color: var(--text-primary);">Invite Team Member</h3>
+                <h3 class="text-base font-semibold" style="color: var(--text-primary);">邀请团队成员</h3>
                 <button @click="showInviteModal = false" class="cursor-pointer" style="color: var(--text-tertiary);">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -28,7 +29,7 @@
 
                 <!-- Email -->
                 <div class="mb-5">
-                    <label for="invite-email" class="block text-sm font-medium mb-1.5" style="color: var(--text-primary);">Email Address</label>
+                    <label for="invite-email" class="block text-sm font-medium mb-1.5" style="color: var(--text-primary);">邮箱地址</label>
                     <input type="email" id="invite-email" name="email" required placeholder="colleague@example.com"
                            class="input-focus w-full px-4 py-2.5 text-sm rounded-lg outline-none transition-all"
                            style="border: 1px solid var(--border); color: var(--text-primary); background: var(--surface-1);">
@@ -36,7 +37,7 @@
 
                 <!-- Org Role -->
                 <div class="mb-5">
-                    <label class="block text-sm font-medium mb-1.5" style="color: var(--text-primary);">Organization Role</label>
+                    <label class="block text-sm font-medium mb-1.5" style="color: var(--text-primary);">组织角色</label>
                     <div class="flex gap-4">
                         {% for value, label in org_role_choices %}
                         <div class="flex items-center">
@@ -45,7 +46,7 @@
                                    class="w-4 h-4 cursor-pointer"
                                    style="accent-color: var(--primary);">
                             <label for="invite-role-{{ value }}" class="select-none ms-2 text-sm font-medium cursor-pointer" style="color: var(--text-primary);">
-                                {{ label }}
+                                {{ label|zh_ui_label }}
                             </label>
                         </div>
                         {% endfor %}
@@ -54,8 +55,8 @@
 
                 <!-- Workspace Assignments -->
                 <div class="mb-5">
-                    <label class="block text-sm font-medium mb-1.5" style="color: var(--text-primary);">Assign to Workspaces</label>
-                    <p class="text-xs mb-3" style="color: var(--text-tertiary);">Select workspaces and roles for this team member.</p>
+                    <label class="block text-sm font-medium mb-1.5" style="color: var(--text-primary);">分配至工作区</label>
+                    <p class="text-xs mb-3" style="color: var(--text-tertiary);">为该团队成员选择工作区和角色。</p>
 
                     <div class="space-y-2 max-h-48 overflow-y-auto">
                         {% for ws in org_workspaces %}
@@ -69,7 +70,7 @@
                                     class="input-focus text-xs font-semibold cursor-pointer"
                                     style="padding: 4px 24px 4px 8px; border-radius: 8px; color: var(--text-secondary); background: var(--surface-0); border: 1px solid var(--border); appearance: none; background-image: url(&quot;data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2378716C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 6px center; transition: all 150ms ease; outline: none;">
                                 {% for value, label in workspace_role_choices %}
-                                <option value="{{ value }}" {% if value == "editor" %}selected{% endif %}>{{ label }}</option>
+                                <option value="{{ value }}" {% if value == "editor" %}selected{% endif %}>{{ label|zh_ui_label }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -77,7 +78,7 @@
                     </div>
 
                     <p class="text-xs mt-2" style="color: var(--text-tertiary);">
-                        Tip: For external clients who only need portal access, use the Client Portal invite from workspace settings instead.
+                        提示：对于仅需访问客户门户的外部客户，请在工作区设置中使用“客户门户邀请”。
                     </p>
                 </div>
 
@@ -89,12 +90,12 @@
                     <button type="button" @click="showInviteModal = false"
                             class="btn-neutral px-5 py-2 text-sm font-medium rounded-full cursor-pointer transition-colors"
                             style="background: var(--neutral-100); color: var(--text-primary);">
-                        Cancel
+                        取消
                     </button>
                     <button type="submit"
                             class="btn-opacity px-5 py-2 text-sm font-medium rounded-full cursor-pointer transition-colors"
                             style="background: var(--primary); color: white;">
-                        Send Invitation
+                        发送邀请
                     </button>
                 </div>
             </form>

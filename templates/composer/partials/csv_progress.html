@@ -8,44 +8,43 @@
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
     </div>
 
-    <h2 class="text-lg font-semibold text-stone-900 mb-1">Import Complete</h2>
+    <h2 class="text-lg font-semibold text-stone-900 mb-1">导入完成</h2>
 
     <div class="flex items-center justify-center gap-4 mt-4 mb-6">
         <div class="px-4 py-2 rounded-lg bg-green-50 border border-green-200">
             <span class="text-2xl font-bold text-green-700">{{ created_count }}</span>
-            <span class="text-xs text-green-600 block">post{{ created_count|pluralize }} created</span>
+            <span class="text-xs text-green-600 block">条内容已创建</span>
         </div>
         {% if error_count > 0 %}
         <div class="px-4 py-2 rounded-lg bg-red-50 border border-red-200">
             <span class="text-2xl font-bold text-red-700">{{ error_count }}</span>
-            <span class="text-xs text-red-600 block">row{{ error_count|pluralize }} skipped</span>
+            <span class="text-xs text-red-600 block">行已跳过</span>
         </div>
         {% endif %}
     </div>
 
     {% if drafted_count > 0 %}
     <p class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 mb-4 max-w-md mx-auto">
-        {{ drafted_count }} {{ drafted_platforms }} post{{ drafted_count|pluralize }} {{ drafted_count|pluralize:"was,were" }} kept as draft{{ drafted_count|pluralize }} on {{ drafted_count|pluralize:"its date,their dates" }},
-        because a CSV can't add the media or Pinterest board {{ drafted_count|pluralize:"it needs,they need" }}. Add {{ drafted_count|pluralize:"it,them" }} in the composer, then schedule.
+        {{ drafted_count }} 条 {{ drafted_platforms }} 内容已在原定日期保留为草稿，因为 CSV 无法添加所需素材或 Pinterest 图板。请在编辑器中补充后再排期。
     </p>
     {% endif %}
 
     <p class="text-sm text-stone-500 mb-6">
         {% if created_count > 0 %}
-        Your imported posts are now on the calendar.
+        您导入的内容现已显示在日历中。
         {% else %}
-        No posts were imported. Check your CSV and try again.
+        未导入任何内容。请检查您的 CSV 文件并重试。
         {% endif %}
     </p>
 
     <div class="flex items-center justify-center gap-3">
         <a href="{% url 'calendar:calendar' workspace_id=workspace.id %}"
            class="btn-brand text-sm py-2 px-5">
-            View Calendar
+            查看日历
         </a>
         <a href="{% url 'composer:csv_upload' workspace_id=workspace.id %}"
            class="text-sm font-semibold py-2 px-5 rounded-full border border-stone-200 hover:border-stone-300 text-stone-700 hover:text-stone-900 transition-colors">
-            Import More
+            导入更多
         </a>
     </div>
 </div>

@@ -11,6 +11,7 @@ from django.utils.crypto import constant_time_compare
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.common.htmx import toast_response
+from apps.common.ui_messages import localize_ui_error
 from apps.composer.models import PlatformPost, Post, PostVersion
 from apps.members.decorators import require_permission, require_workspace_role
 from apps.social_accounts.models import MANUAL_PLATFORMS
@@ -41,7 +42,9 @@ def _toast_response(*, tone, title, body="", refresh=None):
     ``refresh`` event (``approvalAction`` / ``bulkActionComplete``) to re-fetch its list
     in place. This single response shape replaces the old per-caller partial branch.
     """
-    return toast_response(tone=tone, title=title, body=body, events={refresh: True} if refresh else None)
+    return toast_response(
+        tone=tone, title=title, body=localize_ui_error(body), events={refresh: True} if refresh else None
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -114,16 +117,14 @@ def approve(request, workspace_id, post_id):
     try:
         moved = services.approve_post(post, request.user, workspace, comment_text)
     except ValueError as e:
-        return _toast_response(tone="error", title="Couldn't approve", body=str(e))
+        return _toast_response(tone="error", title="无法通过审核", body=str(e))
 
     if not moved:
-        return _toast_response(tone="warn", title="Nothing to update", body="This post was already actioned.")
+        return _toast_response(tone="warn", title="无需更新", body="这条内容已处理。")
 
     if post.platform_posts.filter(status="pending_client").exists():
-        return _toast_response(
-            tone="success", title="Approved internally", body="Sent for client sign-off", refresh="approvalAction"
-        )
-    return _toast_response(tone="success", title="Approved", body="Ready to publish", refresh="approvalAction")
+        return _toast_response(tone="success", title="内部审核已通过", body="已提交客户审核", refresh="approvalAction")
+    return _toast_response(tone="success", title="已通过", body="准备发布", refresh="approvalAction")
 
 
 @login_required
@@ -138,14 +139,12 @@ def request_changes_view(request, workspace_id, post_id):
     try:
         moved = services.request_changes(post, request.user, workspace, comment_text)
     except ValueError as e:
-        return _toast_response(tone="error", title="Couldn't send back", body=str(e))
+        return _toast_response(tone="error", title="无法退回修改", body=str(e))
 
     if not moved:
-        return _toast_response(tone="warn", title="Nothing to update", body="This post was already actioned.")
+        return _toast_response(tone="warn", title="无需更新", body="这条内容已处理。")
 
-    return _toast_response(
-        tone="info", title="Sent back for changes", body="The author was notified", refresh="approvalAction"
-    )
+    return _toast_response(tone="info", title="已退回修改", body="已通知作者", refresh="approvalAction")
 
 
 @login_required
@@ -160,14 +159,12 @@ def reject(request, workspace_id, post_id):
     try:
         moved = services.reject_post(post, request.user, workspace, comment_text)
     except ValueError as e:
-        return _toast_response(tone="error", title="Couldn't reject", body=str(e))
+        return _toast_response(tone="error", title="无法驳回", body=str(e))
 
     if not moved:
-        return _toast_response(tone="warn", title="Nothing to update", body="This post was already actioned.")
+        return _toast_response(tone="warn", title="无需更新", body="这条内容已处理。")
 
-    return _toast_response(
-        tone="error", title="Post rejected", body="The author was notified", refresh="approvalAction"
-    )
+    return _toast_response(tone="error", title="内容已驳回", body="已通知作者", refresh="approvalAction")
 
 
 @login_required
@@ -180,9 +177,9 @@ def resume(request, workspace_id, post_id):
 
     moved = services.resume_hold(post, request.user, workspace)
     if not moved:
-        return _toast_response(tone="warn", title="Nothing to update", body="This post is not on hold.")
+        return _toast_response(tone="warn", title="无需更新", body="这条内容未暂停。")
 
-    return _toast_response(tone="success", title="Hold lifted", body="Back to approved", refresh="approvalAction")
+    return _toast_response(tone="success", title="已解除暂停", body="已恢复为通过状态", refresh="approvalAction")
 
 
 @login_required
@@ -195,7 +192,7 @@ def bulk_action(request, workspace_id):
     post_ids = request.POST.getlist("post_ids")
 
     if not post_ids:
-        return _toast_response(tone="warn", title="No posts selected")
+        return _toast_response(tone="warn", title="请选择内容")
 
     if (
         action == "approve"
@@ -215,27 +212,24 @@ def bulk_action(request, workspace_id):
         try:
             results = services.bulk_reject(post_ids, request.user, workspace, comment_text)
         except ValueError as e:
-            return _toast_response(tone="error", title="Couldn't reject", body=str(e))
+            return _toast_response(tone="error", title="无法驳回", body=str(e))
     else:
-        return _toast_response(tone="error", title="Invalid action")
+        return _toast_response(tone="error", title="操作无效")
 
     n = sum(1 for _, success, _ in results if success)
-    plural = "s" if n != 1 else ""
 
     if n == 0:
         return _toast_response(
-            tone="warn", title="Nothing to update", body="None were still pending.", refresh="bulkActionComplete"
+            tone="warn", title="无需更新", body="没有内容仍在待审核状态。", refresh="bulkActionComplete"
         )
     if action == "approve":
         return _toast_response(
             tone="success",
-            title=f"{n} post{plural} approved",
-            body="Moved to the next stage",
+            title=f"已通过 {n} 条内容",
+            body="已进入下一阶段",
             refresh="bulkActionComplete",
         )
-    return _toast_response(
-        tone="error", title=f"{n} post{plural} rejected", body="Creators notified", refresh="bulkActionComplete"
-    )
+    return _toast_response(tone="error", title=f"已驳回 {n} 条内容", body="已通知创作者", refresh="bulkActionComplete")
 
 
 # ---------------------------------------------------------------------------
@@ -253,7 +247,7 @@ def add_comment(request, workspace_id, post_id):
 
     body = request.POST.get("body", "").strip()
     if not body:
-        return HttpResponse("Comment body is required.", status=400)
+        return HttpResponse("请填写评论内容。", status=400)
 
     visibility = request.POST.get("visibility", PostComment.Visibility.EXTERNAL)
     parent_id = request.POST.get("parent_id") or None
@@ -269,7 +263,7 @@ def add_comment(request, workspace_id, post_id):
             attachment=attachment,
         )
     except ValueError as e:
-        return HttpResponse(str(e), status=400)
+        return HttpResponse(localize_ui_error(e), status=400)
 
     # Return updated comment list
     comments = comment_service.get_comments_for_post(post, request.user)
@@ -293,7 +287,7 @@ def edit_comment(request, workspace_id, post_id, comment_id):
     body = request.POST.get("body", "").strip()
 
     if not body:
-        return HttpResponse("Comment body is required.", status=400)
+        return HttpResponse("请填写评论内容。", status=400)
 
     # Scope the post + comment lookup to the request workspace so a viewer
     # cannot edit / surface comments belonging to a different workspace.
@@ -302,7 +296,7 @@ def edit_comment(request, workspace_id, post_id, comment_id):
     try:
         comment_service.update_comment(comment_id, request.user, body, workspace=workspace)
     except (ValueError, PermissionError) as e:
-        return HttpResponse(str(e), status=400 if isinstance(e, ValueError) else 403)
+        return HttpResponse(localize_ui_error(e), status=400 if isinstance(e, ValueError) else 403)
 
     comments = comment_service.get_comments_for_post(post, request.user)
     return render(
@@ -326,7 +320,7 @@ def delete_comment(request, workspace_id, post_id, comment_id):
     try:
         comment_service.delete_comment(comment_id, request.user, workspace)
     except (ValueError, PermissionError) as e:
-        return HttpResponse(str(e), status=400 if isinstance(e, ValueError) else 403)
+        return HttpResponse(localize_ui_error(e), status=400 if isinstance(e, ValueError) else 403)
 
     post = get_object_or_404(Post, id=post_id, workspace=workspace)
     comments = comment_service.get_comments_for_post(post, request.user)

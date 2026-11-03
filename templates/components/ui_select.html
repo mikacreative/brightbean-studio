@@ -19,7 +19,7 @@ JS body can't see the parent scope.
     <button type="button" @click="uiToggle($event)"
             class="cal-filter-select{% if icon %} has-icon{% endif %} flex items-center gap-1 whitespace-nowrap"
             :class="{% if multiple %}{{ model }}.length{% else %}{{ model }}{% endif %} && 'border-orange-300 text-orange-700'">
-        <span x-text="{% if multiple %}{{ model }}.length ? {{ model }}.length + ' selected' : '{{ placeholder|escapejs }}'{% else %}uiLabel({{ model }}){% endif %}"></span>
+        <span x-text="{% if multiple %}{{ model }}.length ? '已选择 ' + {{ model }}.length + ' 项' : '{{ placeholder|escapejs }}'{% else %}uiLabel({{ model }}){% endif %}"></span>
     </button>
     <div x-show="open" x-cloak
          :style="`top:${top}px; left:${left}px;`"
@@ -28,7 +28,7 @@ JS body can't see the parent scope.
                 @click="{% if multiple %}{{ model }} = []{% else %}{{ model }} = ''; open = false{% endif %}; {{ onchange }}"
                 class="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-stone-50 border-b border-stone-100"
                 :class="{% if multiple %}!{{ model }}.length{% else %}!{{ model }}{% endif %} ? 'text-orange-600' : 'text-stone-500'">
-            {{ placeholder }} — all
+            {{ placeholder }} — 全部
         </button>
         {% for opt in options %}
         {% if multiple %}

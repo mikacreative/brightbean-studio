@@ -20,17 +20,16 @@ forever; we explicitly do NOT persist plaintext anywhere.
                 </svg>
                 <div>
                     <h3 class="text-base font-semibold" style="color: var(--text-primary);">
-                        Save this token now.
+                        请立即保存此令牌。
                     </h3>
                     <p class="text-xs mt-1" style="color: var(--text-secondary);">
-                        Brightbean does not store the plaintext token. Once you close this modal it cannot be retrieved.
-                        Paste it into your agent or secret manager before continuing.
+                        Brightbean 不存储明文令牌。关闭此弹窗后无法找回。请在继续前将其粘贴到 Agent 或密钥管理器中。
                     </p>
                 </div>
             </div>
 
             <div class="text-xs mb-2" style="color: var(--text-tertiary);">
-                Key name: <strong style="color: var(--text-secondary);">{{ key_name }}</strong>
+                密钥名称： <strong style="color: var(--text-secondary);">{{ key_name }}</strong>
             </div>
 
             <div class="flex items-center gap-2 rounded-lg px-3 py-2 mb-4"
@@ -43,7 +42,7 @@ forever; we explicitly do NOT persist plaintext anywhere.
                         x-text="label"
                         class="px-2.5 py-1 text-xs font-medium rounded cursor-pointer whitespace-nowrap"
                         style="background: var(--neutral-900, #111827); color: white;">
-                    Copy
+                    复制
                 </button>
             </div>
 
@@ -51,7 +50,7 @@ forever; we explicitly do NOT persist plaintext anywhere.
                 <button type="button" @click="showRevealModal = false"
                         class="btn-neutral px-5 py-2 text-sm font-medium rounded-full cursor-pointer"
                         style="background: var(--neutral-100); color: var(--text-primary);">
-                    I've saved it
+                    我已保存
                 </button>
             </div>
         </div>

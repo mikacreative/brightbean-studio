@@ -192,13 +192,13 @@ class ActionBarGatingTests(ReadonlyComposerTestsBase):
         resp = self._compose(post, account=self.secondary)
         self.assertFalse(resp.context["post_is_readonly"])
         self.assertEqual([pp.social_account_id for pp in resp.context["live_siblings"]], [self.primary.id])
-        self.assertIn("Already published on", resp.content.decode("utf-8"))
+        self.assertIn("已发布于", resp.content.decode("utf-8"))
 
     def test_unscoped_view_has_no_live_sibling_notice(self):
         post = self._make_post(PlatformPost.Status.DRAFT, PlatformPost.Status.PUBLISHED)
         resp = self._compose(post)
         self.assertEqual(list(resp.context["live_siblings"]), [])
-        self.assertNotIn("Already published on", resp.content.decode("utf-8"))
+        self.assertNotIn("已发布于", resp.content.decode("utf-8"))
 
     def test_only_the_form_itself_opts_out_of_the_error_toast(self):
         # base.html checks data-no-error-toast on the requesting element, not its

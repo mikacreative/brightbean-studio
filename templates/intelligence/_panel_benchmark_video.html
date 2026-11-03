@@ -1,12 +1,12 @@
 <div id="intel-panel-benchmark-video" class="intel-panel mt-6 grid-cols-1 gap-6 lg:grid-cols-2">
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Benchmark video</h2>
-            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">3 credits</span>
+            <h2 class="text-sm font-semibold text-stone-900">基准视频</h2>
+            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">3 积分</span>
         </div>
         <div class="p-5">
             <p class="text-xs text-stone-500 mb-5 leading-relaxed">
-                Score a single video against its niche. Returns engagement percentiles, title pattern fit, and a CTR-prediction residual (actual vs predicted velocity).
+                将单个视频与其所属领域进行对比。返回互动率百分位、标题模式匹配度及 CTR 预测残差（实际值与预测值之差）。
             </p>
 
             <form class="intel-form space-y-5"
@@ -15,23 +15,23 @@
                   hx-swap="innerHTML">
                 {% csrf_token %}
                 <div>
-                    <label for="bv-url" class="intel-label">Video URL</label>
+                    <label for="bv-url" class="intel-label">视频 URL</label>
                     <input type="url" name="url" id="bv-url" required maxlength="1024"
                            placeholder="https://youtube.com/watch?v=dQw4w9WgXcQ"
                            value="{% if is_preview %}{{ preview_inputs.benchmark_video.url }}{% endif %}"
                            class="intel-input">
-                    <p class="intel-helper">Accepts <code class="font-mono text-[11px]">watch?v=…</code>, <code class="font-mono text-[11px]">youtu.be/…</code>, <code class="font-mono text-[11px]">shorts/…</code>, or <code class="font-mono text-[11px]">embed/…</code>.</p>
+                    <p class="intel-helper">接受 <code class="font-mono text-[11px]">watch?v=…</code>, <code class="font-mono text-[11px]">youtu.be/…</code>, <code class="font-mono text-[11px]">shorts/…</code>，或 <code class="font-mono text-[11px]">embed/…</code>.</p>
                 </div>
                 <div>
                     <button type="submit" class="intel-submit"{% if is_preview %} disabled aria-disabled="true"{% endif %}>
                         <svg class="intel-submit-icon h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg>
                         <svg class="intel-submit-spinner hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
-                        <span class="intel-submit-label">Benchmark</span>
-                        <span class="intel-submit-loading hidden">Benchmarking…</span>
+                        <span class="intel-submit-label">基准</span>
+                        <span class="intel-submit-loading hidden">基准测试中…</span>
                     </button>
                     {% if is_preview %}
                     <p class="intel-activate-note">
-                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">Activate Intelligence</a> to benchmark your own videos.{% else %}Ask an admin to activate Intelligence to benchmark your own videos.{% endif %}
+                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">启用智能功能</a> 以基准测试您自己的视频。{% else %}请联系管理员激活 Intelligence 以基准测试您自己的视频。{% endif %}
                     </p>
                     {% endif %}
                 </div>
@@ -41,7 +41,7 @@
 
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Result</h2>
+            <h2 class="text-sm font-semibold text-stone-900">结果</h2>
         </div>
         <div id="benchmark-video-result" class="p-5 min-h-[220px]">
             {% if is_preview %}

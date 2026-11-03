@@ -101,7 +101,7 @@ DAILY_DIGEST_HOUR = 8
 # "1 posts failed" is the kind of detail that makes an alert look automated and
 # ignorable.
 BATCH_HEADINGS: dict[str, tuple[str, str]] = {
-    EventType.POST_FAILED: ("{n} post failed to publish", "{n} posts failed to publish"),
+    EventType.POST_FAILED: ("{n} 条内容发布失败", "{n} 条内容发布失败"),
 }
 
 # Derived, never maintained by hand: an event that is batched but has no
@@ -110,7 +110,7 @@ BATCH_HEADINGS: dict[str, tuple[str, str]] = {
 BATCHED_EMAIL_EVENTS = frozenset(BATCH_HEADINGS)
 
 # The daily digest is not per-event-type, so it has no BATCH_HEADINGS entry.
-DAILY_DIGEST_HEADINGS = ("Your daily digest: {n} notification", "Your daily digest: {n} notifications")
+DAILY_DIGEST_HEADINGS = ("每日摘要：{n} 条通知", "每日摘要：{n} 条通知")
 
 # Default channel enablement per event type.
 # Key: event_type, Value: dict of channel → default enabled.

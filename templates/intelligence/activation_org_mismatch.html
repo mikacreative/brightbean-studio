@@ -1,14 +1,13 @@
 {% extends "base.html" %}
-{% block page_title %}Org mismatch{% endblock %}
+{% block page_title %}组织不匹配{% endblock %}
 {% block content %}
 <div class="max-w-xl mx-auto py-16 px-4 text-center">
-  <h1 class="text-xl font-semibold text-stone-900 mb-2">This activation isn't for your org</h1>
+  <h1 class="text-xl font-semibold text-stone-900 mb-2">此激活不属于您的组织</h1>
   <p class="text-sm text-stone-600 mb-6">
-    The Stripe payment was made for a different organization, OR your
-    role no longer permits managing billing for {{ organization.name }}.
+    Stripe 付款是针对另一个组织的，或者您的角色不再允许为 {{ organization.name }} 管理账单。
   </p>
   <p class="text-sm text-stone-600">
-    If you believe this is a mistake, contact
+    如果您认为这是错误，请联系
     <a href="mailto:support@brightbean.xyz" class="text-orange-600 hover:text-orange-700">support@brightbean.xyz</a>.
   </p>
 </div>

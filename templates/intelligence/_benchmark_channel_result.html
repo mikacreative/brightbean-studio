@@ -7,10 +7,9 @@
     <div class="mb-4">
         <div class="text-base font-semibold text-stone-900 truncate">{{ channel.title }}</div>
         <div class="mt-1 text-xs text-stone-500">
-            {{ channel.subscriber_count|humanize_count }} subscribers
-            · {{ channel.video_count|humanize_count }} videos
+            {{ channel.subscriber_count|humanize_count }} 订阅者 · {{ channel.video_count|humanize_count }} 视频
             {% if channel.sample_window_days %}
-            · {{ channel.sample_window_days }}-day sample
+            · {{ channel.sample_window_days }} 天样本
             {% endif %}
         </div>
     </div>
@@ -19,14 +18,13 @@
     <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 items-start mt-2 pt-4 border-t border-stone-100">
         <div>
             <div class="flex items-center">
-                <div class="text-xs uppercase tracking-wide text-stone-500">Overall percentile</div>
+                <div class="text-xs uppercase tracking-wide text-stone-500">总体百分位</div>
                 <span class="intel-tooltip-trigger" tabindex="0" aria-describedby="bc-overall-tooltip">
                     <span class="intel-tooltip-icon" aria-hidden="true">?</span>
                     <span id="bc-overall-tooltip" role="tooltip" class="intel-tooltip" data-align="left">
-                        Composite rank vs other channels in the same niche.
-                        <strong>50</strong> is the median; <strong>80+</strong>
-                        is top-tier engagement; below 30 means most niche peers
-                        outperform this channel on the engagement metrics below.
+                        与同领域其他账号的综合排名对比。
+                        <strong>50</strong> 是中位数； <strong>80+</strong>
+                        属于顶级互动率；低于 30 表示大多数同领域账号在以下互动指标上优于该账号。
                     </span>
                 </span>
             </div>
@@ -35,7 +33,7 @@
             </div>
         </div>
         <div class="text-right">
-            <div class="text-xs uppercase tracking-wide text-stone-500">Niche</div>
+            <div class="text-xs uppercase tracking-wide text-stone-500">细分领域</div>
             <div class="mt-1 text-sm font-medium text-stone-900">{{ niche.name }}</div>
             <div class="mt-1 flex items-center gap-2 justify-end flex-wrap">
                 <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-stone-100 text-stone-500">{{ niche.slug }}</span>
@@ -72,23 +70,16 @@
     {% if channel.engagement_percentiles %}
     <div class="mt-6 pt-5 border-t border-stone-100">
         <div class="flex items-center mb-3">
-            <div class="text-xs uppercase tracking-wide text-stone-500">Engagement vs niche distribution</div>
+            <div class="text-xs uppercase tracking-wide text-stone-500">互动率与细分领域分布</div>
             <span class="intel-tooltip-trigger" tabindex="0" aria-describedby="bc-engagement-tooltip">
                 <span class="intel-tooltip-icon" aria-hidden="true">?</span>
                 <span id="bc-engagement-tooltip" role="tooltip" class="intel-tooltip" data-align="left">
-                    Each row compares one engagement ratio against the niche's
-                    distribution. <strong>Views / sub</strong> is recent views
-                    divided by subscriber count; <strong>Likes / view</strong>
-                    and <strong>Comments / view</strong> are the equivalent
-                    per-video ratios.
+                    每一行将一项互动比率与领域分布进行对比。 <strong>浏览量 / 订阅数</strong> 为近期观看数除以订阅者数； <strong>点赞数 / 浏览量</strong>
+                    和 <strong>评论数 / 浏览量</strong> 是每视频比率。
                     <br><br>
-                    <strong>Niche p50</strong> is the median niche channel on
-                    that ratio, half of the niche scores below it, half
-                    above. The <strong>pNN</strong> readout on the right is
-                    your channel's percentile rank: <strong>p50</strong> means
-                    you sit exactly at the niche median, <strong>p80</strong>
-                    means you outperform 80% of niche peers, <strong>p20</strong>
-                    means 80% of peers outperform you.
+                    <strong>细分领域 p50</strong> 是该比率下细分领域的中位数账号，一半细分领域得分低于此值，一半高于此值。 <strong>pNN</strong> 右侧读数显示您账号的百分位排名： <strong>p50</strong> 表示您恰好处于细分领域中位数， <strong>p80</strong>
+                    表示您优于 80% 的细分领域同行， <strong>p20</strong>
+                    表示 80% 的同行优于您。
                 </span>
             </span>
         </div>
@@ -96,42 +87,42 @@
             {% with eng=channel.engagement engp=channel.engagement_percentiles nichep=niche.engagement %}
 
             <div class="grid grid-cols-[120px_1fr_60px] items-center gap-3">
-                <div class="text-xs font-medium text-stone-700">Views / sub</div>
+                <div class="text-xs font-medium text-stone-700">浏览量 / 订阅数</div>
                 <div>
                     <div class="h-1.5 rounded-full bg-stone-100 overflow-hidden">
                         <div class="h-full rounded-full" style="width: {{ engp.view_to_sub_ratio|default:0 }}%; background: var(--primary);"></div>
                     </div>
                     <div class="flex justify-between mt-1 text-[11px] text-stone-500 tabular-nums">
-                        <span>You: <span class="text-stone-900 font-medium">{{ eng.view_to_sub_ratio|pretty_percent }}</span></span>
-                        <span>Niche p50: {{ nichep.view_to_sub_ratio.p50|pretty_percent }}</span>
+                        <span>您： <span class="text-stone-900 font-medium">{{ eng.view_to_sub_ratio|pretty_percent }}</span></span>
+                        <span>细分领域 p50：{{ nichep.view_to_sub_ratio.p50|pretty_percent }}</span>
                     </div>
                 </div>
                 <div class="text-xs font-mono tabular-nums text-stone-900 text-right">p{{ engp.view_to_sub_ratio }}</div>
             </div>
 
             <div class="grid grid-cols-[120px_1fr_60px] items-center gap-3">
-                <div class="text-xs font-medium text-stone-700">Likes / view</div>
+                <div class="text-xs font-medium text-stone-700">点赞数 / 浏览量</div>
                 <div>
                     <div class="h-1.5 rounded-full bg-stone-100 overflow-hidden">
                         <div class="h-full rounded-full" style="width: {{ engp.like_to_view_ratio|default:0 }}%; background: var(--primary);"></div>
                     </div>
                     <div class="flex justify-between mt-1 text-[11px] text-stone-500 tabular-nums">
-                        <span>You: <span class="text-stone-900 font-medium">{{ eng.like_to_view_ratio|pretty_percent:2 }}</span></span>
-                        <span>Niche p50: {{ nichep.like_to_view_ratio.p50|pretty_percent:2 }}</span>
+                        <span>您： <span class="text-stone-900 font-medium">{{ eng.like_to_view_ratio|pretty_percent:2 }}</span></span>
+                        <span>细分领域 p50：{{ nichep.like_to_view_ratio.p50|pretty_percent:2 }}</span>
                     </div>
                 </div>
                 <div class="text-xs font-mono tabular-nums text-stone-900 text-right">p{{ engp.like_to_view_ratio }}</div>
             </div>
 
             <div class="grid grid-cols-[120px_1fr_60px] items-center gap-3">
-                <div class="text-xs font-medium text-stone-700">Comments / view</div>
+                <div class="text-xs font-medium text-stone-700">评论数 / 浏览量</div>
                 <div>
                     <div class="h-1.5 rounded-full bg-stone-100 overflow-hidden">
                         <div class="h-full rounded-full" style="width: {{ engp.comment_to_view_ratio|default:0 }}%; background: var(--primary);"></div>
                     </div>
                     <div class="flex justify-between mt-1 text-[11px] text-stone-500 tabular-nums">
-                        <span>You: <span class="text-stone-900 font-medium">{{ eng.comment_to_view_ratio|pretty_percent:2 }}</span></span>
-                        <span>Niche p50: {{ nichep.comment_to_view_ratio.p50|pretty_percent:2 }}</span>
+                        <span>您： <span class="text-stone-900 font-medium">{{ eng.comment_to_view_ratio|pretty_percent:2 }}</span></span>
+                        <span>细分领域 p50：{{ nichep.comment_to_view_ratio.p50|pretty_percent:2 }}</span>
                     </div>
                 </div>
                 <div class="text-xs font-mono tabular-nums text-stone-900 text-right">p{{ engp.comment_to_view_ratio }}</div>
@@ -149,34 +140,34 @@
     {% endcomment %}
     {% if channel.title_patterns and niche.title_patterns %}
     <div class="mt-6 pt-5 border-t border-stone-100">
-        <div class="text-xs uppercase tracking-wide text-stone-500 mb-3">Title patterns</div>
+        <div class="text-xs uppercase tracking-wide text-stone-500 mb-3">标题模式</div>
         <div class="grid grid-cols-[1fr_auto_auto] gap-x-6 gap-y-2 text-xs">
             <div></div>
-            <div class="text-stone-500 font-medium uppercase tracking-wide text-right">You</div>
-            <div class="text-stone-500 font-medium uppercase tracking-wide text-right">Niche</div>
+            <div class="text-stone-500 font-medium uppercase tracking-wide text-right">您</div>
+            <div class="text-stone-500 font-medium uppercase tracking-wide text-right">细分领域</div>
 
             {% with ch=channel.title_patterns nc=niche.title_patterns %}
-            <div class="text-stone-700">Avg title length</div>
-            <div class="text-right text-stone-900 font-medium tabular-nums">{{ ch.mean_length_chars|floatformat:0 }} characters</div>
-            <div class="text-right text-stone-500 tabular-nums">{{ nc.mean_length_chars|floatformat:0 }} characters</div>
+            <div class="text-stone-700">平均标题长度</div>
+            <div class="text-right text-stone-900 font-medium tabular-nums">{{ ch.mean_length_chars|floatformat:0 }} 字符</div>
+            <div class="text-right text-stone-500 tabular-nums">{{ nc.mean_length_chars|floatformat:0 }} 字符</div>
 
-            <div class="text-stone-700">Avg word count</div>
+            <div class="text-stone-700">平均字数</div>
             <div class="text-right text-stone-900 font-medium tabular-nums">{{ ch.mean_length_words|floatformat:1 }}</div>
             <div class="text-right text-stone-500 tabular-nums">{{ nc.mean_length_words|floatformat:1 }}</div>
 
-            <div class="text-stone-700">Has a question mark</div>
+            <div class="text-stone-700">包含问号</div>
             <div class="text-right text-stone-900 font-medium tabular-nums">{{ ch.share_with_question_mark|pretty_percent:0 }}</div>
             <div class="text-right text-stone-500 tabular-nums">{{ nc.share_with_question_mark|pretty_percent:0 }}</div>
 
-            <div class="text-stone-700">Has a number</div>
+            <div class="text-stone-700">包含数字</div>
             <div class="text-right text-stone-900 font-medium tabular-nums">{{ ch.share_with_number|pretty_percent:0 }}</div>
             <div class="text-right text-stone-500 tabular-nums">{{ nc.share_with_number|pretty_percent:0 }}</div>
 
-            <div class="text-stone-700">Median uppercase ratio</div>
+            <div class="text-stone-700">大写比例中位数</div>
             <div class="text-right text-stone-900 font-medium tabular-nums">{{ ch.median_uppercase_ratio|pretty_percent:0 }}</div>
             <div class="text-right text-stone-500 tabular-nums">{{ nc.median_uppercase_ratio|pretty_percent:0 }}</div>
 
-            <div class="text-stone-700">Has an emoji</div>
+            <div class="text-stone-700">包含表情符号</div>
             <div class="text-right text-stone-900 font-medium tabular-nums">{{ ch.share_with_emoji|pretty_percent:0 }}</div>
             <div class="text-right text-stone-500 tabular-nums">{{ nc.share_with_emoji|pretty_percent:0 }}</div>
             {% endwith %}
@@ -192,7 +183,7 @@
     {% endcomment %}
     {% if niche.title_patterns.common_niche_phrases %}
     <div class="mt-6 pt-5 border-t border-stone-100">
-        <div class="text-xs uppercase tracking-wide text-stone-500 mb-3">Common phrases in niche</div>
+        <div class="text-xs uppercase tracking-wide text-stone-500 mb-3">细分领域常用短语</div>
         <div class="flex flex-wrap gap-1.5">
             {% for ph in niche.title_patterns.common_niche_phrases|slice:":12" %}
             <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px]
@@ -208,7 +199,7 @@
         </div>
         {% if niche.title_patterns.common_niche_phrases|length > 12 %}
         <div class="mt-2 text-[11px] text-stone-400">
-            + {{ niche.title_patterns.common_niche_phrases|length|add:"-12" }} more
+            + {{ niche.title_patterns.common_niche_phrases|length|add:"-12" }} 更多
         </div>
         {% endif %}
     </div>
@@ -217,7 +208,7 @@
     {% comment %} Exemplar channels, peers in the niche {% endcomment %}
     {% if niche.exemplar_channels %}
     <div class="mt-6 pt-5 border-t border-stone-100">
-        <div class="text-xs uppercase tracking-wide text-stone-500 mb-3">Exemplar channels in this niche</div>
+        <div class="text-xs uppercase tracking-wide text-stone-500 mb-3">该细分领域的标杆账号</div>
         <ul class="space-y-1.5">
             {% for ec in niche.exemplar_channels %}
             <li class="flex items-center justify-between gap-3 text-xs">

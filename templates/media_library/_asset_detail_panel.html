@@ -39,14 +39,14 @@
        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white rounded-full transition-all btn-primary-hover"
        style="background: var(--primary, #F97316); box-shadow: var(--shadow-primary);">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-      Edit
+      编辑
     </a>
     {% elif not asset.is_shared %}
     <a href="{% url 'media_library:asset_edit' workspace_id=workspace.id asset_id=asset.id %}"
        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white rounded-full transition-all btn-primary-hover"
        style="background: var(--primary, #F97316); box-shadow: var(--shadow-primary);">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-      Edit
+      编辑
     </a>
     {% endif %}
     {% if is_shared_library %}
@@ -54,14 +54,14 @@
        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full border transition-all btn-surface-1"
        style="border-color: var(--border, #E7E5E4); color: var(--text-secondary, #57534E);">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-      Download
+      下载
     </a>
     {% else %}
     <a href="{% url 'media_library:asset_download' workspace_id=workspace.id asset_id=asset.id %}"
        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full border transition-all btn-surface-1"
        style="border-color: var(--border, #E7E5E4); color: var(--text-secondary, #57534E);">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-      Download
+      下载
     </a>
     {% endif %}
     {% if is_shared_library and is_admin or not asset.is_shared %}
@@ -69,7 +69,7 @@
             style="color: var(--error-500, #EF4444);"
             @click="showDeleteConfirm = true">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-      Delete
+      删除
     </button>
 
     <!-- Delete confirmation modal -->
@@ -82,13 +82,13 @@
              style="background: var(--error-50, #FEF2F2);">
           <svg class="w-5 h-5" style="color: var(--error-500, #EF4444);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </div>
-        <h3 class="text-base font-semibold text-center mb-1" style="color: var(--text-primary, #1C1917);">Delete asset?</h3>
-        <p class="text-sm text-center mb-5" style="color: var(--text-secondary, #57534E);">{% if is_shared_library %}This shared asset will be removed for all workspaces. This cannot be undone.{% else %}This cannot be undone. The file will be permanently removed.{% endif %}</p>
+        <h3 class="text-base font-semibold text-center mb-1" style="color: var(--text-primary, #1C1917);">删除素材？</h3>
+        <p class="text-sm text-center mb-5" style="color: var(--text-secondary, #57534E);">{% if is_shared_library %}此共享素材将从所有工作区移除。此操作无法撤销。{% else %}此操作无法撤销。文件将被永久删除。{% endif %}</p>
         <div class="flex gap-2">
           <button type="button" @click="showDeleteConfirm = false"
                   class="flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer btn-surface-2"
                   style="color: var(--text-secondary, #57534E); border: 1px solid var(--border, #E7E5E4);">
-            Cancel
+            取消
           </button>
           <button type="button"
                   class="flex-1 px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors cursor-pointer btn-error-darker"
@@ -104,7 +104,7 @@
                   hx-swap="innerHTML"
                   @htmx:after-request.camel="if ($event.detail.successful) { detailOpen = false; htmx.ajax('GET', window.location.href, {target: '#asset-grid', swap: 'innerHTML'}); }"
                   {% endif %}>
-            Delete
+            删除
           </button>
         </div>
       </div>
@@ -117,35 +117,35 @@
 
     <!-- Metadata -->
     <div class="px-5 py-4">
-      <h3 class="text-xs font-bold uppercase tracking-wider mb-3" style="color: var(--text-tertiary, #78716C);">Details</h3>
+      <h3 class="text-xs font-bold uppercase tracking-wider mb-3" style="color: var(--text-tertiary, #78716C);">详情</h3>
       <dl class="space-y-2.5">
         <div class="flex justify-between">
-          <dt class="text-xs" style="color: var(--text-tertiary);">File size</dt>
+          <dt class="text-xs" style="color: var(--text-tertiary);">文件大小</dt>
           <dd class="text-xs font-medium" style="color: var(--text-primary);">{{ asset.human_file_size }}</dd>
         </div>
         <div class="flex justify-between">
-          <dt class="text-xs" style="color: var(--text-tertiary);">Format</dt>
+          <dt class="text-xs" style="color: var(--text-tertiary);">格式</dt>
           <dd class="text-xs font-medium" style="color: var(--text-primary);">{{ asset.mime_type }}</dd>
         </div>
         {% if asset.width and asset.height %}
         <div class="flex justify-between">
-          <dt class="text-xs" style="color: var(--text-tertiary);">Dimensions</dt>
+          <dt class="text-xs" style="color: var(--text-tertiary);">尺寸</dt>
           <dd class="text-xs font-medium" style="color: var(--text-primary);">{{ asset.width }} &times; {{ asset.height }}px</dd>
         </div>
         {% endif %}
         {% if asset.duration_seconds %}
         <div class="flex justify-between">
-          <dt class="text-xs" style="color: var(--text-tertiary);">Duration</dt>
+          <dt class="text-xs" style="color: var(--text-tertiary);">时长</dt>
           <dd class="text-xs font-medium" style="color: var(--text-primary);">{{ asset.duration_seconds }}s</dd>
         </div>
         {% endif %}
         <div class="flex justify-between">
-          <dt class="text-xs" style="color: var(--text-tertiary);">Uploaded</dt>
+          <dt class="text-xs" style="color: var(--text-tertiary);">已上传</dt>
           <dd class="text-xs font-medium" style="color: var(--text-primary);">{{ asset.created_at|date:"M j, Y g:i A" }}</dd>
         </div>
         {% if asset.uploaded_by %}
         <div class="flex justify-between">
-          <dt class="text-xs" style="color: var(--text-tertiary);">Uploaded by</dt>
+          <dt class="text-xs" style="color: var(--text-tertiary);">上传者</dt>
           <dd class="text-xs font-medium" style="color: var(--text-primary);">{{ asset.uploaded_by.display_name }}</dd>
         </div>
         {% endif %}
@@ -154,7 +154,7 @@
 
     <!-- Tags -->
     <div class="px-5 py-4 border-t" style="border-color: var(--surface-2, #F5F5F4);">
-      <h3 class="text-xs font-bold uppercase tracking-wider mb-3" style="color: var(--text-tertiary, #78716C);">Tags</h3>
+      <h3 class="text-xs font-bold uppercase tracking-wider mb-3" style="color: var(--text-tertiary, #78716C);">标签</h3>
       <div id="tag-editor-{{ asset.id }}">
         {% include "media_library/_tag_input.html" %}
       </div>
@@ -163,7 +163,7 @@
     <!-- Version History -->
     <div class="px-5 py-4 border-t" style="border-color: var(--surface-2, #F5F5F4);">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-tertiary, #78716C);">Version History</h3>
+        <h3 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-tertiary, #78716C);">版本历史</h3>
         {% if versions %}
         <span class="text-xs px-2 py-0.5 rounded-full font-semibold" style="background: var(--surface-2); color: var(--text-tertiary);">{{ versions|length }}</span>
         {% endif %}

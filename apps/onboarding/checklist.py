@@ -25,8 +25,8 @@ def get_checklist_items(workspace):
     items = [
         {
             "key": "connect_accounts",
-            "title": "Connect social accounts",
-            "description": "Link your Instagram, LinkedIn, or other platforms",
+            "title": "添加社交账号",
+            "description": "添加小红书、微信公众号等平台账号",
             "completed": SocialAccount.objects.for_workspace(workspace_id).exists(),
             "url": reverse(
                 "social_accounts:connect",
@@ -37,8 +37,8 @@ def get_checklist_items(workspace):
         },
         {
             "key": "create_post",
-            "title": "Create your first post",
-            "description": "Draft and schedule content for your audience",
+            "title": "创建第一条内容",
+            "description": "撰写内容并安排发布时间",
             "completed": Post.objects.for_workspace(workspace_id).exists(),
             "url": reverse(
                 "composer:compose",
@@ -49,8 +49,8 @@ def get_checklist_items(workspace):
         },
         {
             "key": "create_idea",
-            "title": "Create your first idea",
-            "description": "Capture content ideas to develop later",
+            "title": "创建第一个选题",
+            "description": "记录内容灵感，以便后续完善",
             "completed": Idea.objects.for_workspace(workspace_id).filter(author__isnull=False).exists(),
             "url": reverse(
                 "composer:create_landing",
@@ -61,8 +61,8 @@ def get_checklist_items(workspace):
         },
         {
             "key": "invite_members",
-            "title": "Invite your team",
-            "description": "Add team members to collaborate on content",
+            "title": "邀请团队成员",
+            "description": "邀请成员一起协作创作内容",
             "completed": WorkspaceMembership.objects.filter(
                 workspace_id=workspace_id,
                 workspace_role=WorkspaceMembership.WorkspaceRole.CLIENT,

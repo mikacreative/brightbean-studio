@@ -1,12 +1,12 @@
 <div id="intel-panel-video-hook" class="intel-panel mt-6 grid-cols-1 gap-6 lg:grid-cols-2">
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Score video hook</h2>
-            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">10 credits</span>
+            <h2 class="text-sm font-semibold text-stone-900">视频钩子评分</h2>
+            <span class="inline-flex items-center rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-mono text-stone-600">10 积分</span>
         </div>
         <div class="p-5">
             <p class="text-xs text-stone-500 mb-5 leading-relaxed">
-                Analyze the first ~6 seconds of a YouTube video for hook quality, archetype, and improvement suggestions.
+                分析 YouTube 视频前 ~6 秒的钩子质量、原型及改进建议。
             </p>
 
             <form class="intel-form space-y-5"
@@ -15,26 +15,26 @@
                   hx-swap="innerHTML">
                 {% csrf_token %}
                 <div>
-                    <label for="vh-url" class="intel-label">YouTube URL</label>
+                    <label for="vh-url" class="intel-label">YouTube 链接</label>
                     <input type="url" name="youtube_url" id="vh-url" required maxlength="1024"
                            placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                            value="{% if is_preview %}{{ preview_inputs.score_video_hook.youtube_url }}{% endif %}"
                            class="intel-input">
-                    <p class="intel-helper">Accepts <code class="font-mono text-[11px]">watch?v=…</code>, <code class="font-mono text-[11px]">youtu.be/…</code>, <code class="font-mono text-[11px]">shorts/…</code>, or <code class="font-mono text-[11px]">embed/…</code>.</p>
+                    <p class="intel-helper">接受 <code class="font-mono text-[11px]">watch?v=…</code>, <code class="font-mono text-[11px]">youtu.be/…</code>, <code class="font-mono text-[11px]">shorts/…</code>，或 <code class="font-mono text-[11px]">embed/…</code>.</p>
                 </div>
                 <div>
                     <button type="submit" class="intel-submit"{% if is_preview %} disabled aria-disabled="true"{% endif %}>
                         <svg class="intel-submit-icon h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg>
                         <svg class="intel-submit-spinner hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
-                        <span class="intel-submit-label">Analyze hook</span>
-                        <span class="intel-submit-loading hidden">Analyzing…</span>
+                        <span class="intel-submit-label">分析钩子</span>
+                        <span class="intel-submit-loading hidden">分析中…</span>
                     </button>
                     {% if is_preview %}
                     <p class="intel-activate-note">
-                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">Activate Intelligence</a> to analyze your own video hooks.{% else %}Ask an admin to activate Intelligence to analyze your own video hooks.{% endif %}
+                        {% if can_manage_billing %}<a href="{% url 'intelligence:subscribe' org_id=organization.id %}">启用智能功能</a> 以分析您自己的视频钩子。{% else %}请管理员激活 Intelligence 以分析您自己的视频钩子。{% endif %}
                     </p>
                     {% else %}
-                    <p class="mt-2 text-[11px] text-stone-400">First call on a video can take 25–29 s. Cache hits return instantly.</p>
+                    <p class="mt-2 text-[11px] text-stone-400">首次分析视频可能需要 25–29 秒。缓存命中将即时返回。</p>
                     {% endif %}
                 </div>
             </form>
@@ -43,7 +43,7 @@
 
     <div class="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-stone-900">Result</h2>
+            <h2 class="text-sm font-semibold text-stone-900">结果</h2>
         </div>
         <div id="video-hook-result" class="p-5 min-h-[220px]">
             {% if is_preview %}

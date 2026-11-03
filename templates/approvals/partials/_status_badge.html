@@ -1,5 +1,6 @@
+{% load common_extras %}
 {% comment %}Editorial-status pill: dot + label. `meta` = {bg,fg,bd,dot,label} from approval_extras.status_badge.{% endcomment %}
 <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-[0.6875rem] font-semibold rounded-full"
       style="background:{{ meta.bg }};color:{{ meta.fg }};border:1px solid {{ meta.bd }};">
-    <span class="w-1.5 h-1.5 rounded-full" style="background:{{ meta.dot }};"></span>{% if meta.label == 'Draft' %}草稿{% elif meta.label == 'Pending Review' %}待内部审核{% elif meta.label == 'Pending Client' %}待客户审核{% elif meta.label == 'Approved' %}已通过{% elif meta.label == 'Changes Requested' %}待修改{% elif meta.label == 'Rejected' %}已驳回{% elif meta.label == 'Scheduled' %}已排期{% elif meta.label == 'Publishing' %}发布中{% elif meta.label == 'Published' %}已发布{% elif meta.label == 'Partially Published' %}部分已发布{% elif meta.label == 'Failed' %}失败{% elif meta.label == 'Hold Requested' %}已暂停{% else %}{{ meta.label }}{% endif %}
+    <span class="w-1.5 h-1.5 rounded-full" style="background:{{ meta.dot }};"></span>{{ meta.label|zh_ui_label }}
 </span>

@@ -63,7 +63,7 @@ class TestClaim:
             create_account_under_invitation(_request(invitation.token), lambda: save_called.append(1))
 
         assert save_called == []
-        assert b"Your invitation has expired or was already used" in exc.value.response.content
+        assert "您的邀请已过期或已被使用".encode() in exc.value.response.content
 
     def test_used_invite_redirects_to_custom_url(self, settings):
         settings.SIGNUP_MODE = "invite"
@@ -99,7 +99,7 @@ class TestSignupFormLosesTheRace:
             )
 
         assert response.status_code == 200
-        assert b"Your invitation has expired or was already used" in response.content
+        assert "您的邀请已过期或已被使用".encode() in response.content
         assert not User.objects.filter(email="second@example.com").exists()
 
 

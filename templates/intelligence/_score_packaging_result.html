@@ -14,15 +14,11 @@
 <div>
     <div>
         <div class="flex items-center">
-            <div class="text-xs uppercase tracking-wide text-stone-500">Percentile</div>
+            <div class="text-xs uppercase tracking-wide text-stone-500">百分位</div>
             <span class="intel-tooltip-trigger" tabindex="0" aria-describedby="pkg-percentile-tooltip">
                 <span class="intel-tooltip-icon" aria-hidden="true">?</span>
                 <span id="pkg-percentile-tooltip" role="tooltip" class="intel-tooltip" data-align="left">
-                    Where your packaging ranks against other recent videos in
-                    the same niche. <strong>80</strong> means your title +
-                    thumbnail combo is predicted to outperform 80% of niche
-                    peers; <strong>50</strong> is average; below 30 is a sign
-                    to iterate.
+                    您的视频包装在同领域近期视频中的排名。 <strong>80</strong> 意味着您的标题与封面组合预计优于 80% 的同领域竞品； <strong>50</strong> 属于平均水平；低于 30 分则需迭代优化。
                 </span>
             </span>
         </div>
@@ -39,7 +35,7 @@
     {% endcomment %}
     <div class="mt-5 pt-4 border-t border-stone-100">
         <div class="flex items-center justify-between gap-3">
-            <div class="text-xs uppercase tracking-wide text-stone-500">Niche match</div>
+            <div class="text-xs uppercase tracking-wide text-stone-500">领域匹配度</div>
             {% with conf=result.niche_confidence %}
             {% if conf is not None %}
             <div class="flex items-center gap-1">
@@ -47,15 +43,12 @@
                              {% if conf >= 0.75 %}bg-green-50 text-green-700
                              {% elif conf >= 0.5 %}bg-amber-50 text-amber-700
                              {% else %}bg-stone-100 text-stone-600{% endif %}">
-                    {% widthratio conf 1 100 %}% confidence
+                    {% widthratio conf 1 100 %}置信度
                 </span>
                 <span class="intel-tooltip-trigger" tabindex="0" aria-describedby="pkg-confidence-tooltip">
                     <span class="intel-tooltip-icon" aria-hidden="true">?</span>
                     <span id="pkg-confidence-tooltip" role="tooltip" class="intel-tooltip" data-align="right">
-                        How confident the classifier is that your packaging
-                        belongs to this niche. Below ~50% the percentile above
-                        is less reliable, you may be in a niche the model
-                        doesn't have strong distribution data for yet.
+                        分类器判断您的视频包装属于该领域的置信度。低于 50% 时，上述百分位排名可靠性降低，您可能处于模型缺乏强分布数据的领域。
                     </span>
                 </span>
             </div>

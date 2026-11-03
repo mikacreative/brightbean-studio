@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n common_extras %}
 
-{% block title %}Sign Up Closed - Brightbean{% endblock %}
+{% block title %}注册已关闭 - Brightbean{% endblock %}
 
 {% block auth_content %}
 <div class="w-full max-w-md px-4">
@@ -13,24 +13,24 @@
             </svg>
         </div>
         <h1 class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">
-            {% trans "Sign-up is closed" %}
+            {% trans "注册已关闭" %}
         </h1>
         <p class="text-sm mt-1" style="color: var(--text-secondary);">
             {% signup_mode as mode %}
             {% invite_lapsed as lapsed %}
             {% if mode == "invite" and lapsed %}
-            {% trans "Your invitation has expired or was already used. Ask the person who invited you to send a new one." %}
+            {% trans "您的邀请已过期或已被使用。请联系邀请人发送新邀请。" %}
             {% elif mode == "invite" %}
-            {% trans "New accounts need an invitation. If you have one, open the invitation link in this browser, then sign up." %}
+            {% trans "新账号需要邀请。如果您有邀请，请在此浏览器中打开邀请链接，然后注册。" %}
             {% else %}
-            {% trans "This installation does not accept new accounts. Ask an administrator to create one for you." %}
+            {% trans "此安装不接受新账号。请联系管理员为您创建一个。" %}
             {% endif %}
         </p>
     </div>
 
     <div class="auth-card">
         <a href="{% url 'account_login' %}" class="btn-brand w-full text-center block">
-            {% trans "Back to sign in" %}
+            {% trans "返回登录" %}
         </a>
     </div>
 </div>

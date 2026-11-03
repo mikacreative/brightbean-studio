@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,10 +13,10 @@
                     <tr>
                         <td style="padding: 32px 32px 24px; text-align: center;">
                             <h1 style="margin: 0; font-size: 20px; font-weight: 700; color: #1C1917; letter-spacing: -0.01em;">
-                                Connect your social accounts
+                                连接社交账号
                             </h1>
                             <p style="margin: 8px 0 0; font-size: 15px; color: #57534E; line-height: 1.5;">
-                                {{ org_name }} has invited you to connect your accounts to <strong style="color: #1C1917;">{{ workspace_name }}</strong>.
+                                {{ org_name }} 已邀请您将账号连接至 <strong style="color: #1C1917;">{{ workspace_name }}</strong>.
                             </p>
                         </td>
                     </tr>
@@ -31,7 +31,7 @@
                                 border-radius: 9999px;
                                 text-decoration: none;
                                 box-shadow: 0 4px 14px rgba(249,115,22,0.28);
-                            ">Connect Accounts</a>
+                            ">连接账号</a>
                         </td>
                     </tr>
                     <!-- Instructions -->
@@ -39,10 +39,10 @@
                         <td style="padding: 0 32px 24px;">
                             <table width="100%" cellpadding="0" cellspacing="0" style="background: #FAFAF9; border-radius: 8px; padding: 16px;">
                                 <tr><td style="padding: 16px; font-size: 13px; color: #57534E; line-height: 1.7;">
-                                    <strong style="color: #1C1917;">What to expect:</strong><br>
-                                    1. You'll see a list of platforms to connect.<br>
-                                    2. Click "Connect" on each one you'd like to link.<br>
-                                    3. Click "Done" when finished to notify your team.
+                                    <strong style="color: #1C1917;">预期流程：</strong><br>
+                                    1. 您将看到待连接的账号列表。<br>
+                                    2. 点击每个您希望关联的账号旁的“连接”按钮。<br>
+                                    3. 完成后点击“完成”以通知您的团队。
                                 </td></tr>
                             </table>
                         </td>
@@ -51,7 +51,7 @@
                     <tr>
                         <td style="padding: 0 32px 28px; text-align: center;">
                             <p style="margin: 0; font-size: 12px; color: #A8A29E;">
-                                This link expires {{ expires_at|date:"M j, Y" }}.
+                                此链接将于 {{ expires_at|date:"M j, Y" }} 过期。
                             </p>
                         </td>
                     </tr>
@@ -61,7 +61,7 @@
                     <tr>
                         <td style="padding: 20px 32px; text-align: center;">
                             <p style="margin: 0; font-size: 12px; color: #A8A29E;">
-                                Sent by {{ org_name }}
+                                由 {{ org_name }} 发送
                             </p>
                         </td>
                     </tr>

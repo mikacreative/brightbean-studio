@@ -1,15 +1,15 @@
 {% extends "client_portal/portal_base.html" %}
-{% block title %}Dashboard - {{ workspace.name }}{% endblock %}
+{% block title %}仪表盘 - {{ workspace.name }}{% endblock %}
 
 {% block content %}
 <div>
     <!-- Welcome -->
     <div class="mb-8">
         <h1 class="text-2xl font-bold tracking-tight" style="color: var(--text-primary); font-family: var(--font-display);">
-            Welcome back
+            欢迎回来
         </h1>
         <p class="text-[0.9375rem] mt-1" style="color: var(--text-secondary);">
-            Here's what's happening with {{ workspace.name }}
+            {{ workspace.name }} 的最新动态
         </p>
     </div>
 
@@ -28,7 +28,7 @@
                 {% endif %}
             </div>
             <p class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">{{ pending_count }}</p>
-            <p class="text-[0.8125rem] mt-0.5" style="color: var(--text-secondary);">Posts awaiting your review</p>
+            <p class="text-[0.8125rem] mt-0.5" style="color: var(--text-secondary);">等待您审批的内容</p>
         </a>
 
         <!-- Recently published -->
@@ -39,7 +39,7 @@
                 <svg class="w-5 h-5" style="color: var(--success-500);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <p class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">{{ recent_published|length }}</p>
-            <p class="text-[0.8125rem] mt-0.5" style="color: var(--text-secondary);">Recently published</p>
+            <p class="text-[0.8125rem] mt-0.5" style="color: var(--text-secondary);">最近发布</p>
         </a>
 
         <!-- My actions -->
@@ -50,7 +50,7 @@
                 <svg class="w-5 h-5" style="color: var(--info-500);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
             </div>
             <p class="text-2xl font-bold tracking-tight" style="color: var(--text-primary);">{{ my_actions|length }}</p>
-            <p class="text-[0.8125rem] mt-0.5" style="color: var(--text-secondary);">Recent actions</p>
+            <p class="text-[0.8125rem] mt-0.5" style="color: var(--text-secondary);">最近操作</p>
         </a>
     </div>
 
@@ -59,13 +59,13 @@
     <div class="rounded-xl border p-5" style="background: var(--primary-soft); border-color: var(--primary-muted);">
         <div class="flex items-center justify-between">
             <div>
-                <p class="font-semibold text-[0.9375rem]" style="color: var(--brand-800);">You have {{ pending_count }} post{{ pending_count|pluralize }} waiting for review</p>
-                <p class="text-[0.8125rem] mt-0.5" style="color: var(--brand-700);">Review and approve content before it's published</p>
+                <p class="font-semibold text-[0.9375rem]" style="color: var(--brand-800);">有 {{ pending_count }} 条内容等待你的审核</p>
+                <p class="text-[0.8125rem] mt-0.5" style="color: var(--brand-700);">在发布前审批内容</p>
             </div>
             <a href="{% url 'client_portal:approval_queue' %}"
                class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full text-white transition-all hover:-translate-y-0.5"
                style="background: var(--primary); box-shadow: var(--shadow-primary);">
-                Review Now
+                立即审批
             </a>
         </div>
     </div>

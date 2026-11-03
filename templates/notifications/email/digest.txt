@@ -1,12 +1,12 @@
 {{ heading }}
-{{ date|date:"N j, Y" }} - {{ total }} item{{ total|pluralize }}
+{{ date|date:"Y年n月j日" }} · 共 {{ total }} 条
 {% for n in notifications %}
-- {{ n.title }}{% if n.body %}: {{ n.body|truncatewords:20 }}{% endif %} ({{ n.created_at|timesince }} ago)
+- {{ n.title }}{% if n.body %}：{{ n.body|truncatewords:20 }}{% endif %}（{{ n.created_at|timesince }}前）
 {% endfor %}{% if overflow %}
-...and {{ overflow }} more.
+另有 {{ overflow }} 条通知。
 {% endif %}
-View all: {{ app_url }}/notifications/
+查看全部：{{ app_url }}/notifications/
 
 ---
-You received this because of your notification settings.
-Manage preferences: {{ app_url }}/notifications/preferences/
+你收到此邮件是因为开启了相应通知。
+管理通知设置：{{ app_url }}/notifications/preferences/

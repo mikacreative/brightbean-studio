@@ -1,1 +1,1 @@
-{% autoescape off %}Confirm your email for Brightbean{% endautoescape %}
+{% autoescape off %}确认你的 Brightbean 邮箱{% endautoescape %}

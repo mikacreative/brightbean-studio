@@ -5,29 +5,29 @@
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
         </svg>
     </div>
-    <h3 class="text-sm font-semibold text-stone-800 mb-1">Your inbox is empty</h3>
+    <h3 class="text-sm font-semibold text-stone-800 mb-1">互动消息为空</h3>
 
     {% if social_accounts %}
     <p class="text-[13px] text-stone-500 max-w-xs leading-relaxed">
-        Comments, mentions, and DMs from your connected accounts will appear here. Messages are synced every 5 minutes.
+        来自已连接账号的评论、提及和私信将显示在此处。消息每 5 分钟同步一次。
     </p>
     {% else %}
     <p class="text-[13px] text-stone-500 max-w-xs leading-relaxed mb-4">
-        Connect your social accounts to start receiving messages in your inbox.
+        连接社交账号以开始在互动消息中接收消息。
     </p>
     <a href="{% url 'social_accounts:connect' workspace_id=workspace.id %}"
        class="inline-flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 rounded-full hover:bg-orange-100 hover:border-orange-300 active:bg-orange-100 transition-all duration-150">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-        Connect Accounts
+        连接账号
     </a>
     {% endif %}
 
     {% if active_filters.q or active_filters.platform or active_filters.type or active_filters.status or active_filters.sentiment %}
     <div class="mt-4 pt-4 border-t border-stone-100">
-        <p class="text-[12px] text-stone-400 mb-2">No messages match your current filters.</p>
+        <p class="text-[12px] text-stone-400 mb-2">没有消息符合当前筛选条件。</p>
         <a href="{% url 'inbox:feed' workspace_id=workspace.id %}"
            class="text-[12px] font-semibold hover:underline" style="color: var(--primary);">
-            Clear all filters
+            清除所有筛选
         </a>
     </div>
     {% endif %}

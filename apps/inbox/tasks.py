@@ -14,6 +14,7 @@ from django.db.models.fields.json import KT
 from django.utils import timezone
 
 from apps.common import quota
+from apps.common.ui_messages import localize_ui_label
 from apps.members.models import WorkspaceMembership
 from apps.notifications.engine import notify
 from apps.notifications.models import EventType
@@ -645,7 +646,7 @@ class InboxSyncEngine:
             notify(
                 user=user,
                 event_type=EventType.NEW_INBOX_MESSAGE,
-                title=f"New {message.get_message_type_display()} from {message.sender_name}",
+                title=f"收到 {message.sender_name} 的新{localize_ui_label(message.get_message_type_display())}",
                 body=message.body[:200],
                 data={
                     "message_id": str(message.id),
@@ -687,8 +688,8 @@ class InboxSyncEngine:
             notify(
                 user=user,
                 event_type=EventType.INBOX_SLA_OVERDUE,
-                title=f"SLA overdue: {message.get_message_type_display()} from {message.sender_name}",
-                body=f"Response target of {config.target_response_minutes} minutes exceeded.",
+                title=f"互动处理超时：{message.sender_name} 的{localize_ui_label(message.get_message_type_display())}",
+                body=f"已超过 {config.target_response_minutes} 分钟的回复时限。",
                 data={
                     "message_id": str(message.id),
                     "workspace_id": str(message.workspace_id),

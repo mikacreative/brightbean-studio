@@ -3,8 +3,8 @@
     {# Title #}
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 600; color: var(--neutral-900); letter-spacing: -0.01em;">Analytics</h1>
-            <p style="font-size: 0.8125rem; color: var(--text-tertiary); margin-top: 2px;">Performance across your connected channels.</p>
+            <h1 style="font-size: 1.5rem; font-weight: 600; color: var(--neutral-900); letter-spacing: -0.01em;">数据分析</h1>
+            <p style="font-size: 0.8125rem; color: var(--text-tertiary); margin-top: 2px;">各已连接账号的表现。</p>
         </div>
     </div>
 
@@ -32,7 +32,7 @@
                 </button>
                 <div x-show="open" @click.away="open = false" x-cloak
                      style="position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; width: 280px; background: #fff; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border); padding: 6px;">
-                    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-ghost); padding: 6px 10px 4px;">Connected accounts</div>
+                    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-ghost); padding: 6px 10px 4px;">已连接账号</div>
                     {% for acc in accounts %}
                         <a href="{% url 'analytics:account' workspace_id=workspace.id account_id=acc.id %}"
                            style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: {% if acc.id == active_account.id %}var(--surface-1){% else %}none{% endif %}; border-radius: var(--radius-md); text-decoration: none; color: inherit;">
@@ -48,7 +48,7 @@
                             </div>
                             <span style="flex: 1; min-width: 0;">
                                 <span style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--neutral-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ acc.account_name }}{% if acc.platform == "youtube" %} <small>YouTube</small>{% endif %}</span>
-                                <span style="display: block; font-size: 0.6875rem; color: var(--text-tertiary);">{{ acc.follower_count|intcomma }} {% if acc.platform == "youtube" %}subscribers{% else %}followers{% endif %}</span>
+                                <span style="display: block; font-size: 0.6875rem; color: var(--text-tertiary);">{{ acc.follower_count|intcomma }} {% if acc.platform == "youtube" %}订阅者{% else %}粉丝{% endif %}</span>
                             </span>
                             {% if acc.analytics_unavailable_reason %}
                                 {% comment %}
@@ -57,7 +57,7 @@
                                 and the page body says which of the two reasons applies.
                                 {% endcomment %}
                                 <span title="{{ acc.analytics_unavailable_reason }}"
-                                      style="flex-shrink: 0; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-tertiary); background: var(--surface-2); border-radius: var(--radius-full); padding: 2px 7px;">No data</span>
+                                      style="flex-shrink: 0; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-tertiary); background: var(--surface-2); border-radius: var(--radius-full); padding: 2px 7px;">暂无数据</span>
                             {% endif %}
                             {% if acc.id == active_account.id %}
                                 <svg width="16" height="16" fill="none" stroke="var(--primary)" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -71,7 +71,7 @@
             <div style="display: flex; align-items: center; gap: 18px;">
                 {% if active_account.platform != "youtube" %}
                 <div>
-                    <div style="font-size: 0.6875rem; color: var(--text-ghost); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Followers</div>
+                    <div style="font-size: 0.6875rem; color: var(--text-ghost); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">粉丝数</div>
                     <div class="a-mono" style="font-size: 0.9375rem; font-weight: 700; color: var(--text-primary);">{{ active_account.follower_count|intcomma }}</div>
                 </div>
                 {% endif %}
@@ -79,10 +79,10 @@
                 {% if active_account.platform != "youtube" %}<div style="width: 1px; height: 28px; background: var(--neutral-200);"></div>{% endif %}
                 <div>
                     <div style="font-size: 0.6875rem; color: var(--text-ghost); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
-                        {% if active_account.platform == "youtube" %}New subscribers{% else %}New followers{% endif %}
+                        {% if active_account.platform == "youtube" %}新增订阅者{% else %}新增粉丝{% endif %}
                     </div>
                     <div style="display: flex; align-items: center; gap: 7px;">
-                        <span class="a-mono" style="font-size: 0.9375rem; font-weight: 700; color: var(--text-primary);"{% if follower_growth.estimated %} title="Calculated by BrightBean from the change in follower totals"{% endif %}>+{{ follower_growth.value|floatformat:0 }}</span>
+                        <span class="a-mono" style="font-size: 0.9375rem; font-weight: 700; color: var(--text-primary);"{% if follower_growth.estimated %} title="由 BrightBean 根据粉丝总数变化计算得出"{% endif %}>+{{ follower_growth.value|floatformat:0 }}</span>
                         {% if follower_growth.comparison_available %}{% include "analytics/_delta_chip.html" with delta=follower_growth.delta %}{% endif %}
                     </div>
                 </div>

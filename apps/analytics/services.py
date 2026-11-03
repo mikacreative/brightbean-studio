@@ -16,7 +16,6 @@ from typing import Any, NamedTuple
 
 from django.db import connections
 from django.utils import timezone
-from django.utils.text import get_text_list
 
 from apps.composer.models import PlatformPost
 from apps.social_accounts.models import SocialAccount
@@ -439,7 +438,7 @@ def calculated_metrics_note(
     A disclosure label does not authorize a derived metric.
     """
     if account.platform == "youtube":
-        return "Metrics reported by YouTube. Data may be delayed. Percentage comparisons, when available, are calculated from reported totals."
+        return "数据由 YouTube 提供，可能存在延迟。可用时，百分比变化根据已报告的总量计算。"
     shown = [card["derived"] for card in cards]
     if engagement:
         shown += [part["derived"] for part in engagement["parts"]]
@@ -448,18 +447,17 @@ def calculated_metrics_note(
     platform = platform_name(account)
     calculated = []
     if engagement:
-        calculated.append("engagement rate")
+        calculated.append("互动率")
     if any(d.averaged for d in shown):
-        calculated.append("daily averages")
+        calculated.append("日均值")
     if any(d.estimated for d in shown):
-        calculated.append(f"estimates built from per-{content_noun(account)} counts")
+        noun = "视频" if content_noun(account) == "video" else "内容"
+        calculated.append(f"基于单条{noun}数据的估算")
     if growth is not None and growth.estimated:
-        calculated.append("follower growth")
-    calculated.append("% changes vs. the previous period")
-    listed = get_text_list(calculated, "and")
-    return (
-        f"Underlying data comes from {platform}. The {listed} are calculated by BrightBean, not reported by {platform}."
-    )
+        calculated.append("粉丝增长")
+    calculated.append("与上一周期的百分比变化")
+    listed = "、".join(calculated)
+    return f"基础数据来自 {platform}。{listed}由 BrightBean 计算，非 {platform} 直接提供。"
 
 
 def hero_chart_metrics(account: SocialAccount) -> list[str]:

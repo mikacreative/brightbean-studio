@@ -560,7 +560,7 @@ def _send_invite_email(invitation) -> bool:
         "app_url": app_url,
     }
 
-    subject = f"You've been invited to join {invitation.organization.name} on Brightbean"
+    subject = f"你已受邀加入 Brightbean 上的「{invitation.organization.name}」团队"
     text_content = render_to_string("members/email/invite.txt", context)
     html_content = render_to_string("members/email/invite.html", context)
 

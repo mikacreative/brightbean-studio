@@ -95,9 +95,9 @@ class TestAccountListView:
         )
         response = authenticated_client.get(reverse("social_accounts:list", kwargs={"workspace_id": workspace.id}))
         body = response.content.decode()
-        assert ("Contact your administrator to enable it." in body) is not flag
-        assert ("Some real-time inbox updates are unavailable" in body) is flag
-        assert ("Reconnect" in body) is flag
+        assert ("请联系管理员启用该功能。" in body) is not flag
+        assert ("部分实时互动消息更新不可用" in body) is flag
+        assert ("重新连接" in body) is flag
         # Rendering applies the current policy without modifying retained state.
         account.refresh_from_db()
         assert account.webhook_error == error
@@ -138,9 +138,12 @@ class TestAccountListView:
         response = authenticated_client.get(reverse("social_accounts:list", kwargs={"workspace_id": workspace.id}))
         body = response.content.decode()
         assert remaining_error in body
-        assert "Some real-time inbox updates are unavailable" in body
-        assert ("Reconnect" in body) is needs_reconnect
-        assert ("Try again" in body) is not needs_reconnect
+        assert "部分实时互动消息更新不可用" in body
+        assert ("重新连接" in body) is needs_reconnect
+        retry_url = reverse(
+            "social_accounts:retry_webhooks", kwargs={"workspace_id": workspace.id, "account_id": account.id}
+        )
+        assert (retry_url in body) is not needs_reconnect
         if "pages_manage_metadata" not in missing_scopes:
             assert dm_error not in body
         assert account.webhook_warning.needs_reconnect is needs_reconnect
@@ -160,8 +163,8 @@ class TestAccountListView:
         response = authenticated_client.get(reverse("social_accounts:list", kwargs={"workspace_id": workspace.id}))
         body = response.content.decode()
         assert "pages_manage_metadata" in body
-        assert "Some real-time inbox updates are unavailable" in body
-        assert "Reconnect" in body
+        assert "部分实时互动消息更新不可用" in body
+        assert "重新连接" in body
 
     @pytest.mark.parametrize("flag", [False, True])
     def test_intentionally_omitted_dm_permission_does_not_prompt_reconnect(
@@ -182,8 +185,8 @@ class TestAccountListView:
         assert "pages_manage_metadata" in account.connection_missing_scopes
         assert ("instagram_manage_messages" in account.connection_missing_scopes) is flag
         body = response.content.decode()
-        assert ("Contact your administrator to enable it." in body) is not flag
-        assert ("grant messaging access on the linked Facebook Page, then reconnect" in body) is flag
+        assert ("请联系管理员启用该功能。" in body) is not flag
+        assert ("请在关联的 Facebook 主页授予消息访问权限，然后重新连接此账号" in body) is flag
 
     def test_requires_authentication(self, client, workspace):
         url = reverse("social_accounts:list", kwargs={"workspace_id": workspace.id})
@@ -210,7 +213,7 @@ class TestAccountListView:
     def test_shows_empty_state(self, authenticated_client, workspace):
         url = reverse("social_accounts:list", kwargs={"workspace_id": workspace.id})
         response = authenticated_client.get(url)
-        assert b"No accounts connected yet" in response.content
+        assert "还没有账号".encode() in response.content
 
 
 @pytest.mark.django_db
@@ -250,7 +253,7 @@ class TestConnectPlatformView:
         url = reverse("social_accounts:connect", kwargs={"workspace_id": workspace.id})
         response = authenticated_client.get(url)
         assert response.status_code == 200
-        assert b"Connect a Platform" in response.content
+        assert "连接平台".encode() in response.content
 
     def test_post_invalid_platform(self, authenticated_client, workspace):
         url = reverse("social_accounts:connect", kwargs={"workspace_id": workspace.id})
@@ -454,7 +457,7 @@ class TestOAuthCallbackView:
 
         assert response.status_code == 302
         shown = [str(m) for m in get_messages(response.wsgi_request)]
-        assert any(f"Try again after {resets_at:%H:%M} UTC" in m for m in shown), shown
+        assert any(f"请在 {resets_at:%H:%M} UTC 后重试" in m for m in shown), shown
         assert not any("Please try again." in m for m in shown), shown
         # Nothing was connected, so the card must not appear half-made.
         assert not SocialAccount.objects.filter(workspace=workspace, platform="youtube").exists()
@@ -681,8 +684,8 @@ class TestSelectAccountView:
 
         assert response.status_code == 200
         body = response.content.decode()
-        assert "Select all publishable" in body
-        assert "Missing Facebook content publishing access" in body
+        assert "全选可发布项" in body
+        assert "缺少 Facebook 内容发布权限" in body
 
     def test_an_already_connected_page_is_never_rendered_pre_checked(self, authenticated_client, workspace):
         """Ticking a row re-runs the whole connect, so it must be deliberate.
@@ -901,7 +904,7 @@ class TestRetryWebhooksView:
         assert response.status_code == 200
         body = response.content.decode()
         assert f'id="account-{account.id}"' in body
-        assert "Real-time comments are off" not in body
+        assert "部分实时互动消息更新不可用" not in body
 
     def test_a_still_failing_retry_re_renders_the_warning(self, authenticated_client, workspace):
         account = self._account(workspace)
@@ -912,10 +915,10 @@ class TestRetryWebhooksView:
 
         assert response.status_code == 200
         body = response.content.decode()
-        assert "Some real-time inbox updates are unavailable" in body
+        assert "部分实时互动消息更新不可用" in body
         # Still retryable, so the card keeps offering the retry rather than
         # sending the user to OAuth for a transient failure.
-        assert "Try again" in body
+        assert "重试" in body
 
     def test_an_auth_failure_offers_reconnect_instead_of_another_retry(self, authenticated_client, workspace):
         """A grant that cannot satisfy the call must not hand back a retry button."""
@@ -928,8 +931,8 @@ class TestRetryWebhooksView:
             response = authenticated_client.post(self._url(workspace, account), HTTP_HX_REQUEST="true")
 
         body = response.content.decode()
-        assert "Reconnect" in body
-        assert "Try again" not in body
+        assert "重新连接" in body
+        assert "重试" not in body
 
     def test_a_disconnected_account_is_not_dialled_out_for(self, authenticated_client, workspace):
         """The token is known bad; the call would spend a round trip to be refused."""
@@ -948,14 +951,17 @@ class TestRetryWebhooksView:
         webhooks_active=False on an ERROR connection — a state where "Try again"
         can only ever be a no-op. The card has to offer the reconnect instead.
         """
-        self._account(workspace, connection_status=SocialAccount.ConnectionStatus.ERROR)
+        account = self._account(workspace, connection_status=SocialAccount.ConnectionStatus.ERROR)
 
         response = authenticated_client.get(reverse("social_accounts:list", kwargs={"workspace_id": workspace.id}))
 
         body = response.content.decode()
-        assert "Real-time comments are off" not in body
-        assert "Try again" not in body
-        assert "Reconnect" in body
+        assert "部分实时互动消息更新不可用" not in body
+        retry_url = reverse(
+            "social_accounts:retry_webhooks", kwargs={"workspace_id": workspace.id, "account_id": account.id}
+        )
+        assert retry_url not in body
+        assert "重新连接" in body
 
     def test_the_stale_card_is_answered_with_the_reconnect_state(self, authenticated_client, workspace):
         """A card rendered while healthy can still POST after the account breaks.
@@ -969,8 +975,8 @@ class TestRetryWebhooksView:
 
         assert response.status_code == 200
         body = response.content.decode()
-        assert "Try again" not in body
-        assert "Reconnect" in body
+        assert "重试" not in body
+        assert "重新连接" in body
 
     def test_a_token_expiring_account_may_still_retry(self, authenticated_client, workspace):
         """The token has not expired yet, so the subscription can genuinely succeed."""
@@ -1159,27 +1165,27 @@ class TestDisconnectConfirmation:
     def test_youtube_says_access_is_revoked_and_data_deleted(self, authenticated_client, workspace):
         text = self._card_text(authenticated_client, workspace, "youtube")
 
-        assert "Disconnect <strong>Test Channel</strong>?" in text
-        assert "This revokes BrightBean's access to the account." in text
-        assert "YouTube data, analytics and copied comments are deleted immediately" in text
-        assert "original uploads and posts shared with other channels stay" in text
-        assert "Historical data will be preserved" not in text
-        assert "removes the account from BrightBean only" not in text
+        assert "确定断开 <strong>Test Channel</strong> 吗？" in text
+        assert "此操作将撤销 BrightBean 对该账号的访问权限。" in text
+        assert "YouTube 数据、分析数据及复制的评论将被立即删除" in text
+        assert "YouTube 原始上传内容以及与其他账号共享的内容将保留" in text
+        assert "历史数据将被保留" not in text
+        assert "此操作仅将该账号从 BrightBean 中移除" not in text
 
     def test_facebook_says_the_grant_is_kept(self, authenticated_client, workspace):
         text = self._card_text(authenticated_client, workspace, "facebook")
 
-        assert "This removes the account from BrightBean only." in text
-        assert "Facebook &rsaquo; Settings &rsaquo; Apps and Websites" in text
-        assert "deleted from BrightBean" in text
-        assert "revokes BrightBean's access" not in text
+        assert "此操作仅将该账号从 BrightBean 中移除。" in text
+        assert "Facebook &rsaquo; 设置 &rsaquo; 应用和网站" in text
+        assert "从 BrightBean 中删除" in text
+        assert "撤销 BrightBean 对该账号的访问权限" not in text
 
     def test_a_platform_without_revocation_does_not_claim_it(self, authenticated_client, workspace):
         text = self._card_text(authenticated_client, workspace, "pinterest")
 
-        assert "remove BrightBean in your Pinterest settings" in text
-        assert "deleted from BrightBean" in text
-        assert "revokes BrightBean's access" not in text
+        assert "您的 Pinterest 设置中移除 BrightBean" in text
+        assert "从 BrightBean 中删除" in text
+        assert "撤销 BrightBean 对该账号的访问权限" not in text
 
 
 @pytest.mark.django_db
@@ -1191,7 +1197,7 @@ class TestBlueskyConnectView:
         )
         response = authenticated_client.get(url)
         assert response.status_code == 200
-        assert b"Connect Bluesky" in response.content
+        assert "连接 Bluesky".encode() in response.content
 
     def test_post_requires_handle_and_password(self, authenticated_client, workspace):
         url = reverse(
@@ -1211,4 +1217,4 @@ class TestMastodonConnectView:
         )
         response = authenticated_client.get(url)
         assert response.status_code == 200
-        assert b"Connect Mastodon" in response.content
+        assert "连接 Mastodon".encode() in response.content
