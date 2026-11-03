@@ -9,13 +9,12 @@ def sidebar_context(request):
     Provides:
         sidebar_workspaces: list of workspace objects the user belongs to
         sidebar_channels: connected social accounts for the current workspace
-        sidebar_connectable_platforms: platforms available to connect
     """
     if not hasattr(request, "user") or not request.user.is_authenticated:
         return {}
 
     from apps.members.models import WorkspaceMembership
-    from apps.social_accounts.models import AnalyticsPlatformConfig, PlatformVisibility, SocialAccount
+    from apps.social_accounts.models import AnalyticsPlatformConfig, SocialAccount
 
     analytics_enabled_platforms = AnalyticsPlatformConfig.enabled_platforms()
 
@@ -33,7 +32,6 @@ def sidebar_context(request):
     # Connected channels for the current workspace
     sidebar_channels = []
     sidebar_unhealthy_channels = []
-    sidebar_connectable_platforms = []
 
     workspace = getattr(request, "workspace", None)
 
@@ -62,17 +60,6 @@ def sidebar_context(request):
                 ]
             )
             .order_by("platform", "account_name")
-        )
-
-        # Connectable platforms: not yet connected in this workspace.
-        # Show all known platforms (configured or not) so the sidebar
-        # always surfaces what can be connected. The connect page itself
-        # handles the "not configured" case with an admin prompt, and shares
-        # PlatformVisibility.visible_choices() with us so the two can't disagree.
-        connected_platforms = {ch.platform for ch in sidebar_channels}
-        sidebar_connectable_platforms = sorted(
-            ((p, label) for p, label in PlatformVisibility.visible_choices() if p not in connected_platforms),
-            key=_connect_suggestion_rank,
         )
 
     # Unread inbox count for sidebar badge
@@ -135,7 +122,6 @@ def sidebar_context(request):
         "can_create_workspace": can_create_workspace,
         "sidebar_channels": sidebar_channels,
         "sidebar_unhealthy_channels": sidebar_unhealthy_channels,
-        "sidebar_connectable_platforms": sidebar_connectable_platforms,
         "sidebar_unread_inbox_count": sidebar_unread_inbox_count,
         "sidebar_pending_approvals": sidebar_pending_approvals,
         "sidebar_idea_columns": sidebar_idea_columns,
@@ -143,37 +129,3 @@ def sidebar_context(request):
         "analytics_enabled_platforms": analytics_enabled_platforms,
         "show_review_banner": show_review_banner,
     }
-
-
-# Display order for the sidebar's connect shortcuts, most-asked-for first.
-# The template shows only the first three, and ``Platform.choices`` is ordered
-# for the publish pipeline — leaving it to decide would put Facebook, Instagram
-# and Instagram (Direct) in all three slots and push LinkedIn/TikTok/YouTube
-# out of sight.
-#
-# Unlike the hand-maintained list this replaced, this is a *ranking*, not the
-# set: a platform missing from here still appears (ranked last), so a new
-# platform can never be silently hidden from the sidebar again.
-_CONNECT_SUGGESTION_ORDER: tuple[str, ...] = (
-    "instagram",
-    "linkedin_company",
-    "tiktok",
-    "youtube",
-    "facebook",
-    "linkedin_personal",
-    "threads",
-    "pinterest",
-    "instagram_login",
-    "google_business",
-    "bluesky",
-    "mastodon",
-    "devto",
-)
-
-
-def _connect_suggestion_rank(choice):
-    platform, _label = choice
-    try:
-        return (0, _CONNECT_SUGGESTION_ORDER.index(platform))
-    except ValueError:
-        return (1, 0)

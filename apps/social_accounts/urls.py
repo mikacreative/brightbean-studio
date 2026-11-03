@@ -50,6 +50,11 @@ urlpatterns = [
     ),
     # Per-account actions
     path(
+        "<uuid:workspace_id>/<uuid:account_id>/edit/",
+        views.edit_manual_account,
+        name="edit_manual",
+    ),
+    path(
         "<uuid:workspace_id>/<uuid:account_id>/reconnect/",
         views.reconnect,
         name="reconnect",

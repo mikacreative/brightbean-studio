@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}连接社交账号{% endblock %}
+{% block page_title %}添加账号{% endblock %}
 {% block content %}
 <div class="max-w-4xl">
     <!-- Header -->
@@ -8,18 +8,30 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             返回社交账号
         </a>
-        <h2 class="text-xl font-semibold text-stone-900">连接平台</h2>
-        <p class="text-sm text-stone-500 mt-1">选择平台以连接您的社交媒体账号。</p>
-        <div class="mt-4 p-4 bg-orange-50 rounded-xl text-sm text-stone-700">
-            <p class="font-semibold">小红书和微信公众号</p>
-            <p class="mt-1">添加人工管理账号，用于预览、排期与协作；此操作不会连接平台，也不会自动发布。</p>
-            <a class="inline-block mt-2 font-semibold text-orange-700 underline" href="{% url 'social_accounts:add_manual' workspace_id=workspace_id %}">添加人工管理账号</a>
-        </div>
+        <h2 class="text-xl font-semibold text-stone-900">添加账号</h2>
+        <p class="text-sm text-stone-500 mt-1">选择平台。小红书和微信公众号支持人工管理，不会自动发布；其他平台按各自的方式授权连接。</p>
     </div>
 
     <!-- Platform grid -->
     <div class="overflow-y-auto pr-1">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for value, label in manual_platform_choices %}
+        <div class="bg-white rounded-xl border border-stone-200 p-5">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-stone-100">
+                    {% include "social_accounts/partials/_platform_icon.html" with platform=value size="5" %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-sm font-semibold text-stone-900">{{ label }}</h3>
+                    <p class="text-xs text-stone-400 mt-0.5">人工管理 · 无需授权</p>
+                </div>
+            </div>
+            <a href="{% url 'social_accounts:add_manual' workspace_id=workspace_id %}?platform={{ value }}"
+               class="mt-4 w-full inline-flex items-center justify-center px-4 py-1.5 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-200 rounded-full hover:bg-orange-100 transition-colors">
+                添加账号
+            </a>
+        </div>
+        {% endfor %}
         {% for value, label in platform_choices %}
         <div class="relative bg-white rounded-xl border border-stone-200 p-5 transition-all duration-200 {% if value in configured_platforms or value == 'youtube' %}{% else %}opacity-60{% endif %}">
             <div class="flex items-start gap-4">

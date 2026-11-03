@@ -18,7 +18,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_ratelimit.decorators import ratelimit
 
 from apps.common.ui_messages import localize_ui_error
@@ -28,7 +28,7 @@ from apps.members.decorators import require_permission
 from providers.exceptions import QuotaExceededError
 
 from .error_messages import quota_connect_error
-from .models import MANUAL_PLATFORM_LABELS, MastodonAppRegistration, PlatformVisibility, SocialAccount
+from .models import MANUAL_PLATFORM_LABELS, MANUAL_PLATFORMS, MastodonAppRegistration, PlatformVisibility, SocialAccount
 from .oauth_aliases import from_url_slug, redirect_uri_from_request, to_url_slug
 from .oauth_pkce import issue_pkce_verifier, pkce_kwargs
 from .provider_factory import _get_provider_for_platform, apply_analytics_scope_flag
@@ -216,11 +216,9 @@ def add_manual_account(request, workspace_id):
     if request.method == "POST":
         if platform not in MANUAL_PLATFORM_LABELS:
             error = "请选择小红书或微信公众号。"
-        elif not name or len(name) > 255:
-            error = "请填写账号名称（最多 255 个字符）。"
-        elif len(handle) > 255:
-            error = "账号标识最多 255 个字符。"
         else:
+            error = _manual_account_details_error(name, handle)
+        if not error:
             # This identity is local. It intentionally has no platform ID or
             # token; a random key allows identically named accounts in a workspace.
             # CONNECTED keeps it selectable by the existing composer. Manual
@@ -254,6 +252,54 @@ def add_manual_account(request, workspace_id):
     )
 
 
+def _manual_account_details_error(name, handle):
+    if not name or len(name) > 255:
+        return "请填写账号名称（最多 255 个字符）。"
+    if len(handle) > 255:
+        return "账号标识最多 255 个字符。"
+    return ""
+
+
+@login_required
+@require_permission("manage_social_accounts")
+@require_http_methods(["GET", "POST"])
+@ratelimit(key="user", rate="20/m", method="POST", block=True)
+def edit_manual_account(request, workspace_id, account_id):
+    """Update local identity details while keeping the account and its relations."""
+    account = get_object_or_404(
+        SocialAccount.objects.for_workspace(workspace_id), id=account_id, platform__in=MANUAL_PLATFORMS
+    )
+    name = account.account_name
+    handle = account.account_handle
+    error = ""
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        handle = request.POST.get("handle", "").strip()
+        if "platform" in request.POST and request.POST["platform"] != account.platform:
+            error = "不能修改账号所属平台。"
+        else:
+            error = _manual_account_details_error(name, handle)
+        if not error:
+            account.account_name = name
+            account.account_handle = handle
+            account.save(update_fields=["account_name", "account_handle", "updated_at"])
+            messages.success(request, "账号资料已更新，关联内容保持不变。")
+            return redirect("social_accounts:list", workspace_id=workspace_id)
+
+    return render(
+        request,
+        "social_accounts/manual_account.html",
+        {
+            "workspace_id": workspace_id,
+            "account": account,
+            "name": name,
+            "handle": handle,
+            "error": error,
+        },
+        status=400 if error else 200,
+    )
+
+
 # ------------------------------------------------------------------
 # Connect Platform (OAuth redirect)
 # ------------------------------------------------------------------
@@ -274,6 +320,7 @@ def connect_platform(request, workspace_id):
             {
                 "workspace_id": workspace_id,
                 "platform_choices": visible_platform_choices,
+                "manual_platform_choices": MANUAL_PLATFORM_LABELS.items(),
                 "configured_platforms": configured_platforms,
             },
         )

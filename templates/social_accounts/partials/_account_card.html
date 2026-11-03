@@ -41,6 +41,11 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
 
         <!-- Actions -->
         <div class="flex items-center gap-2" x-data="{ confirmDisconnect: false }">
+            {% if account.is_manual %}
+            <a href="{% url 'social_accounts:edit_manual' workspace_id=workspace_id account_id=account.id %}"
+               class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-stone-600 bg-stone-100 rounded-full hover:bg-stone-200 transition-colors"
+               aria-label="编辑 {{ account.account_name }}">编辑</a>
+            {% endif %}
             {% if account.needs_reconnect %}
             <form method="post" action="{% url 'social_accounts:reconnect' workspace_id=workspace_id account_id=account.id %}">
                 {% csrf_token %}

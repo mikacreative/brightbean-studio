@@ -85,7 +85,7 @@ def test_workspace_navigation_and_settings_use_chinese(localized_workspace):
 
 
 @pytest.mark.django_db
-def test_calendar_shows_chinese_manual_accounts_and_timezone(localized_workspace):
+def test_calendar_shows_chinese_add_account_and_timezone(localized_workspace):
     user, workspace = localized_workspace
     workspace.timezone = "Asia/Shanghai"
     workspace.save(update_fields=["timezone"])
@@ -95,8 +95,8 @@ def test_calendar_shows_chinese_manual_accounts_and_timezone(localized_workspace
     response = client.get(reverse("calendar:calendar", kwargs={"workspace_id": workspace.id}))
     body = response.content.decode()
     assert response.status_code == 200
-    assert "小红书（人工管理）" in body
-    assert "微信公众号（人工管理）" in body
+    assert "添加账号" in body
+    assert reverse("social_accounts:connect", kwargs={"workspace_id": workspace.id}) in body
     assert "北京时间（工作区）" in body
     assert "Asia/Shanghai" in body
 

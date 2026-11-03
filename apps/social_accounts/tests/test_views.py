@@ -253,7 +253,7 @@ class TestConnectPlatformView:
         url = reverse("social_accounts:connect", kwargs={"workspace_id": workspace.id})
         response = authenticated_client.get(url)
         assert response.status_code == 200
-        assert "连接平台".encode() in response.content
+        assert "添加账号".encode() in response.content
 
     def test_post_invalid_platform(self, authenticated_client, workspace):
         url = reverse("social_accounts:connect", kwargs={"workspace_id": workspace.id})
