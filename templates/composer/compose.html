@@ -2,7 +2,7 @@
 {% load static %}
 {% load common_extras %}
 
-{% block title %}{% if is_edit %}Edit Post{% else %}New Post{% endif %} - {{ workspace.name }} - Brightbean{% endblock %}
+{% block title %}{% if is_edit %}编辑内容{% else %}新建内容{% endif %} - {{ workspace.name }} - Brightbean{% endblock %}
 
 {% comment %}Header is rendered inside the content block to avoid overlap with the -m-6 layout{% endcomment %}
 
@@ -289,12 +289,12 @@
                 class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-stone-200 text-stone-400 hover:text-stone-700 hover:border-stone-300 hover:bg-stone-50 transition-all duration-150 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </button>
-        <h1 class="text-base font-semibold text-stone-900" style="letter-spacing: -0.01em;">{% if is_edit %}Edit{% else %}Create{% endif %}</h1>
+        <h1 class="text-base font-semibold text-stone-900" style="letter-spacing: -0.01em;">{% if is_edit %}编辑内容{% else %}新建内容{% endif %}</h1>
         <!-- Preview toggle (mobile only) -->
         <button type="button" @click="showPreviewPanel = true"
                 class="lg:hidden ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 text-xs font-semibold hover:border-stone-300 hover:bg-stone-50 transition-all duration-150 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span>Preview</span>
+            <span>预览</span>
             <span x-show="selectedAccounts.length > 0"
                   x-text="selectedAccounts.length"
                   class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold tabular-nums"></span>
@@ -314,6 +314,8 @@
               hx-post="{% if post %}{% url 'composer:save_post_edit' workspace_id=workspace.id post_id=post.id %}{% else %}{% url 'composer:save_post' workspace_id=workspace.id %}{% endif %}"
               hx-swap="none"
               @htmx:after-request="onFormSaved($event)"
+              @input="if (!$event.target.closest('[data-registration]')) manualDirty = true"
+              @change="if (!$event.target.closest('[data-registration]')) manualDirty = true"
               {# onFormSaved renders every failure inline, JSON or not, so the global toast would duplicate it. Element-scoped: nested controls (Clone, template picker) keep theirs. #}
               data-no-error-toast
               class="flex flex-col flex-1 min-h-0">
@@ -350,7 +352,7 @@
                         <span class="text-sm font-medium text-stone-700 truncate">{{ account.account_name|default:account.account_handle }}{% if account.platform == "youtube" %} <small>YouTube</small>{% endif %}</span>
                     </label>
                     {% empty %}
-                    <span class="text-xs text-stone-400">No accounts connected</span>
+                    <span class="text-xs text-stone-400">还没有账号，请先添加人工管理账号。</span>
                     {% endfor %}
                 </div>
 
@@ -437,12 +439,12 @@
                 <!-- Title (conditional - only when YouTube/Pinterest selected) -->
                 <div x-show="anyPlatformNeedsTitle" x-transition x-cloak>
                     <label class="block text-sm font-semibold text-stone-500 uppercase tracking-wider mb-2"
-                           x-text="titleLabel">Title</label>
+                           x-text="titleLabel">标题</label>
                     <input type="text" name="title"
                            class="w-full text-[15px] font-medium text-stone-900 px-4 py-3 rounded-xl border border-stone-200 bg-white outline-none transition-all duration-150 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                            style="letter-spacing: -0.01em;"
                            x-model="title"
-                           :placeholder="autoSuggestedTitle || 'Enter a title…'"
+                           :placeholder="autoSuggestedTitle || '输入共享标题…'"
                            maxlength="255"
                            @input="debouncedPreviewUpdate()">
                     <div class="flex items-center justify-end mt-1">
@@ -460,7 +462,7 @@
                 <div x-data="{ showTemplatePicker: false }">
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-sm font-semibold text-stone-500 uppercase tracking-wider"
-                               x-text="captionLabel">Caption</label>
+                               x-text="captionLabel">共享正文</label>
                         <div class="flex items-center gap-2 relative">
                             {% if post and is_edit %}
                             <div x-data="{ showSaveTemplate: false }">
@@ -514,7 +516,7 @@
                     <div class="caption-wrap">
                         <textarea name="caption"
                                   class="caption-editor"
-                                  placeholder="What would you like to share?"
+                                  placeholder="输入共享正文；也可为每个平台单独编写。"
                                   x-model="caption"
                                   @input="debouncedPreviewUpdate()"
                                   rows="7">{{ form.caption.value|default:"" }}</textarea>
@@ -530,7 +532,7 @@
                                  @drop.prevent="handleFileDrop($event); $el.classList.remove('dragover')"
                                  @click="$refs.fileInput.click()">
                                 <svg class="w-6 h-6 text-stone-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                <span class="text-[11px] text-stone-400 leading-tight">Drag & drop or <span class="text-orange-500 font-medium">select files</span></span>
+                                <span class="text-[11px] text-stone-400 leading-tight">拖放或<span class="text-orange-500 font-medium">选择素材</span></span>
                             </div>
                             {% if unsplash_enabled %}
                             <button type="button" class="media-unsplash-btn" title="Search Unsplash"
@@ -553,7 +555,7 @@
                             <button type="button" @click="showMediaPicker = true"
                                     class="text-xs font-medium text-stone-400 hover:text-orange-600 transition-colors flex items-center gap-1.5 cursor-pointer">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                Media Library
+                                素材库
                             </button>
                             <span class="text-xs tabular-nums font-medium"
                                   :class="captionOverLimit() ? 'text-red-500' : 'text-stone-400'"
@@ -1149,6 +1151,8 @@
                     </div>
                 </template>
 
+                {% include "composer/partials/manual_fields.html" %}
+
                 <!-- Override toggle buttons -->
                 <div class="flex flex-wrap gap-1.5" x-show="selectedAccounts.length > 0">
                     <template x-for="accId in selectedAccounts" :key="'toggle-' + accId">
@@ -1156,7 +1160,7 @@
                                 class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border transition-all duration-150 cursor-pointer"
                                 :class="overrides[accId] ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-stone-200 bg-white text-stone-400 hover:text-stone-600 hover:border-stone-300'"
                                 @click="overrides[accId] = !overrides[accId]"
-                                x-show="!overrides[accId]">
+                                x-show="!overrides[accId] && !isManual(accId)">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             <span x-text="'Customize ' + (charLimits[accId]?.platform === 'youtube' ? 'YouTube' : (charLimits[accId]?.platform || ''))"></span>
                         </button>
@@ -1166,7 +1170,7 @@
                 <!-- Platform-specific overrides -->
                 <template x-for="accId in selectedAccounts" :key="'override-' + accId">
                     <div class="border border-stone-200 rounded-xl bg-white p-4"
-                         x-show="overrides[accId]" x-transition>
+                         x-show="overrides[accId] && !isManual(accId)" x-transition>
                         <div class="flex items-center gap-2 mb-3">
                             <span class="platform-icon w-5 h-5 rounded-[5px] flex items-center justify-center"
                                   :class="'pi-' + (charLimits[accId]?.platform || '')"
@@ -1180,12 +1184,14 @@
                                 <label class="block text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1"
                                        x-text="(charLimits[accId]?.title_label || 'Title') + ' Override'"></label>
                                 <input type="text" :name="'override_title_' + accId"
+                                       :disabled="isManual(accId)"
                                        class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all"
                                        :placeholder="'Custom ' + (charLimits[accId]?.title_label || 'title') + '…'"
                                        :maxlength="charLimits[accId]?.title_max_length || 255">
                             </div>
                         </template>
                         <textarea :name="'override_caption_' + accId"
+                                  :disabled="isManual(accId)"
                                   class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200 bg-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all resize-none"
                                   style="font-family: system-ui, -apple-system, sans-serif;"
                                   :placeholder="'Custom ' + (charLimits[accId]?.caption_label || 'caption') + ' for this platform...'"
@@ -1405,7 +1411,7 @@
                 <button type="submit" name="action" value="save_draft"
                         class="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 text-sm font-semibold text-stone-600 hover:text-stone-800 rounded-lg hover:bg-stone-100 transition-all duration-150 cursor-pointer flex-shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                    <span class="hidden sm:inline">Save Draft</span>
+                    <span class="hidden sm:inline">保存草稿</span>
                 </button>
                 {% endif %}
 
@@ -1415,8 +1421,8 @@
                         :class="selectedAccounts.length === 0 && 'opacity-50 cursor-not-allowed'"
                         class="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 text-sm font-semibold text-orange-600 hover:text-orange-700 rounded-lg hover:bg-orange-50 transition-all duration-150 cursor-pointer flex-shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span class="hidden sm:inline">Submit for Approval</span>
-                    <span class="sm:hidden">For Approval</span>
+                    <span class="hidden sm:inline">提交审批</span>
+                    <span class="sm:hidden">送审</span>
                 </button>
                 {% endif %}
 
@@ -1426,13 +1432,13 @@
                         :class="selectedAccounts.length === 0 && 'opacity-50 cursor-not-allowed'"
                         class="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 text-sm font-semibold text-orange-600 hover:text-orange-700 rounded-lg hover:bg-orange-50 transition-all duration-150 cursor-pointer flex-shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
-                    <span class="hidden sm:inline">Resubmit</span>
+                    <span class="hidden sm:inline">重新提交</span>
                 </button>
                 {% endif %}
 
                 {% if not post_is_readonly %}
                 <!-- Publish split-button -->
-                <div class="relative inline-flex flex-shrink-0" id="publish-anchor">
+                <div class="relative inline-flex flex-shrink-0" id="publish-anchor" x-show="!selectedAccounts.some(id => isManual(id))">
                     <!-- Mode selector (left) -->
                     <button type="button" id="publish-mode-btn"
                             :disabled="selectedAccounts.length === 0"
@@ -1606,7 +1612,12 @@
             {% endif %}
 
             <!-- Inline approval actions for reviewers -->
-            {% if can_approve and post.status == 'pending_review' or can_approve and post.status == 'pending_client' %}
+            {% if can_approve and post.has_manual_pending_approval %}
+            <div class="mb-3 text-xs text-stone-600">
+                请在审批列表逐平台查看和处理。
+                <a class="font-semibold text-orange-700 underline" href="{% url 'calendar:calendar' workspace_id=workspace.id %}?mode=list&amp;tab=approvals">前往审批</a>
+            </div>
+            {% elif can_approve and post.status == 'pending_review' or can_approve and post.status == 'pending_client' %}
             <div class="flex gap-2 mb-3 relative" x-data="{ showReviewComment: false, reviewComment: '' }">
                 <button hx-post="{% url 'approvals:approve' workspace_id=workspace.id post_id=post.id %}" hx-swap="none"
                         class="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors">Approve</button>
@@ -1649,11 +1660,11 @@
         </div>
         {% endif %}
 
+        <input type="hidden" name="_autosave_post_id" :value="autosavedPostId" form="composer-form">
         {% if not post_is_readonly %}
         <!-- Auto-save trigger (every 30 seconds) -->
         <!-- Tracks autosaved post ID to prevent duplicate drafts -->
         <!-- A read-only post has nothing to save; the endpoint refuses it too. -->
-        <input type="hidden" name="_autosave_post_id" :value="autosavedPostId" form="composer-form">
         <div id="autosave-trigger"
              hx-post="{% if post %}{% url 'composer:autosave_edit' workspace_id=workspace.id post_id=post.id %}{% else %}{% url 'composer:autosave' workspace_id=workspace.id %}{% endif %}"
              hx-trigger="every 30s"
@@ -1680,7 +1691,7 @@
     <div class="panel-right border-l border-stone-200 bg-stone-50 lg:bg-stone-50 flex flex-col"
          :class="{ 'is-open': showPreviewPanel }">
         <div class="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
-            <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Preview</h3>
+            <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wider">预览</h3>
             <div class="flex items-center gap-2">
                 <span class="text-xs text-stone-400 tabular-nums"
                       x-show="selectedAccounts.length > 0"
@@ -2040,6 +2051,7 @@
 {{ selected_account_ids|json_script:"composer-selected-accounts" }}
 {{ char_limits|json_script:"composer-char-limits" }}
 {{ platform_extras|json_script:"composer-platform-extras" }}
+{{ manual_variants|json_script:"composer-manual-variants" }}
 {{ media_items|json_script:"composer-media-items" }}
 <script nonce="{{ request.csp_nonce }}">
 function composerApp() {
@@ -2052,6 +2064,12 @@ function composerApp() {
         overrides: {},
         advancedOpen: {},
         platformExtras: JSON.parse(document.getElementById('composer-platform-extras').textContent) || {},
+        manualVariants: JSON.parse(document.getElementById('composer-manual-variants').textContent) || {},
+        manualDefaultPlan: '{{ manual_default_plan|default:""|escapejs }}',
+        manualPublishedUrl: {},
+        manualPublishedAt: {},
+        manualMessage: {},
+        manualDirty: false,
         showMediaPicker: false,
         showThumbnailPicker: false,
         thumbnailPickerAccId: null,
@@ -2063,6 +2081,79 @@ function composerApp() {
         previewTimer: null,
         autosavedPostId: '{{ post.id|default:"" }}',
         mediaItems: JSON.parse(document.getElementById('composer-media-items').textContent),
+
+        isManual(id) { return ['xiaohongshu', 'wechat_official'].includes(this.charLimits[id]?.platform); },
+        manualLabel(id) { return this.charLimits[id]?.platform === 'xiaohongshu' ? '小红书' : '微信公众号'; },
+        manualStatus(id) {
+            return ({draft: '草稿', pending_review: '待内部审批', pending_client: '待客户审批', approved: '审批通过',
+                     changes_requested: '需修改', rejected: '已退回', published: '已登记发布'})[this.manualVariants[id]?.status] || '草稿';
+        },
+        ensureManual(id) {
+            if (!this.isManual(id)) return;
+            if (!this.manualVariants[id]) this.manualVariants[id] = {title: '', caption: '', media: [], planned: this.manualDefaultPlan, status: 'draft'};
+            if (!this.platformExtras[id]) this.platformExtras[id] = {};
+            for (const key of ['manual_tags', 'author', 'digest', 'article_html']) {
+                if (!this.platformExtras[id][key]) this.platformExtras[id][key] = '';
+            }
+        },
+        refreshManualMedia() {
+            const elements = Array.from(document.querySelectorAll('#media-list .media-thumb[data-asset-id]'));
+            this.mediaItems = elements.map(el => ({id: el.dataset.assetId, filename: el.dataset.filename || '素材'}));
+            const ids = this.mediaItems.map(item => item.id);
+            this.selectedAccounts.filter(id => this.isManual(id)).forEach(id => {
+                this.ensureManual(id);
+                const previous = this.manualVariants[id].media || [];
+                const next = previous.filter(mediaId => ids.includes(mediaId));
+                if (this.manualVariants[id].status !== 'published') {
+                    ids.forEach(mediaId => { if (!next.includes(mediaId)) next.push(mediaId); });
+                }
+                if (next.join(',') !== previous.join(',')) this.manualVariants[id].media = next;
+            });
+        },
+        mediaName(id) { return this.mediaItems.find(item => item.id === id)?.filename || '素材'; },
+        moveManualMedia(id, index, direction) {
+            const list = this.manualVariants[id].media;
+            const target = index + direction;
+            if (target < 0 || target >= list.length) return;
+            [list[index], list[target]] = [list[target], list[index]];
+            this.manualDirty = true;
+            this.$nextTick(() => this.debouncedPreviewUpdate());
+        },
+        async copyManual(id) {
+            const version = this.manualVariants[id], extra = this.platformExtras[id];
+            try {
+                if (this.charLimits[id].platform === 'wechat_official') {
+                    const editor = document.getElementById('article-editor-' + id);
+                    const html = editor?.innerHTML || '';
+                    const plain = editor?.innerText || version.caption || this.caption;
+                    if (html && navigator.clipboard?.write && window.ClipboardItem) {
+                        await navigator.clipboard.write([new ClipboardItem({'text/html': new Blob([html], {type: 'text/html'}), 'text/plain': new Blob([plain], {type: 'text/plain'})})]);
+                    } else {
+                        await navigator.clipboard.writeText(plain);
+                    }
+                } else {
+                    await navigator.clipboard.writeText([version.title || this.title, version.caption || this.caption, extra.manual_tags].filter(Boolean).join('\n\n'));
+                }
+                this.manualMessage[id] = '已复制，请在平台编辑器中检查。';
+            } catch (_) { this.manualMessage[id] = '复制失败，请在编辑框中手动选择并复制。'; }
+        },
+        async markManualPublished(id) {
+            const variant = this.manualVariants[id];
+            if (this.manualDirty) { this.manualMessage[id] = '内容有未保存的修改，请先保存草稿。'; return; }
+            if (!variant?.id || !this.autosavedPostId) { this.manualMessage[id] = '请先保存并重新打开草稿。'; return; }
+            if (!window.confirm('确认已在平台发布，并登记此作品链接？')) return;
+            const data = new FormData();
+            data.append('url', this.manualPublishedUrl[id] || '');
+            data.append('published_at', this.manualPublishedAt[id] || '');
+            data.append('fingerprint', variant.fingerprint || '');
+            const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+            try {
+                const response = await fetch(`/workspace/{{ workspace.id }}/compose/${this.autosavedPostId}/platform-posts/${variant.id}/manual-published/`, {method: 'POST', headers: {'X-CSRFToken': token}, body: data});
+                const result = await response.json();
+                if (!response.ok) { this.manualMessage[id] = result.error || '登记失败'; return; }
+                window.location.reload();
+            } catch (_) { this.manualMessage[id] = '登记失败，请重试。'; }
+        },
 
         // Unsplash search modal
         showUnsplashModal: false,
@@ -2156,11 +2247,11 @@ function composerApp() {
                 .map(c => c.title_label);
             // If multiple platforms need title, use generic "Title"; otherwise use platform-specific label
             if (labels.length === 1) return labels[0];
-            return 'Title';
+            return '共享标题';
         },
         get captionLabel() {
-            if (this.anyPlatformNeedsTitle) return 'Caption / Description';
-            return 'Caption';
+            if (this.anyPlatformNeedsTitle) return '共享正文';
+            return '共享正文';
         },
         get anyPlatformSupportsFirstComment() {
             return this.selectedAccounts.some(id => this.charLimits[id]?.supports_first_comment);
@@ -2197,7 +2288,9 @@ function composerApp() {
                 this.overrides[id] = false;
                 this.advancedOpen[id] = false;
                 if (!this.platformExtras[id]) this.platformExtras[id] = {};
+                this.ensureManual(id);
             });
+            this.$nextTick(() => this.refreshManualMedia());
 
             // Listen for thumbnail selection events dispatched from the picker
             this.$root.addEventListener('thumbnail-selected', (e) => {
@@ -2253,6 +2346,7 @@ function composerApp() {
             };
             this.$nextTick(syncVideoAttached);
             document.body.addEventListener('previewUpdate', syncVideoAttached);
+            document.body.addEventListener('previewUpdate', () => this.refreshManualMedia());
             document.body.addEventListener('htmx:afterSwap', (e) => {
                 if (e.target && e.target.id === 'media-list') syncVideoAttached();
             });
@@ -2269,10 +2363,13 @@ function composerApp() {
                 this.overrides[id] = false;
                 this.advancedOpen[id] = false;
                 if (!this.platformExtras[id]) this.platformExtras[id] = {};
+                this.ensureManual(id);
             }
+            this.manualDirty = true;
             // Wait for Alpine to flush :value bindings before triggering HTMX
             this.$nextTick(() => {
                 this.triggerPreviewUpdate();
+                this.refreshManualMedia();
             });
         },
 
@@ -2713,10 +2810,17 @@ function composerApp() {
             if (event.detail.elt !== event.currentTarget) return;
             const xhr = event.detail.xhr;
             if (event.detail.successful) {
-                const action = document.getElementById('publish-action-btn')?.value;
+                this.manualDirty = false;
+                const action = event.detail.requestConfig?.parameters?.action;
                 if (action === 'schedule' || action === 'publish_now' || action === 'add_to_queue' || action === 'add_to_queue_priority') {
                     // Redirect to calendar after scheduling/publishing/queuing
                     window.location.href = '{% url "calendar:calendar" workspace_id=workspace.id %}';
+                    return;
+                }
+                if (this.selectedAccounts.some(id => this.isManual(id))) {
+                    const payload = xhr.getResponseHeader('HX-Trigger');
+                    const postId = payload ? JSON.parse(payload)?.postSaved?.postId : this.autosavedPostId;
+                    if (postId) window.location.href = `/workspace/{{ workspace.id }}/compose/${postId}/` + window.location.search;
                     return;
                 }
                 this.showSaveToast = true;

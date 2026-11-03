@@ -46,6 +46,9 @@ def _check_social_account_health(account_id: str):
         logger.warning("Health check: account %s not found, skipping", account_id)
         return
 
+    if account.is_manual:
+        return
+
     if account.platform == "youtube":
         from django.conf import settings
 
@@ -185,14 +188,18 @@ def _check_social_account_health(account_id: str):
 @background(schedule=0)
 def schedule_all_health_checks():
     """Enqueue individual health checks for all active accounts."""
-    from .models import SocialAccount
+    from .models import MANUAL_PLATFORMS, SocialAccount
 
-    accounts = SocialAccount.objects.filter(
-        connection_status__in=[
-            SocialAccount.ConnectionStatus.CONNECTED,
-            SocialAccount.ConnectionStatus.TOKEN_EXPIRING,
-        ]
-    ).values_list("id", flat=True)
+    accounts = (
+        SocialAccount.objects.filter(
+            connection_status__in=[
+                SocialAccount.ConnectionStatus.CONNECTED,
+                SocialAccount.ConnectionStatus.TOKEN_EXPIRING,
+            ]
+        )
+        .exclude(platform__in=MANUAL_PLATFORMS)
+        .values_list("id", flat=True)
+    )
 
     count = 0
     for account_id in accounts:

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block page_title %}添加人工管理账号{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <a href="{% url 'social_accounts:list' workspace_id=workspace_id %}" class="text-sm text-stone-500 hover:text-stone-700">← 返回账号管理</a>
+    <h1 class="text-xl font-semibold text-stone-900 mt-5">添加人工管理账号</h1>
+    <p class="text-sm text-stone-600 mt-2">账号仅保存在本工作区，用于内容预览、审批和人工发布协作。无需登录，不会连接平台。</p>
+    {% if error %}<p role="alert" class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{{ error }}</p>{% endif %}
+    <form method="post" action="{% url 'social_accounts:add_manual' workspace_id=workspace_id %}" class="mt-6 p-6 bg-white border border-stone-200 rounded-xl space-y-5">
+        {% csrf_token %}
+        <div>
+            <label for="platform" class="block text-sm font-semibold text-stone-700 mb-1">平台</label>
+            <select id="platform" name="platform" required class="w-full rounded-lg border-stone-300 text-sm">
+                <option value="">请选择</option>
+                {% for value, label in platform_choices %}<option value="{{ value }}" {% if selected_platform == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="name" class="block text-sm font-semibold text-stone-700 mb-1">账号名称</label>
+            <input id="name" name="name" value="{{ name }}" required maxlength="255" class="w-full rounded-lg border-stone-300 text-sm" placeholder="例如：品牌官方账号">
+        </div>
+        <div>
+            <label for="handle" class="block text-sm font-semibold text-stone-700 mb-1">账号标识 <span class="font-normal text-stone-400">（选填）</span></label>
+            <input id="handle" name="handle" value="{{ handle }}" maxlength="255" class="w-full rounded-lg border-stone-300 text-sm" placeholder="便于团队区分多个账号">
+        </div>
+        <button type="submit" class="px-5 py-2 rounded-full bg-stone-800 text-white text-sm font-semibold hover:bg-stone-700">添加账号</button>
+    </form>
+</div>
+{% endblock %}

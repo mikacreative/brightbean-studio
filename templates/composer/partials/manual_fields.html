@@ -1,0 +1,89 @@
+<template x-for="accId in selectedAccounts" :key="'manual-' + accId">
+    <template x-if="isManual(accId) && manualVariants[accId] && platformExtras[accId]">
+        <section class="border border-stone-200 rounded-xl bg-white p-4 space-y-4" :aria-label="charLimits[accId]?.name + ' 平台版本'">
+            <div class="flex items-start justify-between gap-2">
+                <div>
+                    <h3 class="text-sm font-semibold text-stone-800" x-text="charLimits[accId]?.name + ' · ' + manualLabel(accId)"></h3>
+                    <p class="text-xs text-stone-500 mt-1">人工管理 · 未连接平台；留空时沿用上面的共享内容。</p>
+                </div>
+                <span class="text-xs text-stone-500" x-text="manualStatus(accId)"></span>
+            </div>
+            <input type="hidden" :name="'manual_panel_' + accId" value="1">
+            <div>
+                <label class="block text-xs font-semibold text-stone-600 mb-1" :for="'manual-title-' + accId">平台标题</label>
+                <input :id="'manual-title-' + accId" type="text" :name="'override_title_' + accId" x-model="manualVariants[accId].title"
+                       :readonly="manualVariants[accId].status === 'published'" @input="debouncedPreviewUpdate()"
+                       class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200" placeholder="留空使用共享标题">
+            </div>
+            <div x-show="charLimits[accId]?.platform === 'xiaohongshu'">
+                <label class="block text-xs font-semibold text-stone-600 mb-1" :for="'manual-caption-' + accId">笔记正文</label>
+                <textarea :id="'manual-caption-' + accId" :name="'override_caption_' + accId" x-model="manualVariants[accId].caption"
+                          :readonly="manualVariants[accId].status === 'published'" @input="debouncedPreviewUpdate()"
+                          rows="5" class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200" placeholder="留空使用共享正文"></textarea>
+                <label class="block text-xs font-semibold text-stone-600 mt-3 mb-1" :for="'manual-tags-' + accId">话题</label>
+                <input :id="'manual-tags-' + accId" :name="'manual_tags_' + accId" x-model="platformExtras[accId].manual_tags"
+                       :readonly="manualVariants[accId].status === 'published'" @input="debouncedPreviewUpdate()"
+                       class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200" placeholder="#话题一 #话题二">
+            </div>
+            <template x-if="charLimits[accId]?.platform === 'wechat_official'">
+                <div class="space-y-3">
+                    <input type="hidden" :name="'override_caption_' + accId" :value="manualVariants[accId].caption || ''">
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <div><label class="block text-xs font-semibold text-stone-600 mb-1" :for="'manual-author-' + accId">作者</label>
+                            <input :id="'manual-author-' + accId" :name="'manual_author_' + accId" x-model="platformExtras[accId].author" :readonly="manualVariants[accId].status === 'published'" @input="debouncedPreviewUpdate()" class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200"></div>
+                        <div><label class="block text-xs font-semibold text-stone-600 mb-1" :for="'manual-digest-' + accId">摘要</label>
+                            <input :id="'manual-digest-' + accId" :name="'manual_digest_' + accId" x-model="platformExtras[accId].digest" :readonly="manualVariants[accId].status === 'published'" @input="debouncedPreviewUpdate()" class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200"></div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-semibold text-stone-600">文章正文</span>
+                            <button type="button" @mousedown.prevent="document.execCommand('bold')" class="text-xs px-2 py-1 bg-stone-100 rounded" aria-label="粗体">粗体</button>
+                            <button type="button" @mousedown.prevent="document.execCommand('italic')" class="text-xs px-2 py-1 bg-stone-100 rounded" aria-label="斜体">斜体</button>
+                            <button type="button" @mousedown.prevent="document.execCommand('insertUnorderedList')" class="text-xs px-2 py-1 bg-stone-100 rounded">列表</button>
+                        </div>
+                        <div :id="'article-editor-' + accId" role="textbox" aria-label="公众号文章正文" aria-multiline="true"
+                             :contenteditable="manualVariants[accId].status !== 'published'" x-init="$el.innerHTML = platformExtras[accId].article_html || ''"
+                             @input="platformExtras[accId].article_html = $el.innerHTML; debouncedPreviewUpdate()"
+                             @paste.prevent="document.execCommand('insertText', false, $event.clipboardData.getData('text/plain'))"
+                             class="min-h-40 text-sm leading-relaxed px-3 py-2 rounded-lg border border-stone-200 bg-white overflow-auto"></div>
+                        <input type="hidden" :name="'manual_article_' + accId" :value="platformExtras[accId].article_html || ''">
+                        <p class="text-xs text-stone-400 mt-1">支持段落、粗体、斜体和列表。图片请从下方素材下载后在公众号编辑器中插入。</p>
+                    </div>
+                </div>
+            </template>
+            <div>
+                <div class="text-xs font-semibold text-stone-600 mb-1">素材顺序 <span class="font-normal text-stone-400">第一张为封面</span></div>
+                <input type="hidden" :name="'manual_media_' + accId" :value="(manualVariants[accId].media || []).join(',')">
+                <template x-for="(mediaId, index) in manualVariants[accId].media" :key="mediaId">
+                    <div class="flex items-center gap-2 py-1 text-xs text-stone-600">
+                        <span class="text-stone-400" x-text="index + 1"></span>
+                        <span class="truncate flex-1" x-text="mediaName(mediaId)"></span>
+                        <a :href="'/workspace/{{ workspace.id }}/compose/media-stream/' + mediaId + '/'" :download="mediaName(mediaId)" class="text-orange-700">下载</a>
+                        <button type="button" @click="moveManualMedia(accId, index, -1)" :disabled="index === 0 || manualVariants[accId].status === 'published'" class="px-1 disabled:opacity-30" aria-label="上移素材">↑</button>
+                        <button type="button" @click="moveManualMedia(accId, index, 1)" :disabled="index === manualVariants[accId].media.length - 1 || manualVariants[accId].status === 'published'" class="px-1 disabled:opacity-30" aria-label="下移素材">↓</button>
+                    </div>
+                </template>
+                <p x-show="!manualVariants[accId].media.length" class="text-xs text-stone-400">先在上方添加共享素材。</p>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-stone-600 mb-1" :for="'manual-plan-' + accId">计划人工发布时间（{{ workspace.effective_timezone }}）</label>
+                <input :id="'manual-plan-' + accId" type="datetime-local" :name="'manual_plan_' + accId" x-model="manualVariants[accId].planned"
+                       :disabled="manualVariants[accId].status === 'published'" class="text-sm px-3 py-2 rounded-lg border border-stone-200">
+                <p class="text-xs text-stone-400 mt-1">仅显示在日历中，不会自动发布。</p>
+            </div>
+            <div class="flex gap-3 flex-wrap items-center">
+                <button type="button" @click="copyManual(accId)" class="text-xs font-semibold text-orange-700">复制<span x-text="charLimits[accId]?.platform === 'xiaohongshu' ? '笔记文案' : '公众号排版'"></span></button>
+                <span class="text-xs text-stone-500" x-text="manualMessage[accId] || ''" aria-live="polite"></span>
+            </div>
+            {% if post and can_publish %}
+            <div data-registration x-show="manualVariants[accId].id && manualVariants[accId].status !== 'published'" class="border-t border-stone-100 pt-3 space-y-2">
+                <p class="text-xs font-semibold text-stone-600">已在平台发布？先保存当前版本，再登记作品链接。</p>
+                <input type="url" x-model="manualPublishedUrl[accId]" placeholder="https://..." class="w-full text-sm px-3 py-2 rounded-lg border border-stone-200" aria-label="已发布作品链接">
+                <label class="block text-xs text-stone-500">实际发布时间（留空为当前时间） <input type="datetime-local" x-model="manualPublishedAt[accId]" class="text-xs px-2 py-1 border border-stone-200 rounded"></label>
+                <button type="button" @click="markManualPublished(accId)" class="text-xs font-semibold px-3 py-2 rounded-lg bg-stone-800 text-white">登记人工发布</button>
+            </div>
+            <p x-show="manualVariants[accId].status === 'published'" class="text-xs text-emerald-700">已由成员登记发布 · <a :href="manualVariants[accId].published_url" target="_blank" rel="noopener noreferrer" class="underline">查看作品</a></p>
+            {% endif %}
+        </section>
+    </template>
+</template>

@@ -351,7 +351,8 @@ def _check_post_references(asset):
 
     Returns a list of post descriptions if referenced, empty list otherwise.
     """
-    from apps.composer.models import PostMedia
+    from apps.composer.models import PlatformPost, PostMedia
+    from apps.social_accounts.models import MANUAL_PLATFORMS
 
     # Status now lives on PlatformPost — a Post is "in flight" if any of its
     # children are scheduled or publishing.
@@ -363,7 +364,19 @@ def _check_post_references(asset):
         .select_related("post")
         .distinct()
     )
-    return [{"id": str(ref.post_id), "caption": (ref.post.caption or "")[:80]} for ref in scheduled_refs]
+    refs = {
+        str(ref.post_id): {"id": str(ref.post_id), "caption": (ref.post.caption or "")[:80]} for ref in scheduled_refs
+    }
+    published_manual = PlatformPost.objects.filter(
+        post__media_attachments__media_asset=asset,
+        social_account__platform__in=MANUAL_PLATFORMS,
+        status="published",
+    ).select_related("post")
+    for pp in published_manual:
+        extra = pp.platform_extra or {}
+        if not extra.get("manual_media_frozen") or str(asset.id) in (pp.platform_specific_media or []):
+            refs[str(pp.post_id)] = {"id": str(pp.post_id), "caption": (pp.post.caption or "")[:80]}
+    return list(refs.values())
 
 
 class ImageTooLargeError(Exception):

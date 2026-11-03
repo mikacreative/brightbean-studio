@@ -4,13 +4,16 @@ import difflib
 import re
 
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils.crypto import constant_time_compare
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.common.htmx import toast_response
-from apps.composer.models import Post, PostVersion
+from apps.composer.models import PlatformPost, Post, PostVersion
 from apps.members.decorators import require_permission, require_workspace_role
+from apps.social_accounts.models import MANUAL_PLATFORMS
 from apps.workspaces.models import Workspace
 
 from . import comments as comment_service
@@ -46,6 +49,55 @@ def _toast_response(*, tone, title, body="", refresh=None):
 # ---------------------------------------------------------------------------
 
 
+def _review_manual_platform(request, workspace_id, post_id, platform_post_id, decision):
+    """Decide one manual version only when the displayed content is current."""
+    workspace = _get_workspace(request, workspace_id)
+    comment = request.POST.get("comment", "").strip()
+    if decision != "approve" and not comment:
+        return HttpResponse("请填写修改或驳回原因。", status=400)
+    actions = {"approve": services.approve_post, "changes": services.request_changes, "reject": services.reject_post}
+    with transaction.atomic():
+        pp = get_object_or_404(
+            PlatformPost.objects.select_for_update().select_related("post", "social_account"),
+            pk=platform_post_id,
+            post_id=post_id,
+            post__workspace=workspace,
+            social_account__platform__in=MANUAL_PLATFORMS,
+            status="pending_review",
+        )
+        if not constant_time_compare(request.POST.get("fingerprint", ""), pp.manual_review_fingerprint):
+            return HttpResponse("版本已变更，请刷新后重新审核。", status=409)
+        try:
+            moved = actions[decision](pp, request.user, workspace, comment)
+        except ValueError as exc:
+            return _toast_response(tone="error", title="审核失败", body=str(exc))
+    if not moved:
+        return _toast_response(tone="warn", title="此版本已处理")
+    title = {"approve": "此版本已通过内部审核", "changes": "已要求修改此版本", "reject": "已驳回此版本"}[decision]
+    return _toast_response(tone="success", title=title, refresh="approvalAction")
+
+
+@login_required
+@require_permission("approve_posts")
+@require_POST
+def approve_platform(request, workspace_id, post_id, platform_post_id):
+    return _review_manual_platform(request, workspace_id, post_id, platform_post_id, "approve")
+
+
+@login_required
+@require_permission("approve_posts")
+@require_POST
+def request_changes_platform(request, workspace_id, post_id, platform_post_id):
+    return _review_manual_platform(request, workspace_id, post_id, platform_post_id, "changes")
+
+
+@login_required
+@require_permission("approve_posts")
+@require_POST
+def reject_platform(request, workspace_id, post_id, platform_post_id):
+    return _review_manual_platform(request, workspace_id, post_id, platform_post_id, "reject")
+
+
 @login_required
 @require_permission("approve_posts")
 @require_POST
@@ -53,6 +105,10 @@ def approve(request, workspace_id, post_id):
     """Approve a post (or advance it to client review in two-stage mode)."""
     workspace = _get_workspace(request, workspace_id)
     post = get_object_or_404(Post, id=post_id, workspace=workspace)
+    if post.platform_posts.filter(
+        social_account__platform__in=MANUAL_PLATFORMS, status__in=("pending_review", "pending_client")
+    ).exists():
+        return HttpResponse("请展开后逐平台审核人工管理版本。", status=409)
     comment_text = request.POST.get("comment", "")
 
     try:
@@ -140,6 +196,17 @@ def bulk_action(request, workspace_id):
 
     if not post_ids:
         return _toast_response(tone="warn", title="No posts selected")
+
+    if (
+        action == "approve"
+        and PlatformPost.objects.filter(
+            post_id__in=post_ids,
+            post__workspace=workspace,
+            social_account__platform__in=MANUAL_PLATFORMS,
+            status__in=("pending_review", "pending_client"),
+        ).exists()
+    ):
+        return HttpResponse("请展开后逐平台审核人工管理版本。", status=409)
 
     if action == "approve":
         results = services.bulk_approve(post_ids, request.user, workspace)

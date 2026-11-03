@@ -67,6 +67,7 @@ class PublishEngineTest(TestCase):
         engine = PublishEngine()
         mock_qs = MagicMock()
         mock_objects.filter.return_value = mock_qs
+        mock_qs.exclude.return_value = mock_qs
         mock_qs.annotate.return_value = mock_qs
         mock_qs.filter.return_value = mock_qs
         mock_qs.select_related.return_value = mock_qs

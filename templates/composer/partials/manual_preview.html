@@ -1,0 +1,121 @@
+{# The caller supplies article_html only after server-side sanitization. #}
+<style>
+    .manual-preview { color: #292524; background: #fff; overflow-wrap: anywhere; }
+    .manual-preview * { box-sizing: border-box; }
+    .manual-preview-header { display: flex; align-items: center; gap: .6rem; padding: .85rem 1rem; }
+    .manual-preview-avatar { width: 2rem; height: 2rem; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: .75rem; font-weight: 700; color: #fff; background: #d84448; }
+    .manual-preview-name { font-size: .8rem; font-weight: 600; line-height: 1.4; }
+    .manual-preview-meta { font-size: .68rem; color: #78716c; line-height: 1.5; }
+    .manual-preview-media { position: relative; width: 100%; aspect-ratio: 4 / 5; background: #f5f5f4; overflow: hidden; }
+    .manual-preview-media img, .manual-preview-media video { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .manual-preview-media-item { position: absolute; inset: 0; }
+    .manual-preview-placeholder { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .4rem; color: #78716c; font-size: .75rem; text-align: center; }
+    .manual-preview-counter { position: absolute; right: .7rem; top: .7rem; border-radius: 999px; background: rgba(41, 37, 36, .75); color: white; padding: .2rem .55rem; font-size: .7rem; }
+    .manual-preview-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 2.2rem; height: 2.2rem; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #44403c; font-size: 1.3rem; line-height: 1; cursor: pointer; }
+    .manual-preview-arrow:disabled { opacity: .35; cursor: default; }
+    .manual-preview-arrow:focus-visible { outline: 2px solid #be123c; outline-offset: 2px; }
+    .manual-preview-copy { padding: 1rem; }
+    .manual-preview-title { font-size: 1rem; font-weight: 700; line-height: 1.5; margin: 0 0 .65rem; }
+    .manual-preview-body { font-size: .85rem; line-height: 1.75; white-space: pre-wrap; }
+    .manual-preview-empty { color: #a8a29e; font-style: normal; }
+    .manual-preview-tags { margin-top: .7rem; color: #34617b; font-size: .8rem; white-space: pre-wrap; }
+    .manual-preview-note { border-top: 1px solid #e7e5e4; padding: .65rem 1rem; font-size: .68rem; line-height: 1.5; color: #78716c; }
+    .manual-wechat-card { margin: .85rem; border: 1px solid #e7e5e4; border-radius: .55rem; overflow: hidden; }
+    .manual-wechat-cover { aspect-ratio: 2.35 / 1; width: 100%; background: #f5f5f4; }
+    .manual-wechat-cover img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .manual-wechat-label { font-size: .68rem; font-weight: 600; color: #78716c; letter-spacing: .03em; }
+    .manual-wechat-article { border-top: 1px solid #e7e5e4; padding: 1.1rem 1rem; }
+    .manual-wechat-article-body { font-size: .875rem; line-height: 1.9; overflow-wrap: anywhere; }
+    .manual-wechat-article-body img { max-width: 100%; height: auto; }
+    .manual-wechat-article-body p { margin: .7em 0; }
+    .manual-wechat-article-body blockquote { border-left: 3px solid #d6d3d1; margin: .9em 0; padding-left: .8em; color: #57534e; }
+    .manual-wechat-article-body pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .manual-wechat-article-body table { max-width: 100%; display: block; overflow-x: auto; }
+</style>
+
+{% if p.account.platform == "xiaohongshu" %}
+<section class="manual-preview" aria-label="小红书图文预览">
+    <div class="manual-preview-header">
+        <div class="manual-preview-avatar" aria-hidden="true">{{ p.account.account_name|default:"红"|first }}</div>
+        <div>
+            <div class="manual-preview-name">{{ p.account.account_name|default:"小红书账号" }}</div>
+            <div class="manual-preview-meta">小红书 · 图文笔记</div>
+        </div>
+    </div>
+
+    {% if p.media_items %}
+    <div class="manual-preview-media" x-data="{ slide: 0, count: {{ p.media_items|length }} }" role="region" aria-label="笔记素材预览">
+        {% for m in p.media_items %}
+        <div class="manual-preview-media-item" x-show="slide === {{ forloop.counter0 }}" {% if not forloop.first %}style="display: none"{% endif %}>
+            {% if m.is_video %}
+            <video src="{{ m.url }}" controls preload="none" aria-label="{{ m.filename|default:'笔记视频' }}"></video>
+            {% else %}
+            <img src="{{ m.url }}" alt="{{ m.filename|default:'笔记图片' }}">
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% if p.media_items|length > 1 %}
+        <div class="manual-preview-counter" aria-live="polite"><span x-text="slide + 1">1</span> / {{ p.media_items|length }}</div>
+        <button class="manual-preview-arrow" style="left: .6rem" type="button" aria-label="上一张素材" :disabled="slide === 0" @click.stop="slide = Math.max(0, slide - 1)">‹</button>
+        <button class="manual-preview-arrow" style="right: .6rem" type="button" aria-label="下一张素材" :disabled="slide === count - 1" @click.stop="slide = Math.min(count - 1, slide + 1)">›</button>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="manual-preview-media">
+        <div class="manual-preview-placeholder"><span aria-hidden="true" style="font-size: 1.5rem">▧</span><span>添加图片后预览笔记素材</span></div>
+    </div>
+    {% endif %}
+
+    <div class="manual-preview-copy">
+        <h3 class="manual-preview-title">{% if p.title %}{{ p.title }}{% else %}<span class="manual-preview-empty">添加笔记标题</span>{% endif %}</h3>
+        <div class="manual-preview-body">{% if p.caption %}{{ p.caption }}{% else %}<span class="manual-preview-empty">添加笔记正文</span>{% endif %}</div>
+        {% if p.tags %}<div class="manual-preview-tags">话题：{{ p.tags }}</div>{% endif %}
+    </div>
+    <div class="manual-preview-note">预览仅供检查内容，实际样式以小红书官方编辑器为准。</div>
+</section>
+{% elif p.account.platform == "wechat_official" %}
+<section class="manual-preview" aria-label="微信公众号文章预览">
+    <div class="manual-preview-header">
+        <div class="manual-preview-avatar" aria-hidden="true" style="background: #418b60">{{ p.account.account_name|default:"微"|first }}</div>
+        <div>
+            <div class="manual-preview-name">{{ p.account.account_name|default:"微信公众号" }}</div>
+            <div class="manual-preview-meta">公众号 · 文章预览</div>
+        </div>
+    </div>
+
+    <div class="manual-wechat-card">
+        <div class="manual-wechat-cover">
+            {% if p.media_items %}
+            {% with cover=p.media_items.0 %}
+                {% if cover.is_video %}
+                <div class="manual-preview-placeholder">首个素材是视频，请添加图片作为封面</div>
+                {% else %}
+                <img src="{{ cover.url }}" alt="{{ cover.filename|default:'公众号文章封面' }}">
+                {% endif %}
+            {% endwith %}
+            {% else %}
+            <div class="manual-preview-placeholder">添加图片作为文章封面</div>
+            {% endif %}
+        </div>
+        <div class="manual-preview-copy">
+            <div class="manual-wechat-label">封面卡片</div>
+            <div class="manual-preview-title" style="margin: .35rem 0">{% if p.title %}{{ p.title }}{% else %}<span class="manual-preview-empty">添加文章标题</span>{% endif %}</div>
+            <div class="manual-preview-meta" style="white-space: pre-wrap">{% if p.digest %}{{ p.digest }}{% else %}文章摘要将在这里显示{% endif %}</div>
+        </div>
+    </div>
+
+    <article class="manual-wechat-article">
+        <div class="manual-wechat-label" style="margin-bottom: .7rem">正文预览</div>
+        <h3 class="manual-preview-title">{% if p.title %}{{ p.title }}{% else %}<span class="manual-preview-empty">添加文章标题</span>{% endif %}</h3>
+        <div class="manual-preview-meta" style="margin-bottom: 1rem">{% if p.author %}{{ p.author }}{% else %}作者未填写{% endif %} · {{ p.account.account_name|default:"微信公众号" }}</div>
+        {% if p.article_html %}
+        <div class="manual-wechat-article-body">{{ p.article_html|safe }}</div>
+        {% elif p.caption %}
+        <div class="manual-preview-body">{{ p.caption }}</div>
+        {% else %}
+        <div class="manual-preview-body manual-preview-empty">添加文章正文</div>
+        {% endif %}
+    </article>
+    <div class="manual-preview-note">预览仅供检查内容，实际样式以公众号官方编辑器为准。</div>
+</section>
+{% endif %}

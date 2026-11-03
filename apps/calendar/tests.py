@@ -943,7 +943,7 @@ class PublishTabTimezoneTests(TestCase):
         resp = self.client.get(url + "?tz=Not/AReal/Zone")
         self.assertEqual(resp.status_code, 200)
         # Falls back to the workspace zone, so the proposed badge still renders.
-        self.assertContains(resp, "Proposed")
+        self.assertContains(resp, "建议发布")
 
     def test_drafts_tab_with_empty_tz_does_not_500(self):
         url = reverse("calendar:publish_tab_drafts", kwargs={"workspace_id": self.ws.id})

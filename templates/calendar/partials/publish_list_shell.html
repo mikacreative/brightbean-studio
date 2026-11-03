@@ -11,32 +11,32 @@ Tab switching is HTMX partial swaps only - no full page reload.
         <div class="flex items-center gap-1 -mb-px overflow-x-auto flex-nowrap">
             <button class="publish-tab" :class="activeTab === 'queue' && 'active'"
                     @click="switchTab('queue')">
-                Queue <span id="tabcount-queue">{% include "calendar/partials/_tab_count_badge.html" with count=queue_count %}</span>
+                发布队列 <span id="tabcount-queue">{% include "calendar/partials/_tab_count_badge.html" with count=queue_count %}</span>
             </button>
             <button class="publish-tab" :class="activeTab === 'drafts' && 'active'"
                     @click="switchTab('drafts')">
-                Drafts <span id="tabcount-drafts">{% include "calendar/partials/_tab_count_badge.html" with count=drafts_count %}</span>
+                草稿 <span id="tabcount-drafts">{% include "calendar/partials/_tab_count_badge.html" with count=drafts_count %}</span>
             </button>
             <button class="publish-tab" :class="activeTab === 'approvals' && 'active'"
                     @click="switchTab('approvals')">
-                Approvals <span id="tabcount-approvals">{% include "calendar/partials/_tab_count_badge.html" with count=approvals_count %}</span>
+                审批 <span id="tabcount-approvals">{% include "calendar/partials/_tab_count_badge.html" with count=approvals_count %}</span>
             </button>
             <button class="publish-tab" :class="activeTab === 'sent' && 'active'"
                     @click="switchTab('sent')">
-                Sent <span id="tabcount-sent">{% include "calendar/partials/_tab_count_badge.html" with count=sent_count %}</span>
+                发布记录 <span id="tabcount-sent">{% include "calendar/partials/_tab_count_badge.html" with count=sent_count %}</span>
             </button>
         </div>
 
         <!-- Right: filter dropdowns -->
         <div class="flex items-center gap-2 pb-2 overflow-x-auto flex-shrink-0">
             <!-- Channels filter (multi-select) -->
-            {% ui_select model="selectedChannels" options=channels_with_posts multiple=True onchange="reloadTab()" placeholder="Channels" icon="channel" label_field="display_label" icon_field="platform" %}
+            {% ui_select model="selectedChannels" options=channels_with_posts multiple=True onchange="reloadTab()" placeholder="账号" icon="channel" label_field="display_label" icon_field="platform" %}
 
             <!-- Tags filter -->
-            {% ui_select model="activeTag" options=all_tags onchange="reloadTab()" placeholder="All Tags" icon="tag" %}
+            {% ui_select model="activeTag" options=all_tags onchange="reloadTab()" placeholder="全部标签" icon="tag" %}
 
             <!-- Timezone dropdown -->
-            {% ui_select model="displayTimezone" options=timezone_options onchange="reloadTab()" placeholder="Timezone" icon="clock" %}
+            {% ui_select model="displayTimezone" options=timezone_options onchange="reloadTab()" placeholder="时区" icon="clock" %}
         </div>
     </div>
 

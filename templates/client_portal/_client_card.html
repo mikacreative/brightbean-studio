@@ -46,6 +46,44 @@ already-approved posts get "Put on hold"; held posts show their state.
     </div>
 
     <div x-show="open" x-cloak class="anim-collapse">
+        <div id="portal-fingerprints-{{ post.id }}" hidden>
+            {% for p in post.manual_previews %}{% if p.platform_post.status == 'pending_client' %}
+            <input type="hidden" name="fingerprint_{{ p.platform_post.id }}" value="{{ p.platform_post.manual_review_fingerprint }}">
+            {% endif %}{% endfor %}
+        </div>
+        {% if post.manual_previews %}
+        <div class="px-5 py-4 border-t border-stone-100 space-y-4">
+            <p class="text-sm font-semibold text-stone-700">各平台版本</p>
+            <p class="text-xs text-stone-500">内容通过后仍需运营人员前往对应平台手动发布。</p>
+            {% for p in post.manual_previews %}
+            <section class="border border-stone-200 rounded-xl overflow-hidden" aria-label="{{ p.account.get_platform_display }}版本" x-data="{ decision: '', note: '' }" hx-vals='{"fingerprint":"{{ p.platform_post.manual_review_fingerprint }}"}'>
+                {% include "composer/partials/manual_preview.html" with p=p %}
+                <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex items-center gap-3 flex-wrap">
+                    <span class="text-xs text-stone-500">
+                        {% if p.platform_post.status == 'pending_client' %}等待你的审批
+                        {% elif p.platform_post.status == 'approved' %}已通过
+                        {% else %}已暂停{% endif %}
+                        {% if p.platform_post.scheduled_at %} · 计划时间：{% timezone workspace.effective_timezone|default:"Asia/Shanghai" %}{{ p.platform_post.scheduled_at|date:"Y-m-d H:i" }}{% endtimezone %}{% endif %}
+                    </span>
+                    {% if p.platform_post.status == 'pending_client' %}
+                    <button type="button" hx-post="{% url 'client_portal:approve_platform' post_id=post.id platform_post_id=p.platform_post.id %}" hx-swap="none"
+                            class="ml-auto px-4 py-2 text-xs font-semibold rounded-full text-white" style="background:#22C55E;">通过此版本</button>
+                    <button type="button" @click="decision = decision === 'changes' ? '' : 'changes'" class="px-3 py-2 text-xs font-semibold rounded-full border border-stone-200">要求修改</button>
+                    <button type="button" @click="decision = decision === 'reject' ? '' : 'reject'" class="px-3 py-2 text-xs font-semibold rounded-full border border-stone-200">拒绝</button>
+                    {% endif %}
+                </div>
+                {% if p.platform_post.status == 'pending_client' %}
+                <div x-show="decision" x-cloak class="px-4 pb-4 bg-stone-50">
+                    <label for="manual-comment-{{ p.platform_post.id }}" class="block text-xs font-semibold text-stone-600 mb-2">说明此版本需要修改或拒绝的原因</label>
+                    <textarea id="manual-comment-{{ p.platform_post.id }}" name="comment" x-model="note" rows="3" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg"></textarea>
+                    <button type="button" x-show="decision === 'changes'" hx-post="{% url 'client_portal:request_platform_changes' post_id=post.id platform_post_id=p.platform_post.id %}" hx-include="#manual-comment-{{ p.platform_post.id }}" hx-swap="none" :disabled="!note.trim()" class="mt-2 px-4 py-2 text-xs font-semibold rounded-full text-white disabled:opacity-50" style="background:#A16207;">提交修改意见</button>
+                    <button type="button" x-show="decision === 'reject'" hx-post="{% url 'client_portal:reject_platform' post_id=post.id platform_post_id=p.platform_post.id %}" hx-include="#manual-comment-{{ p.platform_post.id }}" hx-swap="none" :disabled="!note.trim()" class="mt-2 px-4 py-2 text-xs font-semibold rounded-full text-white disabled:opacity-50" style="background:#B91C1C;">确认拒绝此版本</button>
+                </div>
+                {% endif %}
+            </section>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% if post.visible_comments %}
         <div class="px-5 pb-2 border-t border-stone-100 pt-3">
             <p class="text-[0.6875rem] font-semibold text-stone-400 uppercase tracking-wide mb-2">From the team</p>
@@ -60,12 +98,12 @@ already-approved posts get "Put on hold"; held posts show their state.
 
         <div class="px-5 py-4 border-t border-stone-100 flex flex-wrap items-center gap-2 bg-stone-50">
             {% if post.client_pending %}
-            <button hx-post="{% url 'client_portal:approve' post_id=post.id %}" hx-swap="none"
-                    class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full text-white transition-all hover:-translate-y-px" style="background:#22C55E;">Approve</button>
+            <button hx-post="{% url 'client_portal:approve' post_id=post.id %}" hx-include="#portal-fingerprints-{{ post.id }}" hx-swap="none"
+                    class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full text-white transition-all hover:-translate-y-px" style="background:#22C55E;">通过此选题全部待审版本</button>
             <button @click="panel = panel === 'changes' ? null : 'changes'"
-                    class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full" style="background:#FEFCE8;color:#A16207;border:1px solid rgba(234,179,8,0.25);">Request changes</button>
+                    class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full" style="background:#FEFCE8;color:#A16207;border:1px solid rgba(234,179,8,0.25);">全部待审版本要求修改</button>
             <button @click="panel = panel === 'reject' ? null : 'reject'"
-                    class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full" style="background:#FEF2F2;color:#B91C1C;border:1px solid rgba(239,68,68,0.18);">Reject</button>
+                    class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full" style="background:#FEF2F2;color:#B91C1C;border:1px solid rgba(239,68,68,0.18);">拒绝全部待审版本</button>
             {% elif post.client_on_hold %}
             <span class="text-[0.8125rem] text-stone-500 inline-flex items-center gap-1.5">
                 <svg class="w-[15px] h-[15px]" style="color:#7C3AED;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
@@ -74,7 +112,7 @@ already-approved posts get "Put on hold"; held posts show their state.
             {% elif post.client_approved %}
             <span class="text-[0.8125rem] text-stone-500 inline-flex items-center gap-1.5 mr-1">
                 <svg class="w-[15px] h-[15px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
-                You approved this. Scheduled to publish
+                已通过审批；人工管理账号需手动发布。
             </span>
             <button @click="panel = panel === 'hold' ? null : 'hold'"
                     class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full inline-flex items-center gap-1.5" style="background:#F5F3FF;color:#6D28D9;border:1px solid rgba(124,58,237,0.2);">
@@ -92,10 +130,10 @@ already-approved posts get "Put on hold"; held posts show their state.
                       :placeholder="panel === 'hold' ? 'e.g. Legal wants to double-check the figures…' : 'Add a note…'"
                       class="w-full px-3 py-2 text-[0.875rem] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-200 border-[1.5px] border-stone-200"></textarea>
             <div class="flex gap-2 mt-3">
-                <button x-show="panel === 'changes'" hx-post="{% url 'client_portal:request_changes' post_id=post.id %}" hx-include="#client-comment-{{ post.id }}" hx-swap="none"
+                <button x-show="panel === 'changes'" hx-post="{% url 'client_portal:request_changes' post_id=post.id %}" hx-include="#client-comment-{{ post.id }}, #portal-fingerprints-{{ post.id }}" hx-swap="none"
                         :disabled="!comment.trim()" :class="!comment.trim() && 'opacity-50 cursor-not-allowed'"
                         class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full text-white" style="background:#EAB308;">Submit feedback</button>
-                <button x-show="panel === 'reject'" hx-post="{% url 'client_portal:reject' post_id=post.id %}" hx-include="#client-comment-{{ post.id }}" hx-swap="none"
+                <button x-show="panel === 'reject'" hx-post="{% url 'client_portal:reject' post_id=post.id %}" hx-include="#client-comment-{{ post.id }}, #portal-fingerprints-{{ post.id }}" hx-swap="none"
                         :disabled="!comment.trim()" :class="!comment.trim() && 'opacity-50 cursor-not-allowed'"
                         class="px-4 py-2 text-[0.8125rem] font-semibold rounded-full text-white" style="background:#EF4444;">Reject post</button>
                 <button x-show="panel === 'hold'" hx-post="{% url 'client_portal:request_hold' post_id=post.id %}" hx-include="#client-comment-{{ post.id }}" hx-swap="none"

@@ -20,7 +20,7 @@ def provision_organization_and_workspace(user):
 
     org = Organization.objects.create(
         name="My Organization",
-        default_timezone="UTC",
+        default_timezone="Asia/Shanghai",
     )
 
     OrgMembership.objects.create(

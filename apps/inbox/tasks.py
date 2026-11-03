@@ -203,9 +203,15 @@ class InboxSyncEngine:
 
     def sync_all(self):
         """Poll each connected account for new messages."""
-        accounts = SocialAccount.objects.filter(
-            connection_status=SocialAccount.ConnectionStatus.CONNECTED,
-        ).select_related("workspace")
+        from apps.social_accounts.models import MANUAL_PLATFORMS
+
+        accounts = (
+            SocialAccount.objects.filter(
+                connection_status=SocialAccount.ConnectionStatus.CONNECTED,
+            )
+            .exclude(platform__in=MANUAL_PLATFORMS)
+            .select_related("workspace")
+        )
 
         # One dict for the whole pass. Accounts overwhelmingly share a single
         # OAuth client, so without it the breaker costs a query per account to

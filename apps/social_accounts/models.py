@@ -9,6 +9,12 @@ from apps.common.encryption import EncryptedTextField
 from apps.common.managers import WorkspaceScopedManager
 from apps.credentials.models import PlatformCredential
 
+MANUAL_PLATFORM_LABELS = {
+    "xiaohongshu": "小红书",
+    "wechat_official": "微信公众号",
+}
+MANUAL_PLATFORMS = tuple(MANUAL_PLATFORM_LABELS)
+
 
 class YouTubeRevocation(models.Model):
     """Encrypted, short-lived grant retry, independent of a deleted account."""
@@ -172,6 +178,16 @@ class SocialAccount(models.Model):
 
     def __str__(self):
         return f"{self.account_name} ({self.get_platform_display()})"
+
+    def get_platform_display(self):
+        """Label local planning accounts without changing the platform schema."""
+        return MANUAL_PLATFORM_LABELS.get(self.platform) or dict(PlatformCredential.Platform.choices).get(
+            self.platform, self.platform
+        )
+
+    @property
+    def is_manual(self):
+        return self.platform in MANUAL_PLATFORMS
 
     def save(self, *args, **kwargs):
         """Invalidate Instagram checks atomically when either credential changes."""
@@ -398,6 +414,9 @@ class SocialAccount(models.Model):
         "google_business": 1500,
         "mastodon": 500,
         "devto": 25000,
+        # Editor capacity only; actual acceptance is determined in the platform UI.
+        "xiaohongshu": 100000,
+        "wechat_official": 100000,
     }
 
     @property
@@ -423,6 +442,20 @@ class SocialAccount(models.Model):
 
     # Platform-specific field configuration (which platforms need extra fields)
     PLATFORM_FIELD_CONFIG: dict[str, dict[str, Any]] = {
+        "xiaohongshu": {
+            "needs_title": True,
+            "title_max_length": 255,
+            "title_label": "笔记标题",
+            "caption_label": "笔记正文",
+            "supports_first_comment": False,
+        },
+        "wechat_official": {
+            "needs_title": True,
+            "title_max_length": 255,
+            "title_label": "文章标题",
+            "caption_label": "文章正文",
+            "supports_first_comment": False,
+        },
         "youtube": {
             "needs_title": True,
             "title_max_length": 100,

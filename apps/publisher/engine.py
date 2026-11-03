@@ -433,11 +433,14 @@ class PublishEngine:
 
     def _get_due_platform_posts(self):
         """Find PlatformPosts due for publishing, using Coalesce fallback."""
+        from apps.social_accounts.models import MANUAL_PLATFORMS
+
         now = timezone.now()
         return list(
             PlatformPost.objects.filter(
                 status=PlatformPost.Status.SCHEDULED,
             )
+            .exclude(social_account__platform__in=MANUAL_PLATFORMS)
             .annotate(effective_at=Coalesce("scheduled_at", "post__scheduled_at"))
             .filter(effective_at__lte=now)
             # A row parked on a retry backoff is still SCHEDULED with a
@@ -1156,6 +1159,8 @@ class PublishEngine:
 
     def _process_retries(self):
         """Process platform posts that are due for retry."""
+        from apps.social_accounts.models import MANUAL_PLATFORMS
+
         now = timezone.now()
         # Mirror the primary due-query's hold guard: a retrying child must not
         # publish while any sibling is on_hold (the exclude covers the query
@@ -1167,6 +1172,7 @@ class PublishEngine:
                 retry_count__lte=MAX_RETRIES,
                 next_retry_at__lte=now,
             )
+            .exclude(social_account__platform__in=MANUAL_PLATFORMS)
             .exclude(post__platform_posts__status=PlatformPost.Status.ON_HOLD)
             .select_related("social_account", "post")
         )

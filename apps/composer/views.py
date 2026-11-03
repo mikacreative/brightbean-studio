@@ -2,6 +2,7 @@
 
 import base64
 import contextlib
+import copy
 import json
 import logging
 import re
@@ -33,12 +34,13 @@ from apps.common.validators import (
 from apps.media_library.models import MediaAsset
 from apps.members.decorators import require_permission
 from apps.members.models import WorkspaceMembership
-from apps.social_accounts.models import SocialAccount
+from apps.social_accounts.models import MANUAL_PLATFORMS, SocialAccount
 from apps.workspaces.models import Workspace
 from providers import is_video_only, requires_media
 from providers.tiktok import VALID_PRIVACY_LEVELS as TIKTOK_PRIVACY_LEVELS
 
 from .forms import ContentCategoryForm, PostForm
+from .manual_content import sanitize_article_html
 from .models import (
     ContentCategory,
     Feed,
@@ -99,7 +101,7 @@ def _parse_selected_account_ids(raw):
     corrupted request, and letting them reach a UUIDField lookup raises
     ValidationError (an unhandled 500) instead of being ignored.
     """
-    return [s.strip() for s in (raw or "").split(",") if s.strip() and _is_valid_uuid(s.strip())]
+    return [str(uuid.UUID(s.strip())) for s in (raw or "").split(",") if s.strip() and _is_valid_uuid(s.strip())]
 
 
 def _get_account_scope(request):
@@ -114,7 +116,7 @@ def _get_account_scope(request):
         return None
     if not _is_valid_uuid(scope):
         raise SuspiciousOperation("Malformed account_scope.")
-    return scope
+    return str(uuid.UUID(scope))
 
 
 def _remove_deselected_platform_posts(request, post, selected_ids):
@@ -235,6 +237,19 @@ def _readonly_rejection(request, post):
     )
 
 
+def _require_media_edit(request, post, *, lock=False):
+    """Media belongs to the post, so enforce the same permissions as its editor."""
+    membership = request.workspace_membership
+    perms = membership.effective_permissions if membership else {}
+    if post.author_id != request.user.id and not perms.get("edit_others_posts", False):
+        raise PermissionDenied("You do not have permission to edit this post.")
+    if lock:
+        # Coordinate attachment changes with decisions on the reviewed version.
+        list(post.platform_posts.select_for_update().values_list("id", flat=True))
+    if _is_readonly_write(request, post):
+        raise PermissionDenied("已发布内容只读，不能修改素材。")
+
+
 def _sync_platform_posts(request, post, workspace, initial_status=None):
     """Sync platform post selections from form data.
 
@@ -244,6 +259,9 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
     ``_transition_post_children`` separately if you want to move them.
     """
     selected_ids = _parse_selected_account_ids(request.POST.get("selected_accounts", ""))
+    scope = _get_account_scope(request)
+    if scope:
+        selected_ids = [account_id for account_id in selected_ids if account_id == scope]
     _remove_deselected_platform_posts(request, post, selected_ids)
     for acc_id in selected_ids:
         try:
@@ -258,6 +276,8 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
             social_account=account,
             defaults=defaults,
         )
+        if account.platform in MANUAL_PLATFORMS and pp.status in PlatformPost.PROTECTED_STATUSES:
+            continue
         override_title = request.POST.get(f"override_title_{acc_id}", "").strip()
         override_caption = request.POST.get(f"override_caption_{acc_id}", "").strip()
         override_comment = request.POST.get(f"override_comment_{acc_id}", "").strip()
@@ -266,7 +286,9 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
         pp.platform_specific_first_comment = override_comment if override_comment else None
 
         # Per-platform extras
-        if account.platform == "facebook" and f"facebook_panel_{acc_id}" in request.POST:
+        if account.platform in MANUAL_PLATFORMS and f"manual_panel_{acc_id}" in request.POST:
+            _update_manual_fields(request, pp, workspace)
+        elif account.platform == "facebook" and f"facebook_panel_{acc_id}" in request.POST:
             # Gated on the panel's hidden marker, which the composer renders for
             # every selected Facebook account regardless of media: that keeps a
             # non-composer save from wiping extras it never rendered, while
@@ -357,6 +379,50 @@ def _sync_platform_posts(request, post, workspace, initial_status=None):
             pp.platform_extra = extra
 
         pp.save()
+
+
+def _update_manual_fields(request, pp, workspace):
+    """Persist a manual channel's inputs in existing per-platform fields."""
+    import zoneinfo
+
+    account_id = str(pp.social_account_id)
+    extra = dict(pp.platform_extra or {})
+    extra["author"] = request.POST.get(f"manual_author_{account_id}", "").strip()[:255]
+    extra["digest"] = request.POST.get(f"manual_digest_{account_id}", "").strip()[:1000]
+    extra["manual_tags"] = request.POST.get(f"manual_tags_{account_id}", "").strip()[:2000]
+    extra["article_html"] = sanitize_article_html(request.POST.get(f"manual_article_{account_id}", ""))
+    pp.platform_extra = extra
+
+    raw_order = request.POST.get(f"manual_media_{account_id}", "")
+    ordered_ids = _parse_selected_account_ids(raw_order)
+    attached_ids = {str(value) for value in pp.post.media_attachments.values_list("media_asset_id", flat=True)}
+    pp.platform_specific_media = list(dict.fromkeys(value for value in ordered_ids if value in attached_ids)) or None
+
+    planned = request.POST.get(f"manual_plan_{account_id}", "").strip()
+    if planned:
+        parsed = datetime.fromisoformat(planned)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=zoneinfo.ZoneInfo(workspace.effective_timezone or "Asia/Shanghai"))
+        pp.scheduled_at = parsed
+    else:
+        pp.scheduled_at = None
+
+
+def _validate_manual_plan(request, workspace):
+    """Reject malformed manual dates before a save mutates any rows."""
+    accounts = SocialAccount.objects.filter(
+        id__in=_parse_selected_account_ids(request.POST.get("selected_accounts", "")),
+        workspace=workspace,
+        platform__in=MANUAL_PLATFORMS,
+    )
+    for account in accounts:
+        raw = request.POST.get(f"manual_plan_{account.id}", "").strip()
+        if raw:
+            try:
+                datetime.fromisoformat(raw)
+            except (ValueError, TypeError):
+                return JsonResponse({"errors": {"schedule": "人工计划时间格式不正确。"}}, status=400)
+    return None
 
 
 def _validate_pinterest_board_selection(request, post, workspace):
@@ -469,6 +535,7 @@ def _save_version(post, user):
                 "platform": pp.social_account.platform,
                 "title_override": pp.platform_specific_title,
                 "caption_override": pp.platform_specific_caption,
+                "media_override": pp.platform_specific_media,
                 "first_comment_override": pp.platform_specific_first_comment,
                 "platform_extra": authored_youtube_settings(pp.platform_extra)
                 if pp.social_account.platform == "youtube"
@@ -784,6 +851,7 @@ def compose(request, workspace_id, post_id=None):
         asset = att.media_asset
         media_items.append(
             {
+                "id": str(asset.id),
                 "url": asset.file.url if asset.file else "",
                 "is_video": asset.is_video,
                 "filename": asset.filename,
@@ -793,6 +861,7 @@ def compose(request, workspace_id, post_id=None):
         for asset in pending_assets:
             media_items.append(
                 {
+                    "id": str(asset.id),
                     "url": asset.file.url if asset.file else "",
                     "is_video": asset.is_video,
                     "filename": asset.filename,
@@ -824,6 +893,31 @@ def compose(request, workspace_id, post_id=None):
         if cid and cid in asset_url_map:
             extra["cover_image_url"] = asset_url_map[cid]
 
+    from zoneinfo import ZoneInfo
+
+    local_tz = ZoneInfo(workspace.effective_timezone or "Asia/Shanghai")
+    initial_date = form.initial.get("scheduled_date", "") if post is None else ""
+    initial_time = form.initial.get("scheduled_time", "") if post is None else ""
+    manual_default_plan = f"{initial_date}T{initial_time}" if initial_date and initial_time else ""
+    manual_variants = {
+        str(pp.social_account_id): {
+            "title": pp.platform_specific_title or "",
+            "caption": pp.platform_specific_caption or "",
+            "media": pp.platform_specific_media or [],
+            "planned": pp.scheduled_at.astimezone(local_tz).strftime("%Y-%m-%dT%H:%M") if pp.scheduled_at else "",
+            "id": str(pp.id),
+            "status": pp.status,
+            "published_url": (pp.platform_extra or {}).get("published_url", ""),
+            "fingerprint": pp.manual_review_fingerprint,
+        }
+        for pp in platform_post_list
+        if pp.social_account.platform in MANUAL_PLATFORMS
+    }
+    for pp in platform_post_list:
+        if pp.social_account.platform in MANUAL_PLATFORMS:
+            extra = platform_extras[str(pp.social_account_id)]
+            extra["article_html"] = sanitize_article_html(extra.get("article_html", ""))
+
     context = {
         "workspace": workspace,
         "post": post,
@@ -831,6 +925,8 @@ def compose(request, workspace_id, post_id=None):
         "social_accounts": social_accounts,
         "selected_account_ids": [str(aid) for aid in selected_account_ids],
         "platform_extras": platform_extras,
+        "manual_variants": manual_variants,
+        "manual_default_plan": manual_default_plan,
         "media_attachments": media_attachments,
         "media_items": media_items,
         "char_limits": char_limits,
@@ -910,6 +1006,38 @@ def _base_content_snapshot(post):
     return (post.title, post.caption, post.first_comment, tuple(post.tags or []))
 
 
+def _manual_content_snapshots(post):
+    return {
+        str(pp.id): (
+            pp.platform_specific_title,
+            pp.platform_specific_caption,
+            copy.deepcopy(pp.platform_specific_media),
+            copy.deepcopy(pp.platform_extra),
+        )
+        for pp in post.platform_posts.select_for_update().select_related("social_account")
+        if pp.social_account.platform in MANUAL_PLATFORMS
+    }
+
+
+def _revert_changed_manual_versions(post, before):
+    """An approved version becomes pending review when its content changes."""
+    reverted = []
+    for pp in post.platform_posts.select_related("social_account"):
+        if pp.social_account.platform not in MANUAL_PLATFORMS or pp.status not in ("approved", "pending_client"):
+            continue
+        current = (
+            pp.platform_specific_title,
+            pp.platform_specific_caption,
+            pp.platform_specific_media,
+            pp.platform_extra,
+        )
+        if str(pp.id) in before and before[str(pp.id)] != current:
+            pp.transition_to("pending_review")
+            pp.save(update_fields=[*PlatformPost.TRANSITION_FIELDS, "updated_at"])
+            reverted.append(pp)
+    return reverted
+
+
 def _revert_approved_to_review(post):
     """Option A: editing an approved post's content sends it back for re-approval.
 
@@ -920,7 +1048,7 @@ def _revert_approved_to_review(post):
     """
     reverted = []
     for pp in post.platform_posts.all():
-        if pp.status == "approved" and pp.can_transition_to("pending_review"):
+        if pp.status in ("approved", "pending_client") and pp.can_transition_to("pending_review"):
             pp.transition_to("pending_review")
             pp.save(update_fields=[*PlatformPost.TRANSITION_FIELDS, "updated_at"])
             reverted.append(pp)
@@ -980,13 +1108,46 @@ def _capture_proposed_publish_at(post, post_id, workspace, form, *, clear_when_b
     post.proposed_publish_at = proposed
 
 
+def _attach_pending_media(request, workspace, post):
+    """Attach uploads made before the post existed, in their original order."""
+    session_key = f"pending_media_{workspace.id}"
+    pending_ids = request.session.get(session_key, [])
+    if not pending_ids:
+        return
+    assets = {
+        str(a.id): a
+        for a in MediaAsset.objects.for_workspace_with_shared(workspace.id, workspace.organization_id).filter(
+            id__in=pending_ids
+        )
+    }
+    for index, asset_id in enumerate(pending_ids):
+        if str(asset_id) in assets:
+            PostMedia.objects.get_or_create(post=post, media_asset=assets[str(asset_id)], defaults={"position": index})
+    del request.session[session_key]
+
+
 @login_required
 @require_permission("create_posts")
 @require_POST
+@transaction.atomic
 def save_post(request, workspace_id, post_id=None):
     """Save or update a post (draft, schedule, or publish action)."""
     workspace = _get_workspace(request, workspace_id)
     action = request.POST.get("action", "save_draft")
+    manual_plan_error = _validate_manual_plan(request, workspace)
+    if manual_plan_error:
+        return manual_plan_error
+    if (
+        action in {"schedule", "publish_now", "add_to_queue", "add_to_queue_priority"}
+        and SocialAccount.objects.filter(
+            workspace=workspace,
+            id__in=_parse_selected_account_ids(request.POST.get("selected_accounts", "")),
+            platform__in=MANUAL_PLATFORMS,
+        ).exists()
+    ):
+        return JsonResponse(
+            {"errors": {"schedule": "人工管理账号请填写各平台的计划时间并保存草稿；不会自动发布。"}}, status=400
+        )
 
     if post_id:
         post = get_object_or_404(Post, id=post_id, workspace=workspace)
@@ -1002,9 +1163,11 @@ def save_post(request, workspace_id, post_id=None):
         if readonly_error is not None:
             return readonly_error
         _orig_content = _base_content_snapshot(post)
+        _orig_manual_content = _manual_content_snapshots(post)
         form = PostForm(request.POST, instance=post)
     else:
         _orig_content = None
+        _orig_manual_content = {}
         form = PostForm(request.POST)
 
     if not form.is_valid():
@@ -1139,8 +1302,12 @@ def save_post(request, workspace_id, post_id=None):
         # Save post first so it has a PK, then delegate to approval service
         _capture_proposed_publish_at(post, post_id, workspace, form, clear_when_blank=False)
         post.save()
+        _attach_pending_media(request, workspace, post)
         # Sync platform posts before submitting
         _sync_platform_posts(request, post, workspace, initial_status="draft")
+        if _orig_content is not None and _base_content_snapshot(post) != _orig_content:
+            _revert_approved_to_review(post)
+        _revert_changed_manual_versions(post, _orig_manual_content)
         _save_version(post, request.user)
         from apps.approvals.services import submit_for_review
 
@@ -1158,7 +1325,11 @@ def save_post(request, workspace_id, post_id=None):
         # Resubmit after changes requested or rejection
         _capture_proposed_publish_at(post, post_id, workspace, form, clear_when_blank=False)
         post.save()
+        _attach_pending_media(request, workspace, post)
         _sync_platform_posts(request, post, workspace, initial_status="draft")
+        if _orig_content is not None and _base_content_snapshot(post) != _orig_content:
+            _revert_approved_to_review(post)
+        _revert_changed_manual_versions(post, _orig_manual_content)
         _save_version(post, request.user)
         from apps.approvals.services import resubmit_post
 
@@ -1183,22 +1354,7 @@ def save_post(request, workspace_id, post_id=None):
 
     # Attach pending session media for new posts
     if not post_id:
-        from apps.media_library.models import MediaAsset as _MediaAsset
-
-        session_key = f"pending_media_{workspace.id}"
-        pending_ids = request.session.get(session_key, [])
-        if pending_ids:
-            for idx, asset_id in enumerate(pending_ids):
-                try:
-                    asset = _MediaAsset.objects.get(id=asset_id, workspace=workspace)
-                    PostMedia.objects.get_or_create(
-                        post=post,
-                        media_asset=asset,
-                        defaults={"position": idx},
-                    )
-                except _MediaAsset.DoesNotExist:
-                    continue
-            del request.session[session_key]
+        _attach_pending_media(request, workspace, post)
 
     # Sync any new tags to the Tag model
     _sync_tags_to_model(workspace, post.tags)
@@ -1257,6 +1413,7 @@ def save_post(request, workspace_id, post_id=None):
     # Only ``approved`` children are reverted; anything else is a no-op.
     content_changed = _orig_content is not None and _base_content_snapshot(post) != _orig_content
     reverted_ids = {str(pp.id) for pp in _revert_approved_to_review(post)} if content_changed else set()
+    reverted_ids.update(str(pp.id) for pp in _revert_changed_manual_versions(post, _orig_manual_content))
 
     # Move existing children to the requested target state (no-op for save_draft —
     # children that are already mid-workflow stay put). Children just reverted for
@@ -1351,8 +1508,106 @@ def transition_platform_post(request, workspace_id, post_id, platform_post_id):
 
 
 @login_required
+@require_permission("publish_directly")
+@require_POST
+def mark_manual_published(request, workspace_id, post_id, platform_post_id):
+    """Record a user-confirmed publication; this view never contacts a platform."""
+    import zoneinfo
+    from urllib.parse import urlsplit
+
+    from django.core.validators import URLValidator
+    from django.utils.crypto import constant_time_compare
+
+    from apps.publisher.models import PublishLog
+
+    workspace = _get_workspace(request, workspace_id)
+    url = request.POST.get("url", "").strip()
+    try:
+        URLValidator(schemes=["https"])(url)
+        host = (urlsplit(url).hostname or "").lower()
+    except (ValidationError, ValueError):
+        return JsonResponse({"error": "请输入有效的 HTTPS 作品链接。"}, status=400)
+    if len(url) > 2000:
+        return JsonResponse({"error": "作品链接过长。"}, status=400)
+    raw_published_at = request.POST.get("published_at", "").strip()
+    try:
+        published_at = datetime.fromisoformat(raw_published_at) if raw_published_at else timezone.now()
+        if published_at.tzinfo is None:
+            published_at = published_at.replace(
+                tzinfo=zoneinfo.ZoneInfo(workspace.effective_timezone or "Asia/Shanghai")
+            )
+        if published_at > timezone.now():
+            raise ValueError("future")
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "请输入有效的过去发布时间。"}, status=400)
+
+    with transaction.atomic():
+        pp = get_object_or_404(
+            PlatformPost.objects.select_for_update().select_related("post", "social_account"),
+            pk=platform_post_id,
+            post_id=post_id,
+            post__workspace=workspace,
+            social_account__platform__in=MANUAL_PLATFORMS,
+        )
+        perms = request.workspace_membership.effective_permissions
+        if pp.post.author_id != request.user.id and not perms.get("edit_others_posts", False):
+            raise PermissionDenied("You do not have permission to edit this post.")
+        domains = (
+            ("xiaohongshu.com", "xhslink.com") if pp.social_account.platform == "xiaohongshu" else ("mp.weixin.qq.com",)
+        )
+        if not any(host == domain or host.endswith("." + domain) for domain in domains):
+            return JsonResponse({"error": "请填写对应平台的作品链接。"}, status=400)
+        if pp.status not in ("draft", "approved"):
+            return JsonResponse({"error": "请先完成审批，再登记发布；已发布的版本不能重复登记。"}, status=400)
+        if (
+            workspace.approval_workflow_mode in ("required_internal", "required_internal_and_client")
+            and pp.status != "approved"
+        ):
+            return JsonResponse({"error": "此工作区要求完成审批后才能登记发布。"}, status=400)
+        if not constant_time_compare(request.POST.get("fingerprint", ""), pp.manual_review_fingerprint):
+            return JsonResponse({"error": "内容已变更，请刷新并确认当前版本后再登记。"}, status=409)
+
+        # Freeze inherited text at hand-off so future shared edits cannot change
+        # what this published version records.
+        pp.platform_specific_title = pp.effective_title
+        pp.platform_specific_caption = pp.effective_caption
+        attachment_ids = [str(a.media_asset_id) for a in pp.post.media_attachments.all()]
+        ordered = [str(aid) for aid in (pp.platform_specific_media or []) if str(aid) in attachment_ids]
+        pp.platform_specific_media = list(dict.fromkeys(ordered + attachment_ids))
+        pp.platform_extra = {
+            **(pp.platform_extra or {}),
+            "published_url": url,
+            "manual_media_frozen": True,
+            "manual_recorded_by": str(request.user.pk),
+            "manual_recorded_at": timezone.now().isoformat(),
+        }
+        pp.status = PlatformPost.Status.PUBLISHED
+        pp.published_at = published_at
+        pp.save(
+            update_fields=[
+                "platform_specific_title",
+                "platform_specific_caption",
+                "platform_specific_media",
+                "platform_extra",
+                "status",
+                "published_at",
+                "updated_at",
+            ]
+        )
+        if pp.post.published_at is None or pp.post.published_at < published_at:
+            pp.post.published_at = published_at
+            pp.post.save(update_fields=["published_at", "updated_at"])
+        PublishLog.objects.create(
+            platform_post=pp, response_body=json.dumps({"source": "manual", "user": str(request.user.pk)})
+        )
+
+    return JsonResponse({"ok": True, "status": "published"})
+
+
+@login_required
 @require_permission("create_posts")
 @require_POST
+@transaction.atomic
 def autosave(request, workspace_id, post_id=None):
     """Auto-save endpoint called every 30 seconds via HTMX.
 
@@ -1361,9 +1616,13 @@ def autosave(request, workspace_id, post_id=None):
     URL to the edit endpoint, preventing duplicate drafts on subsequent ticks.
     """
     workspace = _get_workspace(request, workspace_id)
+    manual_plan_error = _validate_manual_plan(request, workspace)
+    if manual_plan_error:
+        return manual_plan_error
 
     is_new = False
     orig_content = None
+    orig_manual_content = {}
     if post_id:
         post = get_object_or_404(Post, id=post_id, workspace=workspace)
         # Enforce edit permissions on existing posts
@@ -1378,6 +1637,7 @@ def autosave(request, workspace_id, post_id=None):
         if _is_readonly_write(request, post):
             return HttpResponse('<span class="text-xs text-gray-400">Read-only — not saved</span>')
         orig_content = _base_content_snapshot(post)
+        orig_manual_content = _manual_content_snapshots(post)
     else:
         # Check if a previous autosave already created a draft for this session
         # by looking for the post_id passed from the client
@@ -1385,6 +1645,14 @@ def autosave(request, workspace_id, post_id=None):
         if client_post_id:
             try:
                 post = Post.objects.get(id=client_post_id, workspace=workspace)
+                membership = request.workspace_membership
+                perms = membership.effective_permissions if membership else {}
+                if post.author != request.user and not perms.get("edit_others_posts", False):
+                    raise PermissionDenied("You do not have permission to edit this post.")
+                if _is_readonly_write(request, post):
+                    return HttpResponse('<span class="text-xs text-gray-400">已发布，未保存</span>')
+                orig_content = _base_content_snapshot(post)
+                orig_manual_content = _manual_content_snapshots(post)
             except Post.DoesNotExist:
                 post = Post(workspace=workspace, author=request.user)
                 is_new = True
@@ -1403,36 +1671,37 @@ def autosave(request, workspace_id, post_id=None):
 
     # Attach pending session media when creating a new post
     if is_new:
-        from apps.media_library.models import MediaAsset
-
-        session_key = f"pending_media_{workspace.id}"
-        pending_ids = request.session.get(session_key, [])
-        if pending_ids:
-            for idx, asset_id in enumerate(pending_ids):
-                try:
-                    asset = MediaAsset.objects.get(id=asset_id, workspace=workspace)
-                    PostMedia.objects.get_or_create(
-                        post=post,
-                        media_asset=asset,
-                        defaults={"position": idx},
-                    )
-                except MediaAsset.DoesNotExist:
-                    continue
-            del request.session[session_key]
+        _attach_pending_media(request, workspace, post)
 
     # Sync platform selections
     selected_ids = _parse_selected_account_ids(request.POST.get("selected_accounts", ""))
+    scope = _get_account_scope(request)
+    if scope:
+        selected_ids = [account_id for account_id in selected_ids if account_id == scope]
     _remove_deselected_platform_posts(request, post, selected_ids)
-    for acc_id in selected_ids:
-        PlatformPost.objects.get_or_create(
+    for account in SocialAccount.objects.filter(id__in=selected_ids, workspace=workspace):
+        pp, _ = PlatformPost.objects.get_or_create(
             post=post,
-            social_account_id=acc_id,
+            social_account=account,
         )
+        account_id = str(account.id)
+        if (
+            account.platform in MANUAL_PLATFORMS
+            and pp.status not in PlatformPost.PROTECTED_STATUSES
+            and f"manual_panel_{account_id}" in request.POST
+        ):
+            title = request.POST.get(f"override_title_{account_id}", "").strip()
+            caption = request.POST.get(f"override_caption_{account_id}", "").strip()
+            pp.platform_specific_title = title or None
+            pp.platform_specific_caption = caption or None
+            _update_manual_fields(request, pp, workspace)
+            pp.save()
 
     # Option A: an autosave that changed an approved post's content reverts it to
     # pending_review so edited content can't publish without a fresh review.
     if orig_content is not None and _base_content_snapshot(post) != orig_content:
         _revert_approved_to_review(post)
+    _revert_changed_manual_versions(post, orig_manual_content)
 
     return HttpResponse(
         f'<span class="text-xs text-gray-400">Saved {timezone.now().strftime("%H:%M")}</span>',
@@ -1483,6 +1752,10 @@ def preview(request, workspace_id):
                     if len(effective_caption) > char_limit
                     else effective_caption,
                     "needs_title": field_config["needs_title"],
+                    "author": request.POST.get(f"manual_author_{account.id}", ""),
+                    "digest": request.POST.get(f"manual_digest_{account.id}", ""),
+                    "tags": request.POST.get(f"manual_tags_{account.id}", ""),
+                    "article_html": sanitize_article_html(request.POST.get(f"manual_article_{account.id}", "")),
                 }
             )
 
@@ -1492,13 +1765,22 @@ def preview(request, workspace_id):
     media_items = []
     post_id_str = request.POST.get("_autosave_post_id", "")
 
-    if post_id_str:
+    frozen_orders = {}
+    if post_id_str and _is_valid_uuid(post_id_str):
         try:
             post_obj = Post.objects.get(id=post_id_str, workspace=workspace)
+            frozen_orders = {
+                str(pp.social_account_id): pp.platform_specific_media or []
+                for pp in post_obj.platform_posts.select_related("social_account")
+                if pp.social_account.platform in MANUAL_PLATFORMS
+                and pp.status == "published"
+                and (pp.platform_extra or {}).get("manual_media_frozen")
+            }
             for att in post_obj.media_attachments.select_related("media_asset").all():
                 asset = att.media_asset
                 media_items.append(
                     {
+                        "id": str(asset.id),
                         "url": asset.file.url if asset.file else "",
                         "is_video": asset.is_video,
                         "filename": asset.filename,
@@ -1512,14 +1794,29 @@ def preview(request, workspace_id):
         session_key = f"pending_media_{workspace.id}"
         pending_ids = request.session.get(session_key, [])
         if pending_ids:
-            for asset in MediaAsset.objects.filter(id__in=pending_ids, workspace=workspace):
+            pending_assets = MediaAsset.objects.for_workspace_with_shared(
+                workspace.id, workspace.organization_id
+            ).filter(id__in=pending_ids)
+            pending_map = {str(asset.id): asset for asset in pending_assets}
+            for asset in (pending_map[asset_id] for asset_id in pending_ids if asset_id in pending_map):
                 media_items.append(
                     {
+                        "id": str(asset.id),
                         "url": asset.file.url if asset.file else "",
                         "is_video": asset.is_video,
                         "filename": asset.filename,
                     }
                 )
+
+    # Explicit platform order first, followed by newly attached media.
+    for item in previews:
+        account_id = str(item["account"].id)
+        order = frozen_orders.get(account_id)
+        if order is None:
+            order = _parse_selected_account_ids(request.POST.get(f"manual_media_{account_id}", ""))
+        rank = {asset_id: index for index, asset_id in enumerate(order)}
+        allowed_media = [media for media in media_items if account_id not in frozen_orders or media["id"] in rank]
+        item["media_items"] = sorted(allowed_media, key=lambda media: rank.get(media["id"], len(rank)))
 
     return render(
         request,
@@ -1957,6 +2254,7 @@ def unsplash_search(request, workspace_id):
 
 
 @login_required
+@require_permission("create_posts")
 @require_POST
 def unsplash_import(request, workspace_id, post_id=None):
     """Download selected Unsplash photos server-side and attach them as media.
@@ -1989,6 +2287,9 @@ def unsplash_import(request, workspace_id, post_id=None):
     post = None
     if post_id:
         post = get_object_or_404(Post, id=post_id, workspace=workspace)
+        _require_media_edit(request, post)
+        if post.platform_posts.filter(social_account__platform__in=MANUAL_PLATFORMS).exists():
+            return JsonResponse({"error": "人工管理版本请上传文件或从素材库选择素材。"}, status=400)
 
     auth_headers = {"Authorization": f"Client-ID {settings.UNSPLASH_ACCESS_KEY}"}
     new_assets = []
@@ -2207,11 +2508,14 @@ def tiktok_creator_info(request, workspace_id, account_id):
 
 
 @login_required
+@require_permission("create_posts")
 @require_POST
+@transaction.atomic
 def attach_media(request, workspace_id, post_id):
     """Attach a media asset to a post."""
     workspace = _get_workspace(request, workspace_id)
     post = get_object_or_404(Post, id=post_id, workspace=workspace)
+    _require_media_edit(request, post, lock=True)
     media_asset_id = request.POST.get("media_asset_id")
 
     if not media_asset_id:
@@ -2250,6 +2554,7 @@ def attach_media(request, workspace_id, post_id):
 
 
 @login_required
+@require_permission("create_posts")
 @require_POST
 def attach_pending_media(request, workspace_id):
     """Attach a library media asset as pending (before post is saved)."""
@@ -2326,10 +2631,15 @@ def _attach_asset_for_composer(request, workspace, asset, post=None):
 
 
 @login_required
+@require_permission("create_posts")
 @require_POST
+@transaction.atomic
 def upload_media(request, workspace_id, post_id=None):
     """Upload a file directly from the composer and optionally attach to a post."""
     workspace = _get_workspace(request, workspace_id)
+    post = get_object_or_404(Post, id=post_id, workspace=workspace) if post_id else None
+    if post:
+        _require_media_edit(request, post, lock=True)
     uploaded_file = request.FILES.get("file")
 
     if not uploaded_file:
@@ -2361,7 +2671,6 @@ def upload_media(request, workspace_id, post_id=None):
     )
 
     if post_id:
-        post = get_object_or_404(Post, id=post_id, workspace=workspace)
         attachment = _attach_asset_for_composer(request, workspace, asset, post)
         # Option A: changing media on an approved post sends it back for re-approval.
         _revert_approved_to_review(post)
@@ -2391,13 +2700,22 @@ def upload_media(request, workspace_id, post_id=None):
 
 
 @login_required
+@require_permission("create_posts")
 @require_POST
+@transaction.atomic
 def remove_media(request, workspace_id, post_id, media_id):
     """Remove a media attachment from a post."""
     workspace = _get_workspace(request, workspace_id)
     post = get_object_or_404(Post, id=post_id, workspace=workspace)
+    _require_media_edit(request, post, lock=True)
     attachment = PostMedia.objects.filter(id=media_id, post=post).first()
     if attachment is not None:
+        for published in post.platform_posts.filter(status="published", social_account__platform__in=MANUAL_PLATFORMS):
+            extra = published.platform_extra or {}
+            if not extra.get("manual_media_frozen") or str(attachment.media_asset_id) in (
+                published.platform_specific_media or []
+            ):
+                return HttpResponse("此素材用于已登记发布的版本，不能从选题移除。", status=400)
         # Taking the last video off a post already scheduled to TikTok, or the
         # last image off a pin, would leave it queued to fail. Plain text,
         # because the global htmx error toast shows the body as-is and a 4xx
@@ -2424,13 +2742,13 @@ def remove_media(request, workspace_id, post_id, media_id):
 
 
 @login_required
+@require_permission("create_posts")
 @require_POST
 def remove_pending_media(request, workspace_id, asset_id):
     """Remove a pending media asset (before post is saved)."""
     workspace = _get_workspace(request, workspace_id)
 
     from apps.media_library.models import MediaAsset
-    from apps.media_library.services import delete_asset
 
     session_key = f"pending_media_{workspace.id}"
     pending = request.session.get(session_key, [])
@@ -2439,13 +2757,7 @@ def remove_pending_media(request, workspace_id, asset_id):
         pending.remove(asset_id_str)
         request.session[session_key] = pending
 
-    # Delete the asset and its files from storage (R2)
-    asset = MediaAsset.objects.filter(id=asset_id, workspace=workspace).first()
-    if asset:
-        with contextlib.suppress(Exception):
-            delete_asset(asset)
-
-    # Return updated pending list
+    # Removing from an unsaved draft must not delete an existing library asset.
     pending_assets = MediaAsset.objects.filter(id__in=pending, workspace=workspace)
     response = render(
         request,

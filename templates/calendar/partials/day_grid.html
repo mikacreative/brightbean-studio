@@ -17,7 +17,7 @@ Context: day_slots, target_date, workspace.
         <div class="flex-1 p-2 flex flex-col justify-center gap-1 cal-drop"
              data-date="{{ cell.compose_date }}" data-time="{{ cell.compose_time }}">
             {% if not is_past_day and not is_today or not is_past_day and cell.hour >= current_hour %}
-            <a href="{% url 'composer:compose' workspace_id=workspace.id %}?scheduled_date={{ cell.compose_date }}&scheduled_time={{ cell.compose_time }}" class="cal-add-btn cal-add-btn--inline" style="position:static; margin:0 auto;" title="Create post">
+            <a href="{% url 'composer:compose' workspace_id=workspace.id %}?scheduled_date={{ cell.compose_date }}&scheduled_time={{ cell.compose_time }}" class="cal-add-btn cal-add-btn--inline" style="position:static; margin:0 auto;" title="创建内容">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
             </a>
             {% endif %}
@@ -33,11 +33,11 @@ Context: day_slots, target_date, workspace.
                     {% if not slot.is_past %}
                     <a href="{% url 'composer:compose' workspace_id=workspace.id %}?account={{ slot.account.id }}&scheduled_date={{ slot.compose_date }}&scheduled_time={{ slot.compose_time }}"
                        class="calendar-slot-add"
-                       title="Schedule post for {{ slot.account.account_name|default:slot.account.account_handle }} at {{ slot.time_label }}">
+                       title="为 {{ slot.account.account_name|default:slot.account.account_handle }} 安排 {{ slot.time_label }} 的内容">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                     </a>
                     {% else %}
-                    <span class="calendar-slot-state">Open</span>
+                    <span class="calendar-slot-state">空闲</span>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -46,7 +46,7 @@ Context: day_slots, target_date, workspace.
             {% for pp in cell.posts %}
             <a href="{% url 'composer:compose_edit' workspace_id=workspace.id post_id=pp.post_id %}?account={{ pp.social_account_id }}"
                class="post-chip status-{{ pp.status }}{% if pp.is_reschedulable %} is-draggable{% endif %}"
-               title="{% if pp.is_reschedulable %}Move or open{% else %}Open{% endif %}"
+               title="{% if pp.social_account.is_manual %}计划人工发布 · {% endif %}{% if pp.is_reschedulable %}移动或打开{% else %}打开{% endif %}"
                {% if pp.is_reschedulable %}draggable="true" data-platform-post-id="{{ pp.id }}"{% else %}draggable="false"{% endif %}>
                 {% if pp.is_bulk_selectable %}{% include "calendar/partials/_select_checkbox.html" with pp_id=pp.id %}{% endif %}
                 <span class="w-4 h-4 rounded flex items-center justify-center pi-{{ pp.social_account.platform }} flex-shrink-0 text-white">
@@ -61,9 +61,9 @@ Context: day_slots, target_date, workspace.
                 <video src="{{ first_media.media_asset.file.url }}#t=0.5" class="w-5 h-5 rounded object-cover flex-shrink-0" muted preload="metadata"></video>
                 {% endif %}
                 {% endwith %}
-                <span class="truncate">{{ pp.post.title|default:pp.post.caption_snippet|truncatechars:28 }}</span>
+                <span class="truncate">{{ pp.effective_title|default:pp.effective_caption|truncatechars:28 }}</span>
                 {% if pp.takes_calendar_slot %}
-                <span class="calendar-post-slot-check" title="Scheduled in a channel slot">
+                <span class="calendar-post-slot-check" title="已排入账号时段">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 </span>
                 {% endif %}

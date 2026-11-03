@@ -5,6 +5,21 @@ from . import views
 app_name = "approvals"
 
 urlpatterns = [
+    path(
+        "approvals/<uuid:post_id>/platform/<uuid:platform_post_id>/approve/",
+        views.approve_platform,
+        name="approve_platform",
+    ),
+    path(
+        "approvals/<uuid:post_id>/platform/<uuid:platform_post_id>/request-changes/",
+        views.request_changes_platform,
+        name="request_changes_platform",
+    ),
+    path(
+        "approvals/<uuid:post_id>/platform/<uuid:platform_post_id>/reject/",
+        views.reject_platform,
+        name="reject_platform",
+    ),
     path("approvals/<uuid:post_id>/approve/", views.approve, name="approve"),
     path("approvals/<uuid:post_id>/request-changes/", views.request_changes_view, name="request_changes"),
     path("approvals/<uuid:post_id>/reject/", views.reject, name="reject"),

@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 
+from django.db import transaction
 from django.db.models import F, Prefetch
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,8 +11,10 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from apps.approvals import services as approval_services
 from apps.approvals.models import ApprovalAction, PostComment
 from apps.common.htmx import toast_response
-from apps.composer.models import Post
+from apps.composer.manual_content import manual_preview_data
+from apps.composer.models import PlatformPost, Post
 from apps.members.models import WorkspaceMembership
+from apps.social_accounts.models import MANUAL_PLATFORMS
 
 from .decorators import portal_auth_required
 from .services import consume_magic_link, create_portal_session, peek_magic_link
@@ -32,6 +35,40 @@ def _portal_error(request, message):
     if request.htmx:
         return toast_response(tone="error", title="Couldn't complete that", body=message)
     return HttpResponse(message, status=400)
+
+
+def _stale_review_response():
+    """Refuse a decision if it was made from a stale preview."""
+    return HttpResponse("内容已更新，请刷新页面后重新审阅。", status=409)
+
+
+def _manual_fingerprints_match(request, targets):
+    """All manual versions in a bulk decision must match what was displayed."""
+    for pp in targets:
+        if pp.social_account.platform in MANUAL_PLATFORMS:
+            submitted = request.POST.get(f"fingerprint_{pp.id}", "")
+            if not submitted or submitted != pp.manual_review_fingerprint:
+                return False
+    return True
+
+
+def _manual_previews(post):
+    """Build client-visible variants from this post's own attached assets.
+
+    Drafts and internally pending versions are not visible in the client
+    portal until they have reached client review. Never resolve arbitrary
+    asset IDs from JSON: order only the assets attached to this post.
+    """
+    previews = []
+    for pp in post.platform_posts.all():
+        if pp.social_account.platform not in MANUAL_PLATFORMS or pp.status not in {
+            "pending_client",
+            "approved",
+            "on_hold",
+        }:
+            continue
+        previews.append(manual_preview_data(pp, post=post))
+    return previews
 
 
 # ---------------------------------------------------------------------------
@@ -135,6 +172,7 @@ def portal_approval_queue(request):
     # client may still want to hold.
     decided_posts = list(
         base.filter(platform_posts__status__in=["approved", "on_hold"])
+        .exclude(platform_posts__status="pending_client")
         .distinct()
         .order_by(F("scheduled_at").asc(nulls_first=True), "-created_at")[:50]
     )
@@ -171,6 +209,7 @@ def portal_approval_queue(request):
         post.client_pending = "pending_client" in child_statuses
         post.client_on_hold = "on_hold" in child_statuses
         post.client_approved = "approved" in child_statuses
+        post.manual_previews = _manual_previews(post)
 
     return render(
         request,
@@ -189,20 +228,78 @@ def portal_approve(request, post_id):
     """Approve a post from the client portal."""
     workspace = request.portal_workspace
     post = get_object_or_404(Post, id=post_id, workspace=workspace)
-    if not post.platform_posts.filter(status="pending_client").exists():
-        raise Http404
     comment_text = request.POST.get("comment", "")
 
     try:
-        approval_services.approve_post(post, request.user, workspace, comment_text)
+        # The service's bundled action also accepts pending internal reviews.
+        # A client may only approve versions that actually reached their stage.
+        with transaction.atomic():
+            targets = list(post.platform_posts.select_for_update().filter(status="pending_client"))
+            if not targets:
+                raise Http404
+            if not _manual_fingerprints_match(request, targets):
+                return _stale_review_response()
+            for target in targets:
+                approval_services.approve_post(target, request.user, workspace, comment_text)
     except ValueError as e:
         return _portal_error(request, str(e))
 
     if request.htmx:
         return _portal_response(
-            post.id, "approved", tone="success", title="Approved", body="Thanks — scheduled to publish."
+            post.id, "approved", tone="success", title="已通过", body="待审版本已通过；人工管理账号仍需手动发布。"
         )
     return redirect("client_portal:approval_queue")
+
+
+def _portal_decide_platform(request, post_id, platform_post_id, action):
+    """Apply one client decision to exactly one eligible manual version."""
+    workspace = request.portal_workspace
+    decisions = {
+        "approved": approval_services.approve_post,
+        "changes_requested": approval_services.request_changes,
+        "rejected": approval_services.reject_post,
+    }
+    with transaction.atomic():
+        pp = get_object_or_404(
+            PlatformPost.objects.select_for_update().select_related("post", "social_account"),
+            id=platform_post_id,
+            post_id=post_id,
+            post__workspace=workspace,
+            social_account__workspace=workspace,
+            social_account__platform__in=MANUAL_PLATFORMS,
+            status="pending_client",
+        )
+        fingerprint = request.POST.get("fingerprint", "")
+        if not fingerprint or fingerprint != pp.manual_review_fingerprint:
+            return _stale_review_response()
+        try:
+            decisions[action](pp, request.user, workspace, request.POST.get("comment", ""))
+        except ValueError as exc:
+            return _portal_error(request, str(exc))
+
+    if request.htmx:
+        if action == "approved":
+            return _portal_response(post_id, action, tone="success", title="版本已通过", body="此账号仍需手动发布。")
+        return _portal_response(post_id, action, tone="info", title="意见已提交", body="团队会查看这个版本的反馈。")
+    return redirect("client_portal:approval_queue")
+
+
+@portal_auth_required
+@require_POST
+def portal_approve_platform(request, post_id, platform_post_id):
+    return _portal_decide_platform(request, post_id, platform_post_id, "approved")
+
+
+@portal_auth_required
+@require_POST
+def portal_request_platform_changes(request, post_id, platform_post_id):
+    return _portal_decide_platform(request, post_id, platform_post_id, "changes_requested")
+
+
+@portal_auth_required
+@require_POST
+def portal_reject_platform(request, post_id, platform_post_id):
+    return _portal_decide_platform(request, post_id, platform_post_id, "rejected")
 
 
 @portal_auth_required
@@ -211,12 +308,17 @@ def portal_request_changes(request, post_id):
     """Request changes on a post from the client portal."""
     workspace = request.portal_workspace
     post = get_object_or_404(Post, id=post_id, workspace=workspace)
-    if not post.platform_posts.filter(status="pending_client").exists():
-        raise Http404
     comment_text = request.POST.get("comment", "")
 
     try:
-        approval_services.request_changes(post, request.user, workspace, comment_text)
+        with transaction.atomic():
+            targets = list(post.platform_posts.select_for_update().filter(status="pending_client"))
+            if not targets:
+                raise Http404
+            if not _manual_fingerprints_match(request, targets):
+                return _stale_review_response()
+            for target in targets:
+                approval_services.request_changes(target, request.user, workspace, comment_text)
     except ValueError as e:
         return _portal_error(request, str(e))
 
@@ -233,12 +335,17 @@ def portal_reject(request, post_id):
     """Reject a post from the client portal."""
     workspace = request.portal_workspace
     post = get_object_or_404(Post, id=post_id, workspace=workspace)
-    if not post.platform_posts.filter(status="pending_client").exists():
-        raise Http404
     comment_text = request.POST.get("comment", "")
 
     try:
-        approval_services.reject_post(post, request.user, workspace, comment_text)
+        with transaction.atomic():
+            targets = list(post.platform_posts.select_for_update().filter(status="pending_client"))
+            if not targets:
+                raise Http404
+            if not _manual_fingerprints_match(request, targets):
+                return _stale_review_response()
+            for target in targets:
+                approval_services.reject_post(target, request.user, workspace, comment_text)
     except ValueError as e:
         return _portal_error(request, str(e))
 

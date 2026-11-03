@@ -9,6 +9,21 @@ urlpatterns = [
     path("", views.portal_dashboard, name="dashboard"),
     path("approvals/", views.portal_approval_queue, name="approval_queue"),
     path("approvals/<uuid:post_id>/approve/", views.portal_approve, name="approve"),
+    path(
+        "approvals/<uuid:post_id>/versions/<uuid:platform_post_id>/approve/",
+        views.portal_approve_platform,
+        name="approve_platform",
+    ),
+    path(
+        "approvals/<uuid:post_id>/versions/<uuid:platform_post_id>/request-changes/",
+        views.portal_request_platform_changes,
+        name="request_platform_changes",
+    ),
+    path(
+        "approvals/<uuid:post_id>/versions/<uuid:platform_post_id>/reject/",
+        views.portal_reject_platform,
+        name="reject_platform",
+    ),
     path("approvals/<uuid:post_id>/request-changes/", views.portal_request_changes, name="request_changes"),
     path("approvals/<uuid:post_id>/reject/", views.portal_reject, name="reject"),
     path("approvals/<uuid:post_id>/hold/", views.portal_request_hold, name="request_hold"),

@@ -10,6 +10,11 @@
         </a>
         <h2 class="text-xl font-semibold text-stone-900">Connect a Platform</h2>
         <p class="text-sm text-stone-500 mt-1">Select a platform to connect your social media account.</p>
+        <div class="mt-4 p-4 bg-orange-50 rounded-xl text-sm text-stone-700">
+            <p class="font-semibold">小红书和微信公众号</p>
+            <p class="mt-1">添加人工管理账号，用于预览、排期与协作；此操作不会连接平台，也不会自动发布。</p>
+            <a class="inline-block mt-2 font-semibold text-orange-700 underline" href="{% url 'social_accounts:add_manual' workspace_id=workspace_id %}">添加人工管理账号</a>
+        </div>
     </div>
 
     <!-- Platform grid -->

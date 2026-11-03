@@ -17,6 +17,11 @@ urlpatterns = [
         name="connect",
     ),
     path(
+        "<uuid:workspace_id>/manual/",
+        views.add_manual_account,
+        name="add_manual",
+    ),
+    path(
         "<uuid:workspace_id>/connect/bluesky/",
         views.connect_bluesky,
         name="connect_bluesky",

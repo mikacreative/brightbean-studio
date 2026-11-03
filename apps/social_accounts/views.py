@@ -5,6 +5,7 @@ Handles OAuth flows, account listing, connect/reconnect/disconnect actions.
 
 import logging
 import secrets
+import uuid
 from datetime import timedelta
 from urllib.parse import urlsplit
 
@@ -26,7 +27,7 @@ from apps.members.decorators import require_permission
 from providers.exceptions import QuotaExceededError
 
 from .error_messages import quota_connect_error
-from .models import MastodonAppRegistration, PlatformVisibility, SocialAccount
+from .models import MANUAL_PLATFORM_LABELS, MastodonAppRegistration, PlatformVisibility, SocialAccount
 from .oauth_aliases import from_url_slug, redirect_uri_from_request, to_url_slug
 from .oauth_pkce import issue_pkce_verifier, pkce_kwargs
 from .provider_factory import _get_provider_for_platform, apply_analytics_scope_flag
@@ -194,6 +195,61 @@ def account_list(request, workspace_id):
             "platform_choices": PlatformCredential.Platform.choices,
             "settings_active": "social_accounts",
         },
+    )
+
+
+@login_required
+@require_permission("manage_social_accounts")
+@ratelimit(key="user", rate="20/m", method="POST", block=True)
+def add_manual_account(request, workspace_id):
+    """Add a local planning identity, without authorizing a platform account."""
+    if request.method not in ("GET", "POST"):
+        from django.http import HttpResponseNotAllowed
+
+        return HttpResponseNotAllowed(["GET", "POST"])
+
+    platform = request.POST.get("platform", request.GET.get("platform", ""))
+    name = request.POST.get("name", "").strip()
+    handle = request.POST.get("handle", "").strip()
+    error = ""
+    if request.method == "POST":
+        if platform not in MANUAL_PLATFORM_LABELS:
+            error = "请选择小红书或微信公众号。"
+        elif not name or len(name) > 255:
+            error = "请填写账号名称（最多 255 个字符）。"
+        elif len(handle) > 255:
+            error = "账号标识最多 255 个字符。"
+        else:
+            # This identity is local. It intentionally has no platform ID or
+            # token; a random key allows identically named accounts in a workspace.
+            # CONNECTED keeps it selectable by the existing composer. Manual
+            # accounts are explicitly excluded from external synchronization.
+            from apps.analytics.signals import suppress_analytics_backfills
+
+            with suppress_analytics_backfills():
+                SocialAccount.objects.create(
+                    workspace_id=workspace_id,
+                    platform=platform,
+                    account_platform_id=f"manual-{uuid.uuid4()}",
+                    account_name=name,
+                    account_handle=handle,
+                    connection_status=SocialAccount.ConnectionStatus.CONNECTED,
+                )
+            messages.success(request, "已添加人工管理账号。此账号未连接平台。")
+            return redirect("social_accounts:list", workspace_id=workspace_id)
+
+    return render(
+        request,
+        "social_accounts/manual_account.html",
+        {
+            "workspace_id": workspace_id,
+            "platform_choices": MANUAL_PLATFORM_LABELS.items(),
+            "selected_platform": platform,
+            "name": name,
+            "handle": handle,
+            "error": error,
+        },
+        status=400 if error else 200,
     )
 
 
@@ -871,18 +927,19 @@ def disconnect(request, workspace_id, account_id):
     # Try to revoke token. The account's own credentials, not just the org's:
     # a Mastodon grant lives on the account's instance, under that instance's
     # app registration, and revoking without them calls an empty base URL.
-    try:
-        from apps.publisher.engine import _resolve_publish_credentials
-        from providers import get_provider
+    if not account.is_manual:
+        try:
+            from apps.publisher.engine import _resolve_publish_credentials
+            from providers import get_provider
 
-        provider = get_provider(account.platform, _resolve_publish_credentials(account))
-        if account.revocation_token:
-            provider.revoke_token(account.revocation_token)
-    except Exception:
-        logger.warning(
-            "Failed to revoke token for %s, proceeding with disconnect",
-            account,
-        )
+            provider = get_provider(account.platform, _resolve_publish_credentials(account))
+            if account.revocation_token:
+                provider.revoke_token(account.revocation_token)
+        except Exception:
+            logger.warning(
+                "Failed to revoke token for %s, proceeding with disconnect",
+                account,
+            )
 
     # Delete posts that ONLY target this account (will be fully orphaned).
     # Multi-platform posts keep their other PlatformPost targets via cascade.

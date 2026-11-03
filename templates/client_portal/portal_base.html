@@ -19,6 +19,13 @@
         document.body.addEventListener('htmx:configRequest', function(event) {
             event.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
         });
+        document.body.addEventListener('htmx:responseError', function(event) {
+            if (event.detail.xhr && event.detail.xhr.status === 409) {
+                document.body.dispatchEvent(new CustomEvent('showToast', {detail: {
+                    tone: 'warn', title: '内容已更新', body: '请刷新页面后重新审阅。'
+                }}));
+            }
+        });
     </script>
 
     <!-- Top bar -->

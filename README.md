@@ -8,6 +8,28 @@
   <strong>Open-source social media management for creators, agencies, and SMBs.</strong>
 </p>
 
+## 中国大陆预览与人工发布版
+
+此本地改版在 BrightBean 原有工作区、素材库、审批和日历基础上，增加小红书和微信公众号的**人工管理账号**。账号不连接平台、不保存平台登录凭据，也不通过平台 API 发布内容。
+
+1. 在社交账号页面添加小红书或微信公众号人工账号；填写的名称仅用于工作区内识别。
+2. 新建内容并选择账号。共享素材可以复用，每个账号可填写自己的标题、正文、话题或公众号作者、摘要和富文本，并调整该账号的素材顺序。公众号预览的第一张素材用作封面；正文图片需在公众号编辑器中手动插入。
+3. 填写各账号的计划时间后保存。日历显示的是**人工执行计划**，到时不会自动发布。新注册组织默认使用北京时间；已有组织继续使用原有时区设置。
+4. 按工作区审批设置提交审核。审核人可逐平台查看和通过，客户门户也可逐版本审核。版本内容变动后需要重新审核；旧页面不能通过已发生变化的版本。
+5. 复制文案或公众号排版、下载素材，在平台官方编辑器中检查并手动发布。随后在对应账号版本里登记作品链接与实际发布时间。
+
+预览用于检查内容，不保证与平台最终排版完全一致；公众号粘贴效果取决于浏览器和平台编辑器。本版不提供自动发布、平台账号授权、评论同步、平台数据统计或定时提醒。
+
+完成依赖安装和数据库初始化后，可在项目目录执行：
+
+```bash
+.venv/bin/python manage.py runserver 127.0.0.1:8000
+```
+
+然后访问 `http://127.0.0.1:8000` 并自行创建本地账号。`.env` 中的密钥用于解密本地数据，应与数据库一起妥善保管。
+
+项目初始化与运行沿用下方上游说明。首次创建数据库需要执行项目迁移；对既有数据库或本地凭据文件操作前，请先确认目标和权限。
+
 <p align="center">
   <a href="https://github.com/brightbeanxyz/brightbean-studio/actions/workflows/ci.yml"><img src="https://github.com/brightbeanxyz/brightbean-studio/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg" alt="License: AGPL-3.0"></a>

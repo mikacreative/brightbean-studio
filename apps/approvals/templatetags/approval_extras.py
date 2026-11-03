@@ -4,6 +4,14 @@ from django import template
 
 register = template.Library()
 
+
+@register.simple_tag
+def manual_preview(platform_post):
+    from apps.composer.manual_content import manual_preview_data
+
+    return manual_preview_data(platform_post)
+
+
 # Presentation metadata per editorial status — mirrors the approved design's
 # ``STATUS_META`` (dot / background / foreground / border + label). Kept here so
 # every approval surface (publish tab, composer panel, client portal) renders an

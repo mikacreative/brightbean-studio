@@ -323,6 +323,25 @@ class Post(models.Model):
         return self.caption[:100] + "…"
 
     @property
+    def has_manual_pending_approval(self):
+        from apps.social_accounts.models import MANUAL_PLATFORMS
+
+        return any(
+            pp.social_account.platform in MANUAL_PLATFORMS and pp.status in {"pending_review", "pending_client"}
+            for pp in self.platform_posts.all()
+        )
+
+    @property
+    def manual_planned_platform_posts(self):
+        from apps.social_accounts.models import MANUAL_PLATFORMS
+
+        return [
+            pp
+            for pp in self.platform_posts.all()
+            if pp.social_account.platform in MANUAL_PLATFORMS and pp.scheduled_at and pp.status != "published"
+        ]
+
+    @property
     def platform_posts_summary(self):
         """Summary of target platforms."""
         return list(self.platform_posts.values_list("social_account__platform", flat=True))
@@ -395,7 +414,7 @@ class PlatformPost(models.Model):
         "draft": {"pending_review", "scheduled", "publishing"},
         "pending_review": {"approved", "changes_requested", "rejected"},
         "approved": {"pending_client", "scheduled", "publishing", "draft", "on_hold", "pending_review"},
-        "pending_client": {"approved", "changes_requested", "rejected"},
+        "pending_client": {"approved", "changes_requested", "rejected", "pending_review"},
         "changes_requested": {"pending_review", "draft"},
         "rejected": {"draft", "pending_review"},
         "scheduled": {"publishing", "draft"},
@@ -622,6 +641,12 @@ class PlatformPost(models.Model):
         if self.platform_specific_first_comment is not None:
             return self.platform_specific_first_comment
         return self.post.first_comment
+
+    @property
+    def manual_review_fingerprint(self):
+        from .manual_content import manual_review_fingerprint
+
+        return manual_review_fingerprint(self)
 
     @property
     def platform(self):

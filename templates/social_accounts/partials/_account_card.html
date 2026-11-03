@@ -21,14 +21,18 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
             <div class="flex items-center gap-2 mb-1">
                 <h3 class="text-sm font-semibold text-stone-900 truncate">{{ account.account_name|default:account.account_handle }}</h3>
                 <span class="flex-shrink-0 text-stone-400">
-                    {% if account.platform == "youtube" %}<a href="https://www.youtube.com/channel/{{ account.account_platform_id|urlencode }}" target="_blank" rel="noopener noreferrer" class="text-xs font-medium text-stone-500 underline underline-offset-2">YouTube</a>{% else %}{% include "social_accounts/partials/_platform_icon.html" with platform=account.platform size="4" %}{% endif %}
+                    {% if account.is_manual %}<span class="text-xs">{{ account.get_platform_display }}</span>{% elif account.platform == "youtube" %}<a href="https://www.youtube.com/channel/{{ account.account_platform_id|urlencode }}" target="_blank" rel="noopener noreferrer" class="text-xs font-medium text-stone-500 underline underline-offset-2">YouTube</a>{% else %}{% include "social_accounts/partials/_platform_icon.html" with platform=account.platform size="4" %}{% endif %}
                 </span>
             </div>
             {% if account.account_handle %}
             <p class="text-xs text-stone-500 truncate">@{{ account.account_handle|cut:"@" }}</p>
             {% endif %}
             <div class="flex items-center gap-3 mt-2">
+                {% if account.is_manual %}
+                <span class="text-xs font-medium text-stone-600 bg-stone-100 rounded-full px-2 py-1">人工管理 · 未连接平台</span>
+                {% else %}
                 {% include "social_accounts/partials/_status_badge.html" with status=account.connection_status error=account.last_error %}
+                {% endif %}
                 {% if account.follower_count %}
                 <span class="text-xs text-stone-400">{{ account.follower_count|format_number }} {% if account.platform == "youtube" %}subscribers{% else %}followers{% endif %}</span>
                 {% endif %}
@@ -47,14 +51,14 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
             {% endif %}
 
             <!-- Disconnect -->
-            <button @click="confirmDisconnect = true" class="inline-flex items-center p-1.5 text-stone-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" title="Disconnect">
+            <button @click="confirmDisconnect = true" class="inline-flex items-center p-1.5 text-stone-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" title="{% if account.is_manual %}删除人工账号{% else %}Disconnect{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
 
             <!-- Disconnect confirmation -->
             <div x-show="confirmDisconnect" x-cloak @click.away="confirmDisconnect = false"
                  class="absolute right-4 top-12 z-10 w-72 bg-white rounded-xl shadow-xl border border-stone-200 p-4">
-                <p class="text-sm text-stone-700 mb-2">Disconnect <strong>{{ account.account_name|default:account.account_handle }}</strong>?</p>
+                <p class="text-sm text-stone-700 mb-2">{% if account.is_manual %}删除人工账号{% else %}Disconnect{% endif %} <strong>{{ account.account_name|default:account.account_handle }}</strong>?</p>
                 {% comment %}
                 Say what disconnect really does; the privacy policy promises it
                 and platform reviewers read this against the policy. Only claim
@@ -64,7 +68,9 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
                 the whole person and would sever their other connected accounts.
                 {% endcomment %}
                 <p class="text-xs text-stone-500 mb-2">
-                    {% if account.revokes_platform_grant_on_disconnect %}
+                    {% if account.is_manual %}
+                    这是本地人工管理账号，不涉及平台授权。
+                    {% elif account.revokes_platform_grant_on_disconnect %}
                     This revokes BrightBean's access to the account.
                     {% elif account.keeps_platform_grant_on_disconnect %}
                     This removes the account from BrightBean only. To revoke our access entirely,
@@ -75,7 +81,9 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
                     {% endif %}
                 </p>
                 <p class="text-xs text-stone-500 mb-3">
-                    {% if account.platform == "youtube" %}
+                    {% if account.is_manual %}
+                    仅属于此账号的选题会从本地删除；多平台选题会保留其他账号的版本。此操作不可撤销。
+                    {% elif account.platform == "youtube" %}
                     YouTube data, analytics and copied comments are deleted immediately, including notification copies. Your original uploads and posts shared with other channels stay.
                     {% else %}
                     Its analytics, inbox messages and posts made only for it are deleted from BrightBean. Posts shared with other channels stay.
@@ -94,7 +102,7 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
                         {% csrf_token %}
                         <button type="submit" :disabled="disconnecting" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                             <svg x-show="disconnecting" class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                            <span x-text="disconnecting ? 'Disconnecting…' : 'Disconnect'">Disconnect</span>
+                            <span x-text="disconnecting ? '{% if account.is_manual %}删除中…{% else %}Disconnecting…{% endif %}' : '{% if account.is_manual %}确认删除{% else %}Disconnect{% endif %}'">{% if account.is_manual %}确认删除{% else %}Disconnect{% endif %}</span>
                         </button>
                     </form>
                 </div>
@@ -189,7 +197,7 @@ Usage: {% include "social_accounts/partials/_account_card.html" with account=acc
     {% endwith %}
 
     <!-- Posting Schedule -->
-    {% if account.connection_status == "connected" %}
+    {% if account.connection_status == "connected" and not account.is_manual %}
     <div class="border-t border-stone-100 mt-4 pt-4">
         <div class="mb-3">
             <h4 class="text-xs font-semibold text-stone-700 uppercase tracking-wider">Posting Schedule</h4>

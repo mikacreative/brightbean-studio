@@ -45,7 +45,13 @@ def sync_post_scheduled_at(post):
     endpoint) clears the proposal itself rather than routing through here, to
     avoid disturbing that aggregate.
     """
-    times = list(post.platform_posts.exclude(scheduled_at__isnull=True).values_list("scheduled_at", flat=True))
+    from apps.social_accounts.models import MANUAL_PLATFORMS
+
+    times = list(
+        post.platform_posts.exclude(scheduled_at__isnull=True)
+        .exclude(social_account__platform__in=MANUAL_PLATFORMS)
+        .values_list("scheduled_at", flat=True)
+    )
     if not times:
         if post.scheduled_at is not None:
             post.scheduled_at = None
@@ -453,6 +459,10 @@ def publish_blocker(social_account, *, media_types, platform_extra: dict | None 
     media a platform can't do without (``media_blocker``), and a pin with no
     board, which our own Pinterest provider refuses.
     """
+    from apps.social_accounts.models import MANUAL_PLATFORMS
+
+    if social_account.platform in MANUAL_PLATFORMS:
+        return "此账号为人工管理，请在平台发布后登记链接；不会自动发布。"
     reason = media_blocker(social_account, media_types=media_types)
     if reason:
         return reason

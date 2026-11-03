@@ -17,7 +17,7 @@ from apps.common.validators import is_valid_hex_color
 from apps.composer.models import ContentCategory, PlatformPost, Post
 from apps.members.decorators import require_permission
 from apps.members.models import WorkspaceMembership
-from apps.social_accounts.models import SocialAccount
+from apps.social_accounts.models import MANUAL_PLATFORMS, SocialAccount
 from apps.workspaces.models import Workspace
 
 from .holidays import get_holidays_for_range
@@ -176,6 +176,7 @@ def _get_filtered_platform_posts(workspace, request):
     Each row carries an ``effective_at`` annotation that falls back to
     ``post.scheduled_at`` when the PlatformPost has no per-platform override.
     """
+    from django.db.models import Case, DateTimeField, F, When
     from django.db.models.functions import Coalesce
 
     qs = (
@@ -185,7 +186,13 @@ def _get_filtered_platform_posts(workspace, request):
         # would fire its own media_attachments + media_asset queries (N+1) on
         # every month/week/day render.
         .prefetch_related("post__media_attachments__media_asset")
-        .annotate(effective_at=Coalesce("scheduled_at", "post__scheduled_at"))
+        .annotate(
+            effective_at=Case(
+                When(social_account__platform__in=MANUAL_PLATFORMS, then=F("scheduled_at")),
+                default=Coalesce("scheduled_at", "post__scheduled_at"),
+                output_field=DateTimeField(),
+            )
+        )
     )
 
     # Status filter — editorial status now lives on the PlatformPost itself,
@@ -1134,6 +1141,24 @@ def reschedule_post(request, workspace_id):
     can_edit = is_own_post or perms.get("edit_others_posts", False)
     if not can_edit:
         return JsonResponse({"error": "Permission denied."}, status=403)
+    if pp.social_account.platform in MANUAL_PLATFORMS:
+        # A calendar drag only changes the manual reminder, not workflow state.
+        import zoneinfo
+
+        try:
+            new_dt = datetime.fromisoformat(new_datetime_str)
+            if new_dt.tzinfo is None:
+                new_dt = new_dt.replace(tzinfo=zoneinfo.ZoneInfo(workspace.effective_timezone or "Asia/Shanghai"))
+        except (ValueError, TypeError):
+            return JsonResponse({"error": "计划时间格式不正确。"}, status=400)
+        pp.scheduled_at = new_dt
+        pp.save(update_fields=["scheduled_at", "updated_at"])
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps({"postRescheduled": {"platformPostId": str(pp.id), "postId": str(post.id)}})
+            },
+        )
     # Dropping a draft/failed chip promotes it to "scheduled" below, which is the
     # publish privilege every other scheduling path gates on (the composer's chip
     # transition, save_post's publish-now branch, REST /schedule). Reject rather
